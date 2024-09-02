@@ -1,0 +1,70 @@
+{% block content %}
+
+<style>
+    th, td {
+      border-style: outset;
+    }
+</style>
+
+
+<h2>Premium Plan Orders</h2>
+<table style="width:100%">
+        <tr>
+            <th>ID</th>
+            <th>User Name</th>
+            <th>Business Name</th>
+            <th>Transaction ID</th>
+            <th>Status</th>
+            <th>Purchased Detail</th>
+            <th>Purchased Date</th>
+            <th>Edit</th>
+        </tr>
+            {% for order in plan_orders %}  
+                <form method="post">
+                    {% csrf_token %}
+                    <tr>
+                        
+                        <td>{{forloop.counter0|add:1 }}</td>
+
+                        <td>{{order.user.name}}</td>
+                        <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+
+                        <td>{{order.user.business.business_name}}</td>
+                        <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+
+                        <td>{{order.transaction_id}}</td>
+
+                        <td>{{order.status}}</td>
+
+                        <td>{{order.details}}</td>
+
+                        <td>{{order.purchased_at}}</td>
+
+
+                        {% comment %} <td>
+                            <select name="status" id="status">
+                                {% if plan.is_active %}
+                                    <option value="True">Approved</option>
+                                    <option value="False">Not Approved</option>
+                                {% else %}
+                                        <option value="False">Not Approved</option>
+                                        <option value="True">Approved</option>
+                                {% endif %}
+                            </select>
+                           
+                        </td> {% endcomment %}
+                        <td><input type="submit" value="Submit"></td>
+                    </tr>
+                </form>
+            {% endfor %}
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+           
+</table>
+    
+ 
+  
+
+{% endblock content %}

@@ -1,0 +1,26 @@
+{%block content%}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label class="form-label" for="customFile">Upload Lead Excel File</label>
+    <input type="file" class="form-control" id="customFile" name='excel_file'/>
+    
+    <br><br>
+    
+
+    <label for="plan">Choose Premium or W/O Premium Plan</label>
+
+    <select name="plan" id="plan">
+      <option value="all_category">All Category</option>
+      <option value="purchased_plan">Premium Plan Purchased</option>
+      <option value="W/O_Premium_Plan">W/O Premium Plan</option>
+      <option value="combo_lead">Combo Lead</option>
+
+    </select> <br><br>
+
+    <button type="submit" name='submit'>Submit Excel File</button>
+
+</form>
+    
+{%endblock%}

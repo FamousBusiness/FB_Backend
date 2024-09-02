@@ -1,0 +1,80 @@
+{% block content %}
+
+<style>
+    th, td {
+      border-style: outset;
+    }
+</style>
+
+
+<h2>Purchased Plans</h2>
+<table style="width:100%">
+        <tr>
+            <th>ID</th>
+            <th>User Name</th>
+            <th>Business Name</th>
+            <th>Purchased Plan</th>
+            <th>Lead View Quantity</th>
+            <th>AD POST Quantity</th>
+            <th>Job POST Quantity</th>
+            <th>Purchased Date</th>
+            <th>Status</th>
+            <th>Edit</th>
+        </tr>
+            {% for plan in purchased_plan %}  
+                <form method="post">
+                    {% csrf_token %}
+                    <tr>
+                        
+                        <td>{{forloop.counter0|add:1 }}</td>
+
+                        <td>{{plan.user.name}}</td>
+                        <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+
+                        <td>{{plan.user.business.business_name}}</td>
+                        <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+
+                        <td>{{plan.plan}} -> ID: {{lead.lead.id}}</td>
+
+                        <td>{{plan.lead_assigned}}</td>
+
+                        <td>{{plan.ads_allowed}}</td>
+
+                        <td>{{plan.jobpost_allowed}}</td>
+
+                        <td>{{plan.purchased_at}}</td>
+
+                        <td>
+                            {% if plan.expired == True %}
+                               Expired
+                            {% else %}
+                                Active
+                            {% endif %}
+                        </td>
+                        {% comment %} <td>
+                            <select name="status" id="status">
+                                {% if plan.is_active %}
+                                    <option value="True">Approved</option>
+                                    <option value="False">Not Approved</option>
+                                {% else %}
+                                        <option value="False">Not Approved</option>
+                                        <option value="True">Approved</option>
+                                {% endif %}
+                            </select>
+                           
+                        </td> {% endcomment %}
+                        <td><input type="submit" value="Submit"></td>
+                    </tr>
+                </form>
+            {% endfor %}
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+           
+</table>
+    
+ 
+  
+
+{% endblock content %}

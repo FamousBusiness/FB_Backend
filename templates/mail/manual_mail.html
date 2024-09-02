@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manually Send Mail</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+</head>
+<body>
+
+ <form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+      <label for="from_email">Enter From email Address:</label>
+      <input type="email" id="from_email" name="from_email"><br><br>
+
+   
+      <label for="to_email"><b>To Address:</b></label>
+        <label for="category">Choose a Category</label>
+          <select name="category" id="category">
+            {% for cat in category %}
+              <option value="{{cat}}">{{cat}}</option>
+            {% endfor %}
+          </select>
+
+        <label for="city">Choose a City</label>
+          <select name="city" id="city">
+            {% for city in cities %}
+              <option value="{{city}}">{{city}}</option>
+            {% endfor %}
+          </select>
+
+    <br><br>
+
+      <label for="subject">Subject: </label>
+      <input type="text" id="subject" name="subject"><br><br>
+
+      <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="10" cols="100">
+          
+        </textarea>
+
+    <br><br>
+    <button type="submit" name='submit' class="btn btn-primary">Submit</button>
+</form>
+  
+</body>
+</html>

@@ -1,0 +1,13 @@
+{% block content %}
+
+<h1>AWS BOUNCE MAIL LIST WITH REASON</h1>
+    <ul>
+        {% for suppressed_destination in suppression_list %}
+        <li>
+            <strong>Email:</strong> {{ suppressed_destination.EmailAddress }}<br>
+            <strong>Reason:</strong> {{ suppressed_destination.Reason }}
+        </li>
+    {% endfor %}
+    </ul>
+ 
+{% endblock content %}

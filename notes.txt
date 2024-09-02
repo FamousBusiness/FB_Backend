@@ -1,0 +1,4 @@
+Lead Price
+LeadPrice id - 1
+LeadPrice id -1 used for Auto Lead
+LeadPrice id -2 used for Enquiry form submission For user and Business page owner both

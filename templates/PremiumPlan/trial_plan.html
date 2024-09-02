@@ -1,0 +1,56 @@
+{% block content %}
+
+<style>
+    th, td {
+      border-style: outset;
+    }
+</style>
+
+
+<h2>Trial Plan Requests</h2>
+<table style="width:100%">
+        <tr>
+            <th>User Name</th>
+            <th>Business Name</th> 
+            <th>Created</th>
+            <th>Lead View Quantity</th>
+            <th>Status</th>
+            <th>Submit</th>
+        </tr>
+            {% for plan in trial_plan %}  
+                <form method="post">
+                    {% csrf_token %}
+                    <tr>
+                        <td>{{plan.user.name}}</td>
+                        <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+                        <td>{{plan.user.business.business_name}}</td>
+                        <input type="hidden" name="business_name" value="{{ plan.user.business.business_name }}">
+                        <td>{{plan.created_at}}</td>
+                        <td>{{plan.lead_view}}</td>
+                        <td>
+                            <select name="status" id="status">
+                                {% if plan.is_active %}
+                                    <option value="True">Approved</option>
+                                    <option value="False">Not Approved</option>
+                                {% else %}
+                                        <option value="False">Not Approved</option>
+                                        <option value="True">Approved</option>
+                                {% endif %}
+                            </select>
+                           
+                        </td>
+                        <td><input type="submit" value="Submit"></td>
+                    </tr>
+                </form>
+            {% endfor %}
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+           
+</table>
+    
+ 
+  
+
+{% endblock content %}

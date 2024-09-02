@@ -1,0 +1,233 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Famous Business</title>
+    <style>
+        /* CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        a.button {
+          display: inline-block;
+          background-color: #3C843C;
+          color: white;
+          padding: 10px 20px;
+          text-align: center;
+          text-decoration: none;
+          border-radius: 20px; 
+          transition: background-color 0.3s, border-radius 0.3s; 
+          margin-left: 250px;
+          margin-top: 10px;
+      }
+      a.button:hover {
+          background-color: #45a049;
+          border-radius: 30px; 
+      }
+        .highlight {
+            color: #45a049;
+            font-weight: bold;
+        }
+        .blue-highlight {
+            color: #3498db;
+            font-weight: bold;
+        }
+        .yellow-background {
+            background-color: #ffffcc;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .signature {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><span class="highlight">Congratulations</span>, {{business_owner_name}}!</p>
+
+        <p>Welcome to Famous Business! Your business is live on India's leading online marketplace, Connecting Buyers with Suppliers. You can access your page by clicking 
+          <br>
+          <a href="{{link}}" class="button">View my Business</a>.</p>
+
+        <p>Famous Business is a leading Online Marketplace in India, Connecting Buyers with Suppliers. It's a vital platform for SMEs to list their offerings, allowing buyers to search, compare, and purchase products and services across various industries. Famous Business has played a crucial role in expanding SMEs' market reach and boosting daily customer transactions, becoming a cornerstone of India's digital economy by facilitating trade and commerce.</p>
+        
+        <h2 class="blue-highlight">Why is Famous Business the perfect platform for your business?</h2>
+        <ol>
+            <li><strong>Webpage Profile:</strong> Famous Businesses provides complimentary webpage profiles akin to your own website for your business. These profiles facilitate connections with buyers through calls, emails, WhatsApp, etc., enabling businesses to showcase their products or services effectively. These webpages function as online marketplaces where buyers can easily discover suppliers for a wide array of products and services.</li>
+
+            <li><strong>Guaranteed Customers:</strong> Famous Business is the India's first business portal, offers a bold promise by providing Guaranteed Customers to businesses. With special categories such as <span class="yellow-background">CCTV, Home Appliance Repair, Interior Work, Construction Work, Real Estate, Used Car Purchase, Website and Mobile App Development, House Maintenance Services</span>, we commit to delivering Guaranteed Customers. This type of Guarantee can be highly appealing to businesses seeking to expand their customer base and increase revenue without assuming substantial risk.</li>
+
+            <li><strong>Inquiry and Communication:</strong> Instantly receive alerts for new inquiries via SMS, Email, and WhatsApp messages. Buyers can directly contact suppliers through the platform to inquire about products, request quotes, negotiate terms, and place orders.</li>
+
+            <li><strong>Product and Service Categories:</strong> Famous Business covers a wide range of categories, including industrial products, machinery, electronics, apparel, home goods, chemicals, and more. It primarily focuses on facilitating B2B transactions.</li>
+
+            <li><strong>Search and Filters:</strong> The platform offers robust search and filtering capabilities, allowing buyers to narrow down their search based on criteria such as product category, location, price range, and supplier ratings.</li>
+
+            <li><strong>Trust and Verification:</strong> Famous Business ensures trust and reliability within its marketplace by verifying supplier identities, displaying customer reviews and ratings, and providing buyer protection policies.</li>
+
+            <li><strong>Mobile App and Website:</strong> Famous Business is accessible through both its website and mobile app, enabling users to browse, search, and engage with suppliers conveniently.</li>
+
+            <li><strong>Value-added Services:</strong> In addition to its core marketplace functionality, Famous Business offers various value-added services such as digital marketing solutions, lead generation tools, and business management software.</li>
+
+        </ol>
+
+        <br><br><br>
+
+        <p class="signature"><b>Thanks & Regards,</b><br>
+        <b>Surya Narayan Yadav</b><br>
+        Business Consultant | Famous Business Team<br>
+        WBFS Private Limited<br>
+        M: +91 9883835373 | VOIP: 8585062<br>
+        Website: <a href="http://www.famousbusiness.in">www.famousbusiness.in</a><br>
+        Corporate 545 Sector 58, Faridabad - 121004, India.<br>
+        CIN: U63112HR2023PTC116103 GSTIN: 06AADCW6644C1ZF</p>
+
+        <p class="contact-info">DO BUSINESS BETTER<br>
+        CONSULTING | SYSTEM INTEGRATION | BUSINESS PROCESS SERVICES</p>
+    </div>
+
+</body>
+</html>
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Famous Business Pvt. Ltd.</title>
+
+    <style>
+/* CSS */
+.button-15 {
+  background-image: linear-gradient(#42A1EC, #0070C9);
+  border: 1px solid #0077CC;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  direction: ltr;
+  display: block;
+  font-family: "SF Pro Text","SF Pro Icons","AOS Icons","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: -.022em;
+  line-height: 1.47059;
+  min-width: 30px;
+  overflow: visible;
+  padding: 4px 15px;
+  text-align: center;
+  vertical-align: baseline;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+  margin: 0 auto;
+  max-width: 200px; 
+}
+
+.button-15:disabled {
+  cursor: default;
+  opacity: .3;
+}
+
+.button-15:hover {
+  background-image: linear-gradient(#51A9EE, #147BCD);
+  border-color: #1482D0;
+  text-decoration: none;
+}
+
+.button-15:active {
+  background-image: linear-gradient(#3D94D9, #0067B9);
+  border-color: #006DBC;
+  outline: none;
+}
+
+.button-15:focus {
+  box-shadow: rgba(131, 192, 253, 0.5) 0 0 0 3px;
+  outline: none;
+}
+    </style>
+</head>
+
+
+<body>
+    <h2>Dear {{business_owner_name}},</h2>
+
+
+    <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.4;">
+
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        Congratulations! Your Business page is now live on
+        <a href='{{link}}' style="color: #0070C9; text-decoration: none;">famousbusiness.in</a>.
+      </p>
+    
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        You can access your page by clicking
+        <a href='{{link}}' style="color: #0070C9; text-decoration: none;">here</a>.<br>
+        Famous Business is a popular online local search service in India, offering users information about various businesses, services, and products in different cities.
+      </p>
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        Utilize your business page to showcase your products and services to your business audience, engaging with potential customers and boosting your daily leads.
+      </p>
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        This fantastic opportunity will help you increase your reach and establish a strong online presence.
+      </p>
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        Remember, success is a journey, not a destination. We're here to support you every step of the way. Wishing you continued success and prosperity!
+      </p>
+
+    <div>
+
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td align="center">
+              <a href='{{link}}' >
+                <button class="button-15" role="button">View Your Page</button></a>
+            </td>
+          </tr>
+        </table>
+
+
+        <div>
+
+          <p style="font-size: 16px; color: #333; margin: 10px 0;">
+            <b>Thanks & Regards,</b><br>
+            <b>Rajit Kumar Sahoo</b><br>
+            Business Consultant<br>
+            <a href='https://famousbusiness.in/' style="color: #0070C9; text-decoration: none;">FamousBusiness.in</a><br>
+        </p>
+      
+        </div>
+
+</body>
+</html>
+ {% endcomment %}

@@ -1,0 +1,161 @@
+{% block content %}
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #D6EEEE;
+    }
+
+    .topnav input[type=text] {
+        border: 1px solid #ccc;
+    }
+
+    /* .topnav input[type=text] {
+        float: right;
+        padding: 6px;
+        margin-top: 8px;
+        margin-right: 16px;
+        border: none;
+        font-size: 17px;
+    } */
+
+    .topnav {
+        overflow: hidden;
+        background-color: #e9e9e9;
+        float: right;
+        padding: 6px;
+        margin-top: 8px;
+        margin-right: 16px;
+        border: none;
+        font-size: 17px;
+    }
+
+    @media screen and (max-width: 600px) {
+        .topnav input[type=text] {
+            float: none;
+            display: block;
+            text-align: left;
+            width: 100%;
+            margin: 0;
+            padding: 14px;
+        }
+    }
+</style>
+
+
+<h2>All Business Pages</h2>
+
+<form class="d-flex" method='post'>
+    {% csrf_token %}
+    <!-- <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" value="Search"> -->
+    <button class="topnav" type="submit">Search</button>
+    <input type="text" name="Search" value="" class='topnav' placeholder="Search..">
+</form>
+
+
+<table style="width:100%">
+    <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Business Name</th>
+        <th>Email</th>
+        <th>Mobile Number</th>
+        <th>Whatsapp Number</th>
+        <th>Category</th>
+        <th>State</th>
+        <th>City</th>
+        <th>GSTIN</th>
+        <th>CIN No</th>
+        <th>DIN No</th>
+        <th>Company No</th>
+        <th>RoC</th>
+        <th>Established ON</th>
+        <th>Edit</th>
+       
+
+    </tr>
+   
+    <form class="d-flex" method='get'>
+        {% csrf_token %}
+        {% for business in all_business %}
+            <tr>
+                
+        
+                <td>{{business.id }}</td>
+
+                <td>{{business.owner.name }}</td>
+
+                <td>{{business.business_name}}</td>
+                <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+
+                <td>{{business.email}}</td>
+
+                <td>{{business.mobile_number}}</td>
+
+                <td>{{business.whatsapp_number}}</td>
+
+                <td>{{business.category.type}}</td>
+
+                <td>{{business.state}}</td>
+
+                <td>{{business.city}}</td>
+
+                <td>{{business.GSTIN}}</td>
+
+                <td>{{business.CIN_No}}</td>
+
+                <td>{{business.DIN}}</td>
+
+                <td>{{business.company_No}}</td>
+
+                <td>{{business.RoC}}</td>
+
+                <td>{{business.established_on}}</td>
+
+                <td>
+                    <a href="{% url 'admin_business_update' business.id %}">Edit</a>
+                </td>
+
+            </tr>
+        {% endfor %}
+    </form>
+</table>
+
+    {% if is_paginated %}
+            {% if page_obj.has_previous %}
+                <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+            {% endif %}
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+
+    {% if page_obj.has_next %}
+      <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+      <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    {% endif %}
+
+
+
+   
+
+
+
+{% endblock content %}

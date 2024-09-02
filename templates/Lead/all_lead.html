@@ -1,0 +1,81 @@
+{% block content %}
+
+<style>
+
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      
+      th, td {
+        text-align: left;
+        padding: 8px;
+      }
+      
+      tr:nth-child(even) {
+        background-color: #D6EEEE;
+      }
+</style>
+
+
+<h2>All Available Leads</h2>
+<table style="width:100%">
+        <tr>
+            <th>ID</th>
+            <th>Lead Name</th>
+            <th>Lead Category</th>
+            <th>Requirements</th>
+            <th>Created Date</th>
+            <th>Mobile Number</th>
+            <th>City</th>
+            <th>Pincode</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Views</th>
+            <th>Edit</th>
+        </tr>
+            {% for lead in all_leads %}  
+                <form method="post">
+                    {% csrf_token %}
+                    <tr>
+                        
+                        {% comment %} <td>{{forloop.counter0|add:1 }}</td> {% endcomment %}
+                        <td>{{lead.id }}</td>
+
+                        <td>{{lead.created_by}}</td>
+                        <input type="hidden" name="user_name" value="{{ plan.user.name }}">
+
+                        <td>{{lead.category}}</td>
+
+                        <td>{{lead.requirement}}</td>
+                        
+                        <td>{{lead.created_at}}</td>
+
+                        <td>{{lead.mobile_number}}</td>
+
+                        <td>{{lead.city}}</td>
+
+                        <td>{{lead.pincode}}</td>
+                        
+                        <td>{{lead.price.price}}</td>
+
+                        <td>{{lead.status}}</td>
+
+                        <td>{{lead.views}}</td>
+                       
+                        <td><input type="submit" value="Submit"></td>
+                    </tr>
+                </form>
+            {% endfor %}
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+           
+</table>
+    
+ 
+  
+
+{% endblock content %}

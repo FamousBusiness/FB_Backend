@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Notification</title>
+    <style>
+        /* CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 20px; /* Smooth curve */
+            transition: background-color 0.3s, border-radius 0.3s; /* Smooth transition */
+            margin: 0 auto;
+            display: block;
+        }
+        .button:hover {
+            background-color: #45a049;
+            border-radius: 30px; /* Larger curve on hover */
+        }
+        .highlight {
+            color: #45a049;
+            font-weight: bold;
+        }
+        .red-highlight {
+            color: red;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .signature {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .contact-info {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3 class="red-highlight">Converting Inquiries into Buying Customers: A Step-by-Step Guide</h3>
+        <p><span class="highlight">Dear {{business_owner_name}},</span></p>
+        <p>Congratulations! New Customer <b>{{customer_name}}</b> has raised an inquiry for your business dated  {% now "d/M/Y" %}, regarding <b>{{requirements}}</b> in <b>{{location}}</b>. Please reach out to the customer at your earliest convenience to discuss their specific needs and provide a quotation. We trust that your expertise and commitment to quality will ensure a hassle-free experience for the customer.</p>
+        
+        <table>
+            <tr>
+                <th>Customer Name</th>
+                <td>{{customer_name}}</td>
+            </tr>
+            <tr>
+                <th>Requirement</th>
+                <td>{{requirements}}</td>
+            </tr>
+            <tr>
+                <th>City</th>
+                <td>{{location}}</td>
+            </tr>
+            {% comment %} <tr>
+                <th>Pin Code</th>
+                <td>11005</td>
+            </tr> {% endcomment %}
+        </table>
+
+        <p><a href="https://famousbusiness.in/leads" class="button">View Leads</a></p>
+        
+        <p><strong>Step 1: Prompt Response</strong><br>
+        Respond swiftly to inquiries via Call, Email, and WhatsApp Message, addressing customer questions promptly and thoroughly. Understand their needs response effectively.</p>
+        
+        <p><strong>Step 2: Demonstration</strong><br>
+        Offer a complimentary product demonstration to showcase the value and functionality of the product.</p>
+        
+        <p><strong>Step 3: Provide Value</strong><br>
+        Highlight the product's benefits, such as specifications, warranties, quality assurances, and technical support, emphasizing the value it brings to the customer.</p>
+        
+        <p><strong>Step 4: Build Trust</strong><br>
+        Establish trust by sharing your business background and success stories, along with previous client details, and Your 24X7 Technical Support to instill confidence in your product and services.</p>
+        
+        <p><strong>Step 5: Follow Up</strong><br>
+        After sending a quotation, follow up with the customer via call and WhatsApp message the next day to address any further questions or provide assistance with the ordering process. Reiterate your availability to support their needs.</p>
+
+        <p class="signature"><b>Thanks & Regards,</b><br>
+        <b>Surya Narayan Yadav</b><br>
+        Business Consultant | Famous Business Team<br>
+        WBFS Private Limited<br>
+        M: +91 9883835373 | VOIP: 8585062<br>
+        Website: <a href="http://www.famousbusiness.in">www.famousbusiness.in</a><br>
+        Corporate 545 Sector 58, Faridabad - 121004, India.<br>
+        CIN: U63112HR2023PTC116103 GSTIN: 06AADCW6644C1ZF</p>
+
+        <p class="contact-info">DO BUSINESS BETTER<br>
+        CONSULTING | SYSTEM INTEGRATION | BUSINESS PROCESS SERVICES</p>
+    </div>
+</body>
+</html>
+
+
+
+<!-- {% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Famous Business Pvt. Ltd.</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+  
+      table {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        /* border-radius: 8px; */
+        overflow: hidden;
+      }
+  
+      .header {
+        background-color: #3498db;
+        color: #ffffff;
+        padding: 10px 40px 10px 40px;
+        text-align: center;
+      }
+  
+      .content {
+        padding: 20px;
+      }
+  
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #3498db;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-left: 100px;
+        color: #ffffff;
+        decoration:none;
+      }
+  
+    </style>
+
+</head>
+
+<body>
+    <h2>Dear {{business_owner_name}},</h2>
+
+
+    <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.4;">
+
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+            We trust this message finds you in good health and high spirits. 
+      </p>
+      {% comment %} {{current_date}} {% endcomment %}
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        There is a new potential customer inquiry Dated - {% now "d/M/Y" %} regarding CCTV requirements in {{location}}. 
+        
+      </p><br>
+
+      <table width="400px" cellspacing="0" cellpadding="0">
+        <tr>
+          <td>
+            <div class="header">
+              <h2>New Leads</h2>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="content">
+              <span><b>Customer Name: {{customer_name}}</b></span><span></span>
+              <br/>
+              <br/>
+              <span><b>Requirement: {{requirements}}</b></span>
+              <p>Feel free to add more content here.</p>
+              <br/>
+              <br/>
+                <a href="https://famousbusiness.in/leads" class="button">View Lead</a>
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    
+
+      <b>Inquiry: Requirement of {{requirements}}</b><br>
+
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        Please reach out to the customer at your earliest convenience to discuss their specific needs and provide a quotation for your services. We trust that your expertise and commitment to quality will ensure a hassle-free experience for the customer.
+      </p>
+      
+      <p style="font-size: 16px; color: #333; margin-bottom: 10px;">
+        Please mark our Mail as Starred to get instant Leads.
+      </p>
+
+      <h3>How to convert leads into customers?<h3>
+        <p>1.) Understand Customer Needs: Gather information about requirements, interests, and preferences.</p>
+        <p>2.) Engage Effectively: Use multiple communication channels to highlight value propositions.</p>
+        <p>3.) Provide Incentives: Offer warranties, quality assurances, and technical support.</p>
+        <p>4.) Build Trust: Share success stories and maintain transparency in interactions.</p>
+        <p>5.) Follow-Up: Ensure satisfaction, gather feedback, and encourage repeat business.</p>
+
+    <div>
+
+        <br><br>
+          <div>
+            <p style="font-size: 16px; color: #333; margin: 10px 0;">
+              <b>Best Regards,</b><br>
+              <b>Ranjit Kumar Sahoo</b><br>
+              <b>Business Consultant</b><br>
+              <b>Famous Business Team</b><br>
+              <b>Mobile No: 9871475373</b>
+            </p>
+          </div>
+
+</body>
+</html>
+ -->

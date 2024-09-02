@@ -1,0 +1,7 @@
+{'entry': [{'id': '0', 'time': 1708854348, 'uid': '0', 'changed_fields': ['about']}], 'object': 'user'}
+
+{'entry': [{'id': '0', 'time': 1708854467, 'uid': '0', 'changed_fields': ['birthday']}], 'object': 'user'}
+
+{'entry': [{'id': '0', 'time': 1708854528, 'uid': '0', 'changed_fields': ['books']}], 'object': 'user'}
+
+{'entry': [{'id': '0', 'time': 1708855087, 'changes': [{'field': 'in_process_ad_objects', 'value': {'id': '111111111111', 'level': 'CREATIVE', 'status_name': 'Paused'}}]}], 'object': 'ad_account'}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title>Google Signin</title>
+</head>
+
+<body>
+    <!-- data-callback="handleCredentialResponse" -->
+    <div id="g_id_onload" data-client_id="551152799852-rqs04fias7rph26i8c5j28b7bffr6jva.apps.googleusercontent.com">
+        <button class="g_id_signin" data-type="standard">Google Sign in</button>
+    </div>
+
+    <script>
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            console.log("ID: ", profile.getId());
+            var id_token = googleUser.getAuthResponse().id_token;
+            console.log("ID Token: " + id_token);
+        }
+
+    </script>
+
+</body>
+
+</html>

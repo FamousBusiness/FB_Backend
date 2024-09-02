@@ -1,0 +1,15 @@
+
+
+{%block content%}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label class="form-label" for="customFile">Default file input example</label>
+    <input type="file" class="form-control" id="customFile" name='excel_file'/>
+
+    <button type="submit" name='submit'>Submit Excel File</button>
+
+</form>
+    
+{%endblock%}
