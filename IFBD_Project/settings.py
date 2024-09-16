@@ -10,15 +10,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 
+IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 
-DEBUG = False
-# DEBUG = True
-
+if IS_DEVELOPMENT == 'True':
+    DEBUG = True
+else:
+    DEBUG = False
 
 
 
 if DEBUG:
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = ["0f45-2409-4050-e38-e2f-d00e-68bf-c089-e6c0.ngrok-free.app", "127.0.0.1"]
 
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'

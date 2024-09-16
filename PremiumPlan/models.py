@@ -1,6 +1,8 @@
+from typing import Iterable
 from django.db import models
 from users.models import User
 from django.utils.translation import gettext_lazy as _
+from Phonepe.uniqueID import generate_unique_id
 
 
 
@@ -129,21 +131,21 @@ class PremiumPlanOrder(models.Model):
     user                   = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id         = models.CharField(_("Transaction ID"), max_length=100, unique=True)
     amount                 = models.PositiveIntegerField(_("Amount"), null=True, blank=False)
-    provider_reference_id  = models.CharField(
-        _("Provider Reference ID"), max_length=40, null=False, blank=False
-    )
-    merchant_id            = models.CharField(_("Merchant ID"), null=True, blank=True)
-    merchant_order_id      = models.CharField(_("Merchant Order ID"), null=True, blank=True, max_length=100)
-    checksum               = models.CharField(_("Checksum"), null=True, blank=True)
     status                 = models.CharField(_("Payment Status"), default="Pending", max_length=254,
         blank=False,
         null=False,
-       )
+       ) # Pending, Paid, Failed
     details               = models.CharField(max_length=255, null=True, blank=True)
-    currency              = models.CharField(max_length=50, default='INR')
-    message               = models.CharField(_("Phonepe Message"), default="Phonpe Message", blank=True, null=True, max_length=100)
-    purchased_at          = models.DateTimeField(_("Purchased Date"),auto_now_add=True)
+    purchased_at          = models.DateTimeField(_("Purchased Date"), auto_now_add=True)
     isPaid                = models.BooleanField(default=False)
+    # provider_reference_id  = models.CharField(
+    #     _("Provider Reference ID"), max_length=40, null=False, blank=False
+    # )
+    # merchant_id            = models.CharField(_("Merchant ID"), null=True, blank=True)
+    # merchant_order_id      = models.CharField(_("Merchant Order ID"), null=True, blank=True, max_length=100)
+    # checksum               = models.CharField(_("Checksum"), null=True, blank=True)
+    # currency              = models.CharField(max_length=50, default='INR')
+    # message               = models.CharField(_("Phonepe Message"), default="Phonpe Message", blank=True, null=True, max_length=100)
 
 
     def __str__(self):
@@ -151,6 +153,29 @@ class PremiumPlanOrder(models.Model):
     
     class Meta:
         ordering = ["-id"]
+
+
+
+# Phonepe Autopay System
+class PhonepeAutoPayOrder(models.Model):
+    premium_plan_id         = models.IntegerField(null=True)
+    user_id                 = models.IntegerField(null=True)
+    merchantUserId          = models.CharField(_("Merchant User ID"), max_length=50, unique=True)
+    MerchantSubscriptionId  = models.CharField(_("Subscription ID"), max_length=50, unique=True) # Sent to phonepe
+    subscriptionId          = models.CharField(_("Subscription ID"), max_length=50, unique=True, null=True)  # Received from phonepe
+    amount                  = models.IntegerField(_("Amount"))
+    authRequestId           = models.CharField(_("Auth Request ID"), max_length=50, unique=True, null=True)
+
+
+    def save(self, *args, **kwargs) -> None:
+        if not self.merchantUserId:
+            self.merchantUserId = generate_unique_id(PhonepeAutoPayOrder, 'merchantUserId')
+        if not self.MerchantSubscriptionId:
+            self.MerchantSubscriptionId = generate_unique_id(PhonepeAutoPayOrder, 'MerchantSubscriptionId')
+        if not self.authRequestId:
+            self.authRequestId = generate_unique_id(PhonepeAutoPayOrder, 'authRequestId')
+
+        super(PhonepeAutoPayOrder, self).save(*args, **kwargs)
     
 
 

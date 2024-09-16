@@ -24,6 +24,9 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from decouple import config
 import requests
 from Phonepe.payment import calculate_sha256_string
+from Phonepe.encoded import base64_decode
+from PremiumPlan.models import PhonepeAutoPayOrder
+from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment
 
 
 
@@ -57,7 +60,7 @@ class AllPremiumPlanView(APIView):
 
 
 
-
+# Premium plan payment
 class PremiumPlanPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -66,7 +69,7 @@ class PremiumPlanPaymentView(APIView):
 
         if serializer.is_valid():
             received_amount = serializer.validated_data.get('amount')
-            amount          = received_amount * 100
+            amount          = received_amount
             current_user    = request.user
             plan_id         = request.data.get('premium_plan_id')
 
@@ -75,16 +78,50 @@ class PremiumPlanPaymentView(APIView):
             except PremiumPlan.DoesNotExist:
                 return Response({'msg': 'Premium Plan Does Not exists'})
             
-            try:
-                order            = PremiumPlanOrder.objects.create( amount=received_amount, user=current_user,
-                                                    details=f'Purchased {premium_plan_instance.plan.name} {premium_plan_instance.plan.type}' )
-                transaction_id   = order.transaction_id
-                payment_response = PremiumPlanPaymentInitiation(transaction_id, amount, plan_id)
+            # Create Phonepe Order
+            phonePeOrder = PhonepeAutoPayOrder.objects.create(
+                amount          = amount,
+                premium_plan_id = int(plan_id),
+                user_id         = int(current_user.id)
+            )
 
-                return Response({'msg': 'Payment initiation successful', 'payment_response': payment_response},
-                                status=status.HTTP_200_OK)
-            except PremiumPlanOrder.DoesNotExist:
-                return Response({'msg': 'Unable to Create the Order'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            # 1st step Create user subscription
+            create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+
+            subscriptionID = create_user['data']['subscriptionId']
+
+            if subscriptionID:
+                # Update Phonepe order with Subscription ID
+                phonePeOrder.subscriptionId = subscriptionID
+                phonePeOrder.save()
+
+                # 2nd step Submit QR Auth Request
+                create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
+                    subscriptionID, phonePeOrder.merchantUserId, phonePeOrder.amount, phonePeOrder.authRequestId
+                )
+
+                QRCOde = create_qr_subscription_auth_request['data']['redirectUrl']
+
+                return Response({
+                    'message': 'Success', 
+                    'QR_Code': QRCOde,
+                    'merchantUserId': phonePeOrder.merchantUserId
+                    }, 
+                    status=status.HTTP_200_OK)
+            
+            else:
+                return Response({'message': 'Error occures'}, status=status.HTTP_400_BAD_REQUEST)
+        
+            # try:
+            #     order = PremiumPlanOrder.objects.create(amount=received_amount, user=current_user,
+            #                                         details=f'Purchased {premium_plan_instance.plan.name} {premium_plan_instance.plan.type}' )
+            #     transaction_id   = order.transaction_id
+            #     payment_response = PremiumPlanPaymentInitiation(transaction_id, amount, plan_id)
+
+            #     return Response({'msg': 'Payment initiation successful', 'payment_response': payment_response},
+            #                     status=status.HTTP_200_OK)
+            # except PremiumPlanOrder.DoesNotExist:
+            #     return Response({'msg': 'Unable to Create the Order'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         else:
             response = {
@@ -94,13 +131,186 @@ class PremiumPlanPaymentView(APIView):
             }
 
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+# Pay through UPI ID
+class PaythorughUPIID(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        current_user   = request.user
+        merchantUserId = request.data.get('merchantUserId')
+        upi_id         = request.data.get('upi_id')
+
+        # Get the phonepe order
+        try:
+            autopayOrder = PhonepeAutoPayOrder.objects.get(
+                merchantUserId = merchantUserId
+            )
+        except Exception as e:
+            return Response({'message': 'Phonepe order does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        if autopayOrder:
+            # Send submit Auth Request to phonepe
+            submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
+                autopayOrder.subscriptionId, autopayOrder.merchantUserId, autopayOrder.amount, 
+                autopayOrder.authRequestId, upi_id
+            )
+
+            if submit_auth_reuqest['success'] == True:
+                return Response({'success': True}, status=status.HTTP_200_OK)
+            
+            else:
+                return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response({'msessage': 'Phonepe order does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# Receive AutopayWebhook from Phonepe
+@method_decorator(csrf_exempt, name='dispatch')
+class ReceivePhonepeAutoPayWebhook(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        response_data = request.data.get('response')
+
+        # Decode the response
+        decoded_data = base64_decode(response_data)
+
+        if decoded_data['success'] == True and decoded_data['message']:
+            authRequestID = decoded_data['data']['authRequestId']
+            subscriptionID = decoded_data['data']['subscriptionDetails']['subscriptionId']
+
+            # Get the related Phonepe order
+            auto_pay_order = PhonepeAutoPayOrder.objects.get(
+                authRequestId = authRequestID,
+                subscriptionId = subscriptionID
+            )
+
+            if auto_pay_order:
+                # Get the premium plan ID related to order
+                premium_plan_id  = auto_pay_order.premium_plan_id
+
+                # Get the premium plan
+                premium_plan = PremiumPlan.objects.get(
+                    id = premium_plan_id
+                )
+
+                # Get the user
+                user_obj = User.objects.get(
+                    id = auto_pay_order.user_id
+                )
+
+                order = PremiumPlanOrder.objects.create(
+                    user           = user_obj,
+                    transaction_id = auto_pay_order.authRequestId,
+                    amount         = auto_pay_order.amount,
+                    status         = 'Paid',
+                    details        = f'Purchased Premium plan - {premium_plan.plan.name} {premium_plan.plan.type}',
+                    isPaid         = True
+                )
+
+                try:
+                    business_instance = Business.objects.get(owner=user_obj)
+                except Exception as e:
+                    order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'
+                    order.save()
+                    return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+                data = {
+                    'business_mail': business_instance.email,
+                    'transaction_id': auto_pay_order.authRequestId,
+                    'business_name': business_instance.business_name,
+                    'amount': order.amount
+                }
+
+                try:
+                    plan_benefits, created = PremiumPlanBenefits.objects.get_or_create(user=order.user, plan=premium_plan, is_paid=True)
+                except Exception as e:
+                    order.details = f'Amount paid but unable to Assign the benefits, user name - {user_obj.name}, user iD - {user_obj.pk}'
+                    order.save()
+                    return Response({'success': True}, status=status.HTTP_200_OK)
+
+                try:
+                    previous_available_lead     = plan_benefits.lead_assigned
+                    premiumplan_lead_value      = premium_plan.lead_view
+                    total_lead_view             = previous_available_lead + premiumplan_lead_value
+
+                    previous_available_job_post = plan_benefits.jobpost_allowed
+                    premiumplan_jobpost_value   = premium_plan.job_post
+                    total_jobpost_value         = previous_available_job_post + premiumplan_jobpost_value
+
+                    plan_benefits.lead_assigned   = total_lead_view
+                    plan_benefits.jobpost_allowed = total_jobpost_value
+
+                    business_instance.verified        = premium_plan.verified
+                    business_instance.trusted         = premium_plan.trusted 
+                    business_instance.trending        = premium_plan.trending
+                    business_instance.authorized      = premium_plan.authorized
+                    business_instance.sponsor         = premium_plan.sponsor
+                    business_instance.super           = premium_plan.super
+                    business_instance.premium         = premium_plan.premium
+                    business_instance.industry_leader = premium_plan.industry_leader
+                    
+                    business_instance.save()
+                    plan_benefits.save()
+
+                    # premium_plan_purchase_mail.delay(data)
+                    
+                except Exception as e:
+                    order.details = f'Amount paid but unable to Assign all the benefits, user name - {user_obj.name}, user iD - {user_obj.pk}'
+                    order.save()
+                    return Response({'success': True}, status=status.HTTP_200_OK)
+
+                return Response({'success': True}, status=status.HTTP_200_OK)
+
+        return Response({"message": "Success"}, status=status.HTTP_200_OK)
+
+
+
+# Payment Status of Autopayment
+class AutoPayPaymentStatusCheck(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        merchantUserId = request.data.get('merchantUserId')
+
+        # Get the phonepe order with merchant User Id
+        try:
+            auto_pay_order = PhonepeAutoPayOrder.objects.get(
+                merchantUserId = merchantUserId
+            )
+        except Exception as e:
+            return Response({'message': 'Did not found autopay order'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if auto_pay_order:
+            check_payment_status = PremiumPlanPhonepeAutoPayPayment.CheckPaymentStatus(
+                auto_pay_order.authRequestId
+            )
+
+            if check_payment_status['success'] == True and check_payment_status['message'] == 'Your subscription is active':
+                return Response({'message': 'Status is now active'}, status=status.HTTP_200_OK)
+            
+            elif check_payment_status['success'] == True and check_payment_status['data']['transactionDetails']['state'] == 'PENDING':
+                return Response({'message': "Transaction is pending"}, status=status.HTTP_201_CREATED)
+            
+
+            return Response({'success': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Did not found autopay order'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
 #Get The Business ID and According to the Premium plan benefits create those in Business ID
 @method_decorator(csrf_exempt, name='dispatch')
 class PremiumPlanPaymentCompleteView(View):
-    # permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
         INDEX        = "1"
@@ -142,14 +352,14 @@ class PremiumPlanPaymentCompleteView(View):
                 return redirect("https://www.famousbusiness.in/?no_plan=True")
             
 
-            order.provider_reference_id = provider_reference_id
-            order.merchant_id           = merchant_id
-            order.checksum              = check_sum
+            # order.provider_reference_id = provider_reference_id
+            # order.merchant_id           = merchant_id
+            # order.checksum              = check_sum
             order.status                = payment_status
             order.isPaid                = True
             order.details               = f'Purchased plan: {plan_instance}'
-            order.message               = response.text
-            order.merchant_order_id     = merchant_order_id
+            # order.message               = response.text
+            # order.merchant_order_id     = merchant_order_id
             user                        = order.user
             order.save()
 
