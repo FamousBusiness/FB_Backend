@@ -20,7 +20,7 @@ import time
 import hashlib
 from django.db.models import Q
 from Admin.tasks import process_excel_file, send_email, send_whatsapp_msg_while_registration
-from .serializers import GoogleSocialAuthSerializer, UserPasswordResetAfterMailSerializer
+from .serializers import UserPasswordResetAfterMailSerializer
 from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -657,21 +657,21 @@ def GoogleLoginView(request):
     return render(request, 'User/google_login.html')
 
 
-from rest_framework.generics import GenericAPIView
-class GoogleSocialAuthView(GenericAPIView):
+# from rest_framework.generics import GenericAPIView
+# class GoogleSocialAuthView(GenericAPIView):
 
-    serializer_class = GoogleSocialAuthSerializer
+#     serializer_class = GoogleSocialAuthSerializer
 
-    def post(self, request):
-        """
+#     def post(self, request):
+#         """
 
-        POST with "auth_token"
+#         POST with "auth_token"
 
-        Send an idtoken as from google to get user information
+#         Send an idtoken as from google to get user information
 
-        """
+#         """
 
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = ((serializer.validated_data)['auth_token'])
-        return Response(data, status=status.HTTP_200_OK)
+#         serializer = self.serializer_class(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         data = ((serializer.validated_data)['auth_token'])
+#         return Response(data, status=status.HTTP_200_OK)
