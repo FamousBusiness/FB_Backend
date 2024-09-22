@@ -29,7 +29,7 @@ from PremiumPlan.models import PhonepeAutoPayOrder
 from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment
 
 
-
+            
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 rz_client = RazorpayClient()
@@ -302,8 +302,25 @@ class AutoPayPaymentStatusCheck(APIView):
             
 
             return Response({'success': True}, status=status.HTTP_200_OK)
+        
         else:
             return Response({'message': 'Did not found autopay order'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# Cancel the Plan
+class CancelAutopayPayment(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user    = request.user
+        user_id = user.id
+
+        # Get the Premiumplan Order of the user
+        user_premiumplan_order = PremiumPlanOrder.objects.get(
+            user = user
+        )
+        return Response({'message': "In Progress"}, 200)
 
 
 
@@ -318,11 +335,11 @@ class PremiumPlanPaymentCompleteView(View):
 
         #Phonepe Response
         payment_status        = request.POST.get('code', None)
-        merchant_id           = request.POST.get('merchantId', None)
+        # merchant_id           = request.POST.get('merchantId', None)
         transaction_id        = request.POST.get('transactionId', None)
-        check_sum             = request.POST.get('checksum', None)
-        provider_reference_id = request.POST.get('providerReferenceId', None)
-        merchant_order_id     = request.POST.get('merchantOrderId', None)
+        # check_sum             = request.POST.get('checksum', None)
+        # provider_reference_id = request.POST.get('providerReferenceId', None)
+        # merchant_order_id     = request.POST.get('merchantOrderId', None)
 
         #Query Params
         plan_id = request.GET.get('plan_id')

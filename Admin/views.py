@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views import View
 
 from Lead.models import BusinessPageLeadBucket, Lead, LeadBucket
-from PremiumPlan.models import PremiumPlan, PremiumPlanBenefits, PremiumPlanOrder
+from PremiumPlan.models import PremiumPlan, PremiumPlanBenefits, PremiumPlanOrder, PhonepeAutoPayOrder
 from .forms import AdminExcelUploadForm
 from django.http import HttpResponse
 import pandas as pd
@@ -26,6 +26,10 @@ from rest_framework import permissions, status
 from rest_framework.response import Response
 from django.views.generic import ListView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.utils import timezone
+from datetime import timedelta
+from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment
+from django.contrib import messages
 # import boto3
 
 
@@ -574,6 +578,7 @@ class AllActivePremiumPlanView(View):
     
 
 
+
 class AllUsersDetailView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = User
     template_name = 'User/users.html'
@@ -655,6 +660,56 @@ def LoginRedirectView(request):
 
 def GoogleLoginView(request):
     return render(request, 'User/google_login.html')
+
+
+
+class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
+    model = PremiumPlanOrder
+    template_name = 'PremiumPlan/deduct_payment.html'
+
+
+    def post(self, request):
+
+        current_date = timezone.now()
+        one_day_ago = current_date - timedelta(days=1)
+        
+        try:
+            # Filter PremiumPlanOrder objects
+            # orders_to_deduct = PremiumPlanOrder.objects.filter(purchased_at__date=one_day_ago.date())
+            orders_to_deduct = PremiumPlanOrder.objects.all()
+            count = orders_to_deduct.count()  # Count the number of orders
+
+            # Loop through the orders and process payments
+            for order in orders_to_deduct:
+                transactionID = order.transaction_id
+
+                # Get the Phonepe autopay order
+                phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
+
+                # Process the recurring payment
+                # recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                #     phonepe_order.subscriptionId,
+                #     phonepe_order.merchantUserId,
+                #     phonepe_order.amount,
+                #     phonepe_order.authRequestId
+                # )
+
+                print('phonepe_order', phonepe_order)
+
+            # If everything succeeds, show success message
+            messages.success(request, f'Successfully processed {count} orders.')
+
+        except PhonepeAutoPayOrder.DoesNotExist:
+            messages.error(request, 'Phonepe AutoPay order does not exist.')
+            count = 0
+            
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            count = 0
+
+        # Return count or error message to the template
+        return render(request, self.template_name, {'count': count})
+    
 
 
 # from rest_framework.generics import GenericAPIView

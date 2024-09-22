@@ -13,6 +13,7 @@ urlpatterns = [
     path('purchased-plan/', views.PurchasedPremiumPlanView.as_view(), name='purchased_plans'),
     path('plan-orders/', views.PremumPlanOrderView.as_view(), name='plan_orders'),
     path('active-plans/', views.AllActivePremiumPlanView.as_view(), name='all_active_plans'),
+    path('deduct/periodic/payment/', views.DuductPeriodicPaymentView.as_view(), name='deduct_periodic_payment'),
 
     #Lead
     path('users-lead/', views.UsersPurchasedLeadView.as_view(), name='users_purchased_lead'),

@@ -12,6 +12,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 
+
 if IS_DEVELOPMENT == 'True':
     DEBUG = True
 else:
@@ -20,12 +21,11 @@ else:
 
 
 if DEBUG:
-    ALLOWED_HOSTS = ["0f45-2409-4050-e38-e2f-d00e-68bf-c089-e6c0.ngrok-free.app", "127.0.0.1"]
+    ALLOWED_HOSTS = ["0f45-2409-4050-e38-e2f-d00e-68bf-c089-e6c0.ngrok-free.app", "127.0.0.1", "localhost:3000"]
 
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
-    STATIC_URL = 'static/'
     # STATIC_ROOT = [ os.path.join(BASE_DIR, "static"), ]
     STATICFILES_DIRS = [ os.path.join(BASE_DIR, "static"), ]
 
@@ -44,16 +44,16 @@ else:
 
 
     # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'http')
-    
+
     MEDIA_URL = 'https://mdwebzotica.famousbusiness.in/'
     MEDIA_ROOT = BASE_DIR / '../webzoticafbmedia/'
 
-    STATIC_URL = 'static/'
     STATIC_ROOT = BASE_DIR / 'static'
-   
 
 
 
+
+STATIC_URL = 'static/'
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -273,7 +273,7 @@ SIMPLE_JWT = {
     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
-    
+
 }
 
 
@@ -283,8 +283,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://famousbusiness.in",
     "http://www.famousbusiness.in",
     "https://mdwebzotica.famousbusiness.in",
-    "http://mdwebzotica.famousbusiness.in"
-    # "http://www.localhost:3000"
+    "http://mdwebzotica.famousbusiness.in",
+    "http://localhost:3000"
 ]
 
 
@@ -327,7 +327,7 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = config('EMAIL_HOST')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = 587 
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'customercare@famousbusiness.in'
 

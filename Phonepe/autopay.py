@@ -8,11 +8,17 @@ from decouple import config
 IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 
 if IS_DEVELOPMENT == 'True':
-    webhook_url = 'https://0f45-2409-4050-e38-e2f-d00e-68bf-c089-e6c0.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
-    merchantID  = 'WEBZOTICAUAT'
+    webhook_url    = 'https://0f45-2409-4050-e38-e2f-d00e-68bf-c089-e6c0.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
+    TestMerchantId = 'WEBZOTICAUAT'
+    merchantID     = 'M22BWNC10OPNQ'
+    TestsaltKey    = '9edb6a3f-bfd8-4e64-b325-355044c0e0bb' # test key
+    SaltKey        = '083f0f7b-217c-4930-a6ba-49f6140376da'
 else:
-    webhook_url = 'https://api.famousbusiness.in/premium-plan-api/autopay/payment/webhook/'
-    merchantID  = 'WEBZOTICAUAT'
+    webhook_url    = 'https://api.famousbusiness.in/premium-plan-api/autopay/payment/webhook/'
+    TestMerchantId = 'WEBZOTICAUAT'
+    merchantID     = 'M22BWNC10OPNQ'
+    TestsaltKey    = '9edb6a3f-bfd8-4e64-b325-355044c0e0bb' # test key
+    SaltKey        = '083f0f7b-217c-4930-a6ba-49f6140376da'
 
 
 
@@ -25,20 +31,20 @@ class PremiumPlanPhonepeAutoPayPayment:
         sent_amount = amount * 100
 
         payload = {
-            "merchantId": merchantID,
+            "merchantId": TestMerchantId,
             "merchantSubscriptionId": subscriptionID,
             "merchantUserId": userID,
             "authWorkflowType": "TRANSACTION",
             "amountType": "FIXED",
             "amount": sent_amount ,
-            "frequency": "YEARLY",
-            "recurringCount": 12,
+            "frequency": "DAILY",
+            "recurringCount": 3,
             "mobileNumber": "9883835373",
         }
 
         INDEX = "1"
         ENDPOINT = "/v3/recurring/subscription/create"
-        SALTKEY = "9edb6a3f-bfd8-4e64-b325-355044c0e0bb"
+        SALTKEY = TestsaltKey
         base64String = base64_encode(payload)
         mainString = base64String + ENDPOINT + SALTKEY
         sha256Val = calculate_sha256_string(mainString)
@@ -69,7 +75,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         sent_amount = amount * 100
 
         payload = {
-            "merchantId": merchantID,
+            "merchantId": TestMerchantId,
             "merchantUserId": userID,
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
@@ -82,7 +88,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
         INDEX = "1"
         ENDPOINT = "/v3/recurring/auth/init"
-        SALTKEY = "9edb6a3f-bfd8-4e64-b325-355044c0e0bb"
+        SALTKEY = TestsaltKey
         base64String = base64_encode(payload)
         mainString = base64String + ENDPOINT + SALTKEY
         sha256Val = calculate_sha256_string(mainString)
@@ -114,7 +120,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         sent_amount = amount * 100
 
         payload = {
-            "merchantId": merchantID,
+            "merchantId": TestMerchantId,
             "merchantUserId": userID,
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
@@ -126,7 +132,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
         INDEX = "1"
         ENDPOINT = "/v3/recurring/auth/init"
-        SALTKEY = "9edb6a3f-bfd8-4e64-b325-355044c0e0bb"
+        SALTKEY = TestsaltKey
         base64String = base64_encode(payload)
         mainString = base64String + ENDPOINT + SALTKEY
         sha256Val = calculate_sha256_string(mainString)
@@ -156,9 +162,9 @@ class PremiumPlanPhonepeAutoPayPayment:
     def RecurringInit(susubscriptionID, userID, amount, authRequestId):
 
         sent_amount = amount * 100
-
+        
         payload = {
-            "merchantId": merchantID,
+            "merchantId": TestMerchantId,
             "merchantUserId": userID,
             "subscriptionId": susubscriptionID,
             "transactionId": authRequestId,
@@ -168,7 +174,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
         INDEX = "1"
         ENDPOINT = "/v3/recurring/debit/init"
-        SALTKEY = "9edb6a3f-bfd8-4e64-b325-355044c0e0bb"
+        SALTKEY = TestsaltKey
         base64String = base64_encode(payload)
         mainString = base64String + ENDPOINT + SALTKEY
         sha256Val = calculate_sha256_string(mainString)
@@ -191,14 +197,15 @@ class PremiumPlanPhonepeAutoPayPayment:
         response.raise_for_status()
         responseData = response.json()
 
+        print(responseData)
         return responseData
     
 
     # Check subnit auth status
     def CheckPaymentStatus(authRequestId):
         INDEX = "1"
-        ENDPOINT = f"/v3/recurring/auth/status/{merchantID}/{authRequestId}"
-        SALTKEY = "9edb6a3f-bfd8-4e64-b325-355044c0e0bb"
+        ENDPOINT = f"/v3/recurring/auth/status/{TestMerchantId}/{authRequestId}"
+        SALTKEY = TestsaltKey
         mainString = ENDPOINT + SALTKEY
         sha256Val = calculate_sha256_string(mainString)
         checkSum = sha256Val + '###' + INDEX
@@ -209,12 +216,16 @@ class PremiumPlanPhonepeAutoPayPayment:
         }
 
         response = requests.get(
-            f'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/auth/status/{merchantID}/{authRequestId}', headers=headers)
+            f'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/auth/status/{TestMerchantId}/{authRequestId}', headers=headers)
 
         response.raise_for_status()
         responseData = response.json()
 
         return responseData
+    
+
+    def CancelSubscripton():
+        pass
 
 
 
