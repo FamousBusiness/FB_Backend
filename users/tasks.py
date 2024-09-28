@@ -5,6 +5,8 @@ from django.conf import settings
 from twilio.rest import Client
 from celery import Task
 from django.template.loader import render_to_string
+from celery import shared_task
+import requests
 
 
 
@@ -74,4 +76,33 @@ def send_otp_via_whatsapp(mobile_number,otp):
         to=f'whatsapp:{settings.COUNTRY_CODE}{mobile_number}'
         )
 
-   
+
+
+# Send Otp in message while login
+@shared_task
+def send_login_otp_message(mobile_number, otp):
+    api_url = "https://trans.smsfresh.co/api/sendmsg.php"
+
+    message_text = f"Your OTP is {otp}. Valid for 10 minutes. Do not share it. WEBZOTICA BUSINESS FAMOUS SOFTWARE PVT.LTD"
+
+    params = {
+            "user" : "WEBZOTICAPROMO",
+            "pass" : "123456",
+            "sender" : "WBFSPL",
+            "phone" : mobile_number,
+            "text": message_text,
+            "priority" : "ndnd",
+            "stype" : "normal",
+            "stype" : "normal",
+        }
+
+    response = requests.get(api_url, params=params)
+
+    response_data = {
+        "status-code": response.status_code,
+        "response_text": response.text
+    }
+
+    return response_data
+
+

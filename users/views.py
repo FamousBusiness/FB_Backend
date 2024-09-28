@@ -14,7 +14,7 @@ from ADS.models import ADS
 from Listings.models import Business, Assigned_Benefits, Category
 from Brands.models import BrandBusinessPage
 from Listings.serializers import BusinessSerializer
-from users.models import User, UsersAgreement
+from users.models import User, UsersAgreement, UserOTP
 from users.serializers import (
     UserRegistrationSerializer, UserLoginSerializer, UserChangePasswordSerializer,
     UserSendPasswordResetMailSerializer, UserPasswordResetSerializer, UserSpecificBusinessPageSerializer,
@@ -27,6 +27,7 @@ from django.utils.encoding import force_bytes
 # from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 # from django.middleware.csrf import get_token
 from django.http import HttpResponse
+from users.tasks import send_login_otp_message
 
 
 
@@ -43,6 +44,134 @@ def get_tokens_for_user(user):
 
 def home_view(request):
     return render(request, 'home.html')
+
+
+
+# Send OTP to user
+class SendLoginOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        mobile_number = request.data.get('mobile_number')
+
+        # Check the user exists or Not in DB
+        try:
+            check_user = User.objects.get(mobile_number = mobile_number)
+        except Exception as e:
+            return Response({'message': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if check_user:
+            generate_otp = random.randint(10000, 99999)
+
+            send_login_otp_message.delay(mobile_number, generate_otp)
+
+            try:
+                # Create a User OTP Model
+                user_otp_data = UserOTP.objects.get(
+                    user_id = check_user
+                )
+
+                user_otp_data.otp = generate_otp
+
+                user_otp_data.save()
+
+            except UserOTP.DoesNotExist:
+                # If no UserOTP exists, create a new one
+                user_otp_data = UserOTP.objects.create(
+                    user_id=check_user,
+                    otp=generate_otp
+                )
+
+                user_otp_data.save()
+
+        else:
+            return Response({'message': 'Invalid Mobile Number'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+
+## Login user throguh valid mobile number anf otp
+class LoginUserThroughOTP(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+
+        # Get payload data
+        mobile_number  = request.data.get('mobile_number')
+        input_otp      = request.data.get('otp')
+
+        # Check the user exists or Not in DB
+        try:
+            check_user = User.objects.get(mobile_number = mobile_number)
+        except Exception as e:
+            return Response({'message': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if check_user:
+            # Get the otp of the user
+            try:
+                user_otp_data = UserOTP.objects.get(
+                    otp = input_otp,
+                    user_id = check_user
+                )
+            except Exception as e:
+                return Response({'message': "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not user_otp_data:
+                return Response({'message': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
+            token = get_tokens_for_user(check_user)
+
+            # Null the otp 
+            user_otp_data.otp = None
+            user_otp_data.save()
+
+            try:
+                business = Business.objects.get(owner=check_user)
+
+                #If Business owner has purshased any premium plan
+                try:
+                    premium_plans = PremiumPlanBenefits.objects.filter(user=check_user)
+                    plan_status   = any(plan.expired for plan in premium_plans)
+
+                    response = Response({
+                        'token': token,
+                        'msg': "You are successfully logged in", 
+                        'user_name': check_user.name, 'business_id': business.pk, 
+                        'mobile_number': check_user.mobile_number, 
+                        'plan_status': plan_status}, status=status.HTTP_200_OK)
+                    
+                except PremiumPlanBenefits.DoesNotExist:
+                    response = Response({
+                                'token': token,
+                                    'msg': "You are successfully logged in", 
+                                    'user_name': check_user.name, 
+                                    'business_id': business.pk, 
+                                    'mobile_number': check_user.mobile_number 
+                            }, status=status.HTTP_200_OK)
+                
+                return response
+            
+            except Business.DoesNotExist:
+                try:
+                    brand = BrandBusinessPage.objects.get(owner=check_user)
+                    response = Response({ 
+                                'token': token,
+                                    'msg': "You are successfully logged in", 
+                                    'user_name': check_user.name, 
+                                    'brand_id': brand.pk, 
+                                    'mobile_number': check_user.mobile_number }, status=status.HTTP_200_OK)
+                    return response
+                except:
+                    response =  Response({
+                                    'token': token,
+                                    'msg': "Login Success", 
+                                    'user_name': check_user.name,
+                                    'mobile_number': check_user.mobile_number}, status=status.HTTP_200_OK)
+                    return response
+
+
   
 
 

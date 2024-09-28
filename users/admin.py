@@ -1,5 +1,5 @@
 from django.contrib import admin
-from users.models import User, UsersAgreement
+from users.models import User, UsersAgreement, UserOTP
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 # from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
@@ -53,4 +53,6 @@ class UserAgreementModelAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserModelAdmin)
 admin.site.register(UsersAgreement, UserAgreementModelAdmin)
+admin.site.register(UserOTP)
+
 

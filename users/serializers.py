@@ -12,6 +12,7 @@ from django.contrib.auth import login
 
 
 
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type':'password'}, write_only=True)
 

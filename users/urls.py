@@ -18,6 +18,9 @@ urlpatterns = [
     path('mail-register/<uid>/<token>/', views.MailRegisterView.as_view(), name='mail_register'),
     path('ip-address/', views.ip_view, name='mail_register'),
 
+    path('send/login/otp/', views.SendLoginOTPView.as_view(), name='send_login_otp'),
+    path('login/otp/', views.LoginUserThroughOTP.as_view(), name='send_login_otp'),
+    
     #CSRF Token
     # path('csrf-token/', views.GetCSRFTokenView.as_view(), name='get_csrf_token'),
     path('isauthenticated/', views.CheckAuthenticatedView.as_view(), name='is_authenticated'),
