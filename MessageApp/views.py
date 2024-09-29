@@ -280,7 +280,7 @@ class SendWhatsAppTestMessage(APIView):
         "stype" : "normal",
         "Params": "1,2,3",
         "htype" : "image",
-        "imageUrl" : "https://mdwebzotica.famousbusiness.in/Lead_image_black_blue.jpg"
+        "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
         }
 
         url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"

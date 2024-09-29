@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (PremiumPlan, PlanDetail, UserPremiumPlan, 
                      PlanCancelRequest, TrialPlanRequest, PremiumPlanBenefits, 
-                     PremiumPlanOrder
+                     PremiumPlanOrder, PhonepeAutoPayOrder
                      )
 
 
@@ -29,4 +29,5 @@ admin.site.register(PlanCancelRequest)
 admin.site.register(TrialPlanRequest)
 admin.site.register(PremiumPlanBenefits)
 admin.site.register(PremiumPlanOrder)
+admin.site.register(PhonepeAutoPayOrder)
 

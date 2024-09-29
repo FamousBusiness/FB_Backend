@@ -121,6 +121,7 @@ def AdminExcelUploadView(request):
                     # established_on    = established_on_int
                     # established_on    = row.get('Year of Establishment', '')
                     business_name     = row.get('Business Name', '')
+
                     email             = first_email_id
                     state             = row.get('State', '')
                     city              = row.get('City', '')
@@ -166,9 +167,9 @@ def AdminExcelUploadView(request):
                 try:
                     user = User.objects.filter(
                             Q(mobile_number=mobile_number) | 
-                            Q(email=email) | 
-                            Q(business_name=business_name) | 
-                            Q(name=business_name)
+                            Q(email=email) 
+                            # Q(business_name=business_name) | 
+                            # Q(name=business_name)
                             ).first()
 
                     if not user:
@@ -178,6 +179,7 @@ def AdminExcelUploadView(request):
                             business_name=business_name,
                             name=business_name
                         )
+
                     else:
                         created = False
                     
@@ -186,6 +188,7 @@ def AdminExcelUploadView(request):
                     user.name          = business_name
                     user.business_name = business_name
                     user.save()
+
                 except Exception as e:
                     skipped_business_names.append(business_name)
                     return HttpResponse(f'User not created due to duplicate key error: {str(e)}')
@@ -240,8 +243,8 @@ def AdminExcelUploadView(request):
                     if extra_mobile:
                         extra_mobile_numbers = [names.strip() for names in extra_mobile.split(',')]
                         try:
-                            business             = Business.objects.get(business_name=business_name)
-                            extra_mobiles        = [BusinessMobileNumbers.objects.get_or_create(business=Business.objects.get(owner=business),
+                            business      = Business.objects.get(business_name=business_name)
+                            extra_mobiles = [BusinessMobileNumbers.objects.get_or_create(business=Business.objects.get(owner=business),
                                                                                                 mobile_number=mobile_no)[0]
                                                                                                 for mobile_no in extra_mobile_numbers]
                         except:
@@ -290,12 +293,12 @@ def AdminExcelUploadView(request):
                 try:
                     business_page = Business.objects.filter(
                         Q(mobile_number = mobile_number) |
-                        Q(email         = email) |
-                        Q(business_name = business_name) |
-                        Q(GSTIN         = GSTIN) |
-                        Q(CIN_No        = CIN_No) |
-                        Q(company_No    = Company_No) |
-                        Q(DIN           = DIN) 
+                        Q(email         = email) 
+                        # Q(business_name = business_name) |
+                        # Q(GSTIN         = GSTIN) |
+                        # Q(CIN_No        = CIN_No) |
+                        # Q(company_No    = Company_No) |
+                        # Q(DIN           = DIN) 
                     ).first()
 
                     if not business_page:
@@ -433,14 +436,13 @@ def AdminExcelUploadView(request):
                         'business_category': business_page.category.type
                         }
                     
-                    send_email.delay(data)
+                    # send_email.delay(data)
                     send_whatsapp_msg_while_registration.delay(data)
 
                 except Exception as e:
                     return HttpResponse(f"Business Page Error: {str(e)}")
 
             except Exception as e:
-                # print(f'Error while saving data: {str(e)} {skipped_business_names}')
                 return HttpResponse(f'error while saving data {str(e)}')
             
 
@@ -677,7 +679,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
             # Filter PremiumPlanOrder objects
             # orders_to_deduct = PremiumPlanOrder.objects.filter(purchased_at__date=one_day_ago.date())
             orders_to_deduct = PremiumPlanOrder.objects.all()
-            count = orders_to_deduct.count()  # Count the number of orders
+            count            = orders_to_deduct.count()  # Count the number of orders
 
             # Loop through the orders and process payments
             for order in orders_to_deduct:

@@ -111,7 +111,7 @@ def send_category_wise_business_mail_excel_upload(data):
 
 
 
-
+# Send message while Lead through Excel
 @shared_task
 def send_category_wise_business_message_excel_upload(data):
     for business_data in data:
@@ -135,9 +135,11 @@ def send_category_wise_business_message_excel_upload(data):
         }
 
         return response_data
-        # return response
+    
 
 
+
+#  Send whatsapp message while uploading excel
 @shared_task
 def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
     for business_data in data:
@@ -157,7 +159,7 @@ def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
             "stype" : "normal",
             "Params": f"{business_name}, {customer_name}, {requirements}",
             "htype" : "image",
-            "imageUrl" : "https://mdwebzotica.famousbusiness.in/Lead_image_black_blue.jpg"
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
         }
 
         url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"

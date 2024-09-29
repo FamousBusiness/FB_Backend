@@ -8,7 +8,7 @@ from decouple import config
 IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 
 if IS_DEVELOPMENT == 'True':
-    webhook_url    = 'https://0f45-2409-4050-e38-e2f-d00e-68bf-c089-e6c0.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
+    webhook_url    = 'https://8aee-2405-204-1389-91d5-1de0-c93-c74f-968d.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
     TestMerchantId = 'WEBZOTICAUAT'
     merchantID     = 'M22BWNC10OPNQ'
     TestsaltKey    = '9edb6a3f-bfd8-4e64-b325-355044c0e0bb' # test key

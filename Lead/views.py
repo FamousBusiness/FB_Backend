@@ -838,7 +838,6 @@ class LeadExcelUploadView(View):
 
         # if drop_down_value == 'all_category':
             # beat_task_to_send_lead_mail_every_10_minute.apply_async(countdown=10)
-            
 
         for index,row in df.iterrows():
             try:

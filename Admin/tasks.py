@@ -23,6 +23,8 @@ from django.db import IntegrityError
 import re
 from django.utils.html import strip_tags
 from celery.exceptions import MaxRetriesExceededError
+import time
+
 
 
 
@@ -465,42 +467,48 @@ def process_excel_file(excel_file_path):
         
 
 
-@shared_task
+
+# Send whatsapp message while upload Business excel file
+@shared_task(task_rate_limit='6/m')
 def send_whatsapp_msg_while_registration(data):
-    # for business_data in data:
-    #     api_url = "https://bhashsms.com/api/sendmsg.php"
-    #     mobile_number = business_data.get('mobile_number') 
-    #     business_name = business_data.get('business_name')
-    #     category      = business_data.get('business_category')
-    #     email         = business_data.get('to_email')
-        api_url = "https://bhashsms.com/api/sendmsg.php"
-        mobile_number = data["mobile_number"]
-        business_name = data["business_name"]
-        category      = data["business_category"]
-        email         = data["to_email"]
+        # for business_data in data:
+        #     mobile_number = business_data.get('mobile_number') 
+        #     business_name = business_data.get('business_name')
+        #     category      = business_data.get('business_category')
+        #     email         = business_data.get('to_email')
+            # api_url = "https://bhashsms.com/api/sendmsg.php"
+            api_url = "https://trans.smsfresh.co/api/sendmsg.php"
+            mobile_number = data["mobile_number"]
+            business_name = data["business_name"]
+            category      = data["business_category"]
+            email         = data["to_email"]
 
-        params = {
-            "user" : "WEBZOTICA",
-            "pass" : "123456",
-            "sender" : "BUZWAP",
-            "phone" : mobile_number,
-            "text": "business_pagelive10",
-            "priority" : "wa",
-            "stype" : "normal",
-            "Params": f"{business_name}, {category}, {email}",
-            "htype" : "image",
-            "imageUrl" : "https://mdwebzotica.famousbusiness.in/New_Customer_Registration.jpg"
-        }
+            params = {
+                "user" : "WEBZOTICA",
+                "pass" : "123456",
+                "sender" : "BUZWAP",
+                "phone" : mobile_number,
+                # "text": "business_pagelive10",
+                "text": "final_001",
+                # "text": "status_change",
+                "priority" : "wa",
+                "stype" : "normal",
+                "Params": f"{business_name}, {category}, {email}",
+                "htype" : "image",
+                "imageUrl" : "https://mdwebzotica.famousbusiness.in/business_register.jpg"
+            }
 
-        url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
+            print('time',time.time())
+            
+            url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
 
-        response = requests.get(url, params=params)
+            response = requests.get(url, params=params)
 
-        response_data = {
-            "status-code": response.status_code
-        }
+            response_data = {
+                "status-code": response.status_code
+            }
 
-        return response_data
+            return response_data
 
 
 

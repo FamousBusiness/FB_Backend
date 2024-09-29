@@ -21,6 +21,7 @@ urlpatterns = [
     #Lead Excel Upload
     path('lead-excel-upload/', LeadExcelUploadView.as_view(), name='lead_excel_upload'),
 
+
     #Combo Lead
     path('combo-lead-payment/', ComboLeadPaymentInitiationView.as_view(), name='combo_lead_payment_initiation'),
     path('combo-lead-payment-complete/', ComboLeadPaymentCompleteView.as_view(), name='combo_lead_payment_complete'),

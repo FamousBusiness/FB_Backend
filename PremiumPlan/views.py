@@ -86,7 +86,10 @@ class PremiumPlanPaymentView(APIView):
             )
 
             # 1st step Create user subscription
-            create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+            try:
+                create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+            except Exception as e:
+                return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
             subscriptionID = create_user['data']['subscriptionId']
 
@@ -95,12 +98,16 @@ class PremiumPlanPaymentView(APIView):
                 phonePeOrder.subscriptionId = subscriptionID
                 phonePeOrder.save()
 
-                # 2nd step Submit QR Auth Request
-                create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
-                    subscriptionID, phonePeOrder.merchantUserId, phonePeOrder.amount, phonePeOrder.authRequestId
-                )
+                try:
+                    # 2nd step Submit QR Auth Request
+                    create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
+                        subscriptionID, phonePeOrder.merchantUserId, phonePeOrder.amount, phonePeOrder.authRequestId
+                    )
+                except Exception as e:
+                    return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
                 QRCOde = create_qr_subscription_auth_request['data']['redirectUrl']
+                
 
                 return Response({
                     'message': 'Success', 
@@ -305,6 +312,44 @@ class AutoPayPaymentStatusCheck(APIView):
         
         else:
             return Response({'message': 'Did not found autopay order'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# Deduct Periodic Amount
+class RecurringInitPaymentView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        try:
+            # premium_plan = PremiumPlanOrder.objects.get(user = user)
+            orders_to_deduct = PremiumPlanOrder.objects.all()
+            # count            = orders_to_deduct.count()
+        except Exception as e:
+            return Response({'message': 'Premium plan does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # transaction_id = premium_plan.transaction_id
+        for order in orders_to_deduct:
+            transactionID = order.transaction_id
+            phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
+
+        # phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transaction_id)
+            try:
+                recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                    phonepe_order.subscriptionId,
+                    phonepe_order.merchantUserId,
+                    phonepe_order.amount,
+                    phonepe_order.authRequestId
+                )
+
+            except Exception as e:
+                return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+            print('recurring_payment', recurring_payment)
+
+        return Response({'message': 'Recurring payment deducted successfully'}, status=status.HTTP_200_OK)
+
 
 
 
