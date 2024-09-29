@@ -275,10 +275,10 @@ class SendWhatsAppTestMessage(APIView):
         "pass" : "123456",
         "sender" : "BUZWAP",
         "phone" : "8249258412",
-        "text": "final_001",
+        "text": "status_change",
         "priority" : "wa",
         "stype" : "normal",
-        "Params": "1,2,3",
+        "Params": "1,2",
         "htype" : "image",
         "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
         }

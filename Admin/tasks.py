@@ -488,12 +488,10 @@ def send_whatsapp_msg_while_registration(data):
                 "pass" : "123456",
                 "sender" : "BUZWAP",
                 "phone" : mobile_number,
-                # "text": "business_pagelive10",
-                "text": "final_001",
-                # "text": "status_change",
+                "text": "status_change",
                 "priority" : "wa",
                 "stype" : "normal",
-                "Params": f"{business_name}, {category}, {email}",
+                "Params": f"{business_name}, {category}",
                 "htype" : "image",
                 "imageUrl" : "https://mdwebzotica.famousbusiness.in/business_register.jpg"
             }
