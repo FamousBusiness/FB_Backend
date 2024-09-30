@@ -9,16 +9,20 @@ IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 
 if IS_DEVELOPMENT == 'True':
     webhook_url    = 'https://8aee-2405-204-1389-91d5-1de0-c93-c74f-968d.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
-    TestMerchantId = 'WEBZOTICAUAT'
-    merchantID     = 'M22BWNC10OPNQ'
-    TestsaltKey    = '9edb6a3f-bfd8-4e64-b325-355044c0e0bb' # test key
-    SaltKey        = '083f0f7b-217c-4930-a6ba-49f6140376da'
+    TestMerchantId = config('PHONEPE_TEST_MERCHANT_ID')
+    merchantID     = config('MERCHANT_ID')
+    TestsaltKey    = config('PHONEPE_TEST_SALT_KEY') # test key
+    SaltKey        = config('SALT_KEY')
+    TestURl        = 'https://api-preprod.phonepe.com/apis/pg-sandbox'
+    prodURL        = 'https://mercury-t2.phonepe.com'
 else:
     webhook_url    = 'https://api.famousbusiness.in/premium-plan-api/autopay/payment/webhook/'
-    TestMerchantId = 'WEBZOTICAUAT'
-    merchantID     = 'M22BWNC10OPNQ'
-    TestsaltKey    = '9edb6a3f-bfd8-4e64-b325-355044c0e0bb' # test key
-    SaltKey        = '083f0f7b-217c-4930-a6ba-49f6140376da'
+    TestMerchantId = config('PHONEPE_TEST_MERCHANT_ID')
+    merchantID     = config('MERCHANT_ID')
+    TestsaltKey    = config('PHONEPE_TEST_SALT_KEY') # test key
+    SaltKey        = config('SALT_KEY')
+    TestURl        = 'https://api-preprod.phonepe.com/apis/pg-sandbox'
+    prodURL        = 'https://mercury-t2.phonepe.com'
 
 
 
@@ -61,7 +65,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         }
 
         response = requests.post(
-            'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/subscription/create', headers=headers, json=json_data)
+            f'{prodURL}/v3/recurring/subscription/create', headers=headers, json=json_data)
 
         response.raise_for_status()
         responseData = response.json()
@@ -106,7 +110,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         }
 
         response = requests.post(
-            'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/auth/init', headers=headers, json=json_data)
+            f'{prodURL}/v3/recurring/auth/init', headers=headers, json=json_data)
 
         response.raise_for_status()
         responseData = response.json()
@@ -150,7 +154,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         }
 
         response = requests.post(
-            'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/auth/init', headers=headers, json=json_data)
+            f'{prodURL}/v3/recurring/auth/init', headers=headers, json=json_data)
 
         response.raise_for_status()
         responseData = response.json()
@@ -193,12 +197,12 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
         response = requests.post(
-            'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/debit/init', headers=headers, json=json_data)
+            f'{prodURL}/v3/recurring/debit/init', headers=headers, json=json_data)
 
         response.raise_for_status()
         responseData = response.json()
 
-        print(responseData)
+
         return responseData
     
 
@@ -217,7 +221,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         }
 
         response = requests.get(
-            f'https://api-preprod.phonepe.com/apis/pg-sandbox/v3/recurring/auth/status/{merchantID}/{authRequestId}', headers=headers)
+            f'{prodURL}/v3/recurring/auth/status/{merchantID}/{authRequestId}', headers=headers)
 
         response.raise_for_status()
         responseData = response.json()
