@@ -61,8 +61,7 @@ class ClientLeadSerializer(serializers.ModelSerializer):
 class EnquiryFormSerializer(serializers.Serializer):
     name          = serializers.CharField()
     mobile_number = serializers.CharField()
-    # category      = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
-    category      = serializers.CharField()
+    category      = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     requirements  = serializers.CharField()
     city          = serializers.CharField()
     state         = serializers.CharField()
