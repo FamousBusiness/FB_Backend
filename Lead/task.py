@@ -171,6 +171,74 @@ def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
         }
 
         return response_data
+    
+
+# Send Message to Business owner while user fill form through enquiry form
+@shared_task()
+def send_category_wise_business_whatsapp_message_enquiry_form_submit(data):
+    for business_data in data:
+        api_url = "https://bhashsms.com/api/sendmsg.php"
+        mobile_number = business_data.get('mobile_number') 
+        business_name  = business_data.get('business_name')
+        customer_name  = business_data.get('customer_name', '')
+        requirements   = business_data.get('requirements', '')
+
+        params = {
+            "user" : "WEBZOTICA",
+            "pass" : "123456",
+            "sender" : "BUZWAP",
+            "phone" : mobile_number,
+            "text": "final_001",
+            "priority" : "wa",
+            "stype" : "normal",
+            "Params": f"{business_name}, {customer_name}, {requirements}",
+            "htype" : "image",
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
+        }
+
+        url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
+
+        response = requests.get(url, params=params)
+
+        response_data = {
+            "status-code": response.status_code
+        }
+
+        return response_data
+    
+
+# Send Message to user who filled the enquiry form
+@shared_task()
+def send_whatsapp_message_enqiury_form_user(data):
+    for business_data in data:
+        api_url = "https://bhashsms.com/api/sendmsg.php"
+        mobile_number  = business_data.get('mobile_number') 
+        business_name  = 'Test Business'
+        customer_name  = 'Customer Name'
+        requirements   = business_data.get('requirements', '')
+
+        params = {
+            "user" : "WEBZOTICA",
+            "pass" : "123456",
+            "sender" : "BUZWAP",
+            "phone" : mobile_number,
+            "text": "final_001",
+            "priority" : "wa",
+            "stype" : "normal",
+            "Params": f"{business_name}, {customer_name}, {requirements}",
+            "htype" : "image",
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
+        }
+
+        url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
+
+        response = requests.get(url, params=params)
+
+        response_data = {
+            "status-code": response.status_code
+        }
+
+        return response_data
 
        
 

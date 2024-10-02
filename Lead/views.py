@@ -26,7 +26,7 @@ from rest_framework import status, generics
 from Listings.RazorpayPayment.razorpay.main import RazorpayClient
 from .task import (
     Lead_purchase_mail, beat_task_to_send_lead_mail_every_10_minute, send_business_page_lead_mail, send_category_wise_business_message_excel_upload, send_category_wise_business_whatsapp_message_lead_excel_upload, send_lead_mail_to_category_wise_business,send_category_wise_business_mail_excel_upload,
-    send_mail_for_remaining_combo_lead
+    send_mail_for_remaining_combo_lead, send_category_wise_business_whatsapp_message_enquiry_form_submit, send_whatsapp_message_enqiury_form_user
     )
 import pandas as pd
 from django.views import View
@@ -44,6 +44,7 @@ import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
+from users.models import User
 
 
 
@@ -236,15 +237,8 @@ def LeadPaymentCompleteView(request):
 #Enquiry form without any specific user(Business Page)
 class EnquiryFormAPIView(APIView):
     permission_classes = [permissions.AllowAny]
-    # request_count      = 0
 
     def post(self, request):
-        # self.__class__.request_count += 1
-        # businesses_per_page          = 10
-
-        # start_index = (self.__class__.request_count - 1) * businesses_per_page
-        # end_index   = start_index + businesses_per_page
-
         enquiry_serializer = EnquiryFormSerializer(data=request.data)
         enquiry_serializer.is_valid(raise_exception=True)
 
@@ -256,13 +250,13 @@ class EnquiryFormAPIView(APIView):
         state         = enquiry_serializer.validated_data.get('state')
         email         = request.data.get('email')
         pincode       = request.data.get('pincode')
-        
+
 
         try:
             lead_price = LeadPrice.objects.get(id=2)
         except Exception as e:
             return Response("Assign a price to the lead")
-
+        
         # user = request.user
 
         lead = Lead.objects.create(
@@ -278,33 +272,46 @@ class EnquiryFormAPIView(APIView):
             pincode       = pincode
         )
 
-        # total_businesses = Business.objects.filter(category=category, city=city).count()
+        # Create user using Mobile Number
+        try:
+            user, created = User.objects.get_or_create(
+                mobile_number = mobile_number,
+                name          = name
+            )
 
-        # if end_index > total_businesses:
-        #     start_index = 0
-        #     end_index   =  businesses_per_page
+            if created:
+                data = [{
+                'business_email': email,
+                'location': lead.city, 
+                'customer_name': lead.created_by,
+                'requirements': lead.requirement, 
+                'mobile_number': mobile_number
+                }]
+                send_whatsapp_message_enqiury_form_user.delay(data)
 
-        # businesses = Business.objects.filter(category=category, city=city)[start_index:end_index]
-        # business_pages = Business.objects.filter(category=category, city=city).values('email', 'business_name', 'mobile_number')
+        except Exception as e:
+             pass
 
-        # if not business_pages:
-        #     return Response({'msg': 'No more businesses available for the given criteria.'})
+        business_pages = Business.objects.filter(category=category, city=city).values('email', 'business_name', 'mobile_number')
+
+        if not business_pages:
+            return Response({'msg': 'No more businesses available for the given criteria.'}, status=status.HTTP_400_BAD_REQUEST)
+        
         # tasks = []
 
-        # data = [{
-        #                 'business_email': business['email'],
-        #                 'business_name': business['business_name'],
-        #                 'location': lead.city, 
-        #                 'customer_name': lead.created_by,
-        #                 'requirements': lead.requirement, 
-        #                 'mobile_number': business['mobile_number']
-        #     } for business in business_pages]
+        data = [{
+                'business_email': business['email'],
+                'business_name': business['business_name'],
+                'location': lead.city, 
+                'customer_name': lead.created_by,
+                'requirements': lead.requirement, 
+                'mobile_number': business['mobile_number']
+            } for business in business_pages]
         
-        # print(data)
-
         # send_lead_mail_to_category_wise_business.delay(data)
         # tasks.append(send_category_wise_business_whatsapp_message_lead_excel_upload.s(data))
         # tasks.append(send_category_wise_business_message_excel_upload.s(data))
+        send_category_wise_business_whatsapp_message_enquiry_form_submit.delay(data)
         
         # group(*tasks).apply_async()
 
@@ -971,6 +978,24 @@ class LeadExcelUploadView(View):
                 }
                 for business in business_pages
                 ]
+
+                # Create User from Lead data
+                try:
+                    user, created = User.objects.get_or_create(
+                        mobile_number = lead_mobile_number,
+                        name          = lead_created_by
+                    )
+
+                    if created:
+                        data = [{
+                        'customer_name': lead_created_by,
+                        'requirements': lead.requirement, 
+                        'mobile_number': lead_mobile_number
+                        }]
+                        send_whatsapp_message_enqiury_form_user.delay(data)
+
+                except Exception as e:
+                    pass
 
                 # try:
                 #     send_category_wise_business_mail_excel_upload.delay(data)
