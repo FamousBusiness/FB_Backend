@@ -281,10 +281,8 @@ class EnquiryFormAPIView(APIView):
 
             if created:
                 data = [{
-                'business_email': email,
-                'location': lead.city, 
-                'customer_name': lead.created_by,
-                'requirements': lead.requirement, 
+                'user_name': lead.created_by,
+                'lead_id': lead.pk, 
                 'mobile_number': mobile_number
                 }]
                 send_whatsapp_message_enqiury_form_user.delay(data)
