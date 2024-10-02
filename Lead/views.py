@@ -251,6 +251,11 @@ class EnquiryFormAPIView(APIView):
         email         = request.data.get('email')
         pincode       = request.data.get('pincode')
 
+        # get category
+        try:
+            category_obj = Category.objects.get(type = category)
+        except Exception as e:
+            return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             lead_price = LeadPrice.objects.get(id=2)
@@ -262,7 +267,7 @@ class EnquiryFormAPIView(APIView):
         lead = Lead.objects.create(
             created_by    = name,
             mobile_number = mobile_number,
-            category      = category,
+            category      = category_obj,
             status        = 'High Priority',
             requirement   = requirements, 
             price         = lead_price,
@@ -292,10 +297,10 @@ class EnquiryFormAPIView(APIView):
         except Exception as e:
              pass
 
-        business_pages = Business.objects.filter(category=category, city=city).values('email', 'business_name', 'mobile_number')
+        business_pages = Business.objects.filter(category=category_obj, city=city).values('email', 'business_name', 'mobile_number')
 
         if not business_pages:
-            return Response({'msg': 'No more businesses available for the given criteria.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'msg': 'No more businesses available for the given criteria.'}, status=status.HTTP_200_OK)
         
         # tasks = []
 
