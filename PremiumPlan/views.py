@@ -85,6 +85,7 @@ class PremiumPlanPaymentView(APIView):
                 user_id         = int(current_user.id)
             )
 
+
             # 1st step Create user subscription
             try:
                 create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
@@ -98,22 +99,25 @@ class PremiumPlanPaymentView(APIView):
                 phonePeOrder.subscriptionId = subscriptionID
                 phonePeOrder.save()
 
+                authRequestID = phonePeOrder.authRequestId
+                order_amount  = phonePeOrder.amount
+
                 try:
                     # 2nd step Submit QR Auth Request
                     create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
-                        subscriptionID, phonePeOrder.merchantUserId, phonePeOrder.amount, phonePeOrder.authRequestId
+                        subscriptionID, order_amount, authRequestID
                     )
                 except Exception as e:
                     return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
                 QRCOde = create_qr_subscription_auth_request['data']['redirectUrl']
                 
-
                 return Response({
                     'message': 'Success', 
                     'QR_Code': QRCOde,
-                    'merchantUserId': phonePeOrder.merchantUserId
+                    'authRequestId': phonePeOrder.authRequestId
                     }, 
+
                     status=status.HTTP_200_OK)
             
             else:
@@ -146,28 +150,49 @@ class PaythorughUPIID(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        current_user   = request.user
-        merchantUserId = request.data.get('merchantUserId')
-        upi_id         = request.data.get('upi_id')
+        current_user    = request.user
+        upi_id          = request.data.get('upi_id')
+        amount          = request.data.get('amount')
+        plan_id         = request.data.get('premium_plan_id')
 
-        # Get the phonepe order
+
+        # Create Phonepe Order
+        phonePeOrder = PhonepeAutoPayOrder.objects.create(
+            amount          = amount,
+            premium_plan_id = int(plan_id),
+            user_id         = int(current_user.id)
+        )
+
+        # 1st step Create user subscription
         try:
-            autopayOrder = PhonepeAutoPayOrder.objects.get(
-                merchantUserId = merchantUserId
-            )
+            create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
         except Exception as e:
-            return Response({'message': 'Phonepe order does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
+        subscriptionID = create_user['data']['subscriptionId']
 
-        if autopayOrder:
-            # Send submit Auth Request to phonepe
-            submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
-                autopayOrder.subscriptionId, autopayOrder.merchantUserId, autopayOrder.amount, 
-                autopayOrder.authRequestId, upi_id
-            )
+        if subscriptionID:
+            # Update Phonepe order with Subscription ID
+            phonePeOrder.subscriptionId = subscriptionID
+            phonePeOrder.save()
+
+            authRequestID = phonePeOrder.authRequestId
+            order_amount  = phonePeOrder.amount
+
+            try:
+                submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
+                    subscriptionID, order_amount, 
+                    authRequestID, upi_id
+                )
+            except Exception as e:
+                return Response({'message': f"{str(e)}"}, 400)
+            
 
             if submit_auth_reuqest['success'] == True:
-                return Response({'success': True}, status=status.HTTP_200_OK)
+                return Response({
+                    'success': True,
+                    'authRequestId': phonePeOrder.authRequestId
+                    }, status=status.HTTP_200_OK)
             
             else:
                 return Response({'success': False}, status=status.HTTP_400_BAD_REQUEST)
@@ -185,6 +210,8 @@ class ReceivePhonepeAutoPayWebhook(APIView):
 
     def post(self, request):
         response_data = request.data.get('response')
+
+        print(response_data)
 
         # Decode the response
         decoded_data = base64_decode(response_data)
@@ -286,12 +313,12 @@ class AutoPayPaymentStatusCheck(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
-        merchantUserId = request.data.get('merchantUserId')
+        authRequestId = request.data.get('authRequestId')
 
         # Get the phonepe order with merchant User Id
         try:
             auto_pay_order = PhonepeAutoPayOrder.objects.get(
-                merchantUserId = merchantUserId
+                authRequestId = authRequestId
             )
         except Exception as e:
             return Response({'message': 'Did not found autopay order'}, status=status.HTTP_400_BAD_REQUEST)

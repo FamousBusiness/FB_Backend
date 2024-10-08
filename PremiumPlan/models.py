@@ -160,7 +160,7 @@ class PremiumPlanOrder(models.Model):
 class PhonepeAutoPayOrder(models.Model):
     premium_plan_id         = models.IntegerField(null=True)
     user_id                 = models.IntegerField(null=True)
-    merchantUserId          = models.CharField(_("Merchant User ID"), max_length=50, unique=True)
+    merchantUserId          = models.CharField(_("Merchant User ID"), max_length=50, unique=False)
     MerchantSubscriptionId  = models.CharField(_("Subscription ID"), max_length=50, unique=True) # Sent to phonepe
     subscriptionId          = models.CharField(_("Subscription ID"), max_length=50, unique=True, null=True)  # Received from phonepe
     amount                  = models.IntegerField(_("Amount"))
@@ -168,8 +168,6 @@ class PhonepeAutoPayOrder(models.Model):
 
 
     def save(self, *args, **kwargs) -> None:
-        if not self.merchantUserId:
-            self.merchantUserId = generate_unique_id(PhonepeAutoPayOrder, 'merchantUserId')
         if not self.MerchantSubscriptionId:
             self.MerchantSubscriptionId = generate_unique_id(PhonepeAutoPayOrder, 'MerchantSubscriptionId')
         if not self.authRequestId:

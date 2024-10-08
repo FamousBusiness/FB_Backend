@@ -774,7 +774,7 @@ class LeadExcelUploadView(View):
         balance_lead = ComboLeadBucket.objects.filter(remaining_lead__gt=0)
 
         try:
-            lead         = Lead.objects.get(id=lead_id)
+            lead = Lead.objects.get(id=lead_id)
         except Exception:
             return Response({'msg': 'Not able to get the lead'})
 
@@ -983,11 +983,12 @@ class LeadExcelUploadView(View):
                         mobile_number = lead_mobile_number,
                         name          = lead_created_by
                     )
+                    print(user)
 
                     if created:
                         data = [{
                         'customer_name': lead_created_by,
-                        'requirements': lead.requirement, 
+                        'lead_id': lead.pk, 
                         'mobile_number': lead_mobile_number
                         }]
                         send_whatsapp_message_enqiury_form_user.delay(data)

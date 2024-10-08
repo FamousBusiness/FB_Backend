@@ -21,7 +21,7 @@ else:
 
 
 if DEBUG:
-    ALLOWED_HOSTS = ["8aee-2405-204-1389-91d5-1de0-c93-c74f-968d.ngrok-free.app", "127.0.0.1"]
+    ALLOWED_HOSTS = ["1e50-2405-204-1389-91d5-e1dc-29cb-3441-de61.ngrok-free.app/", "127.0.0.1"]
 
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'

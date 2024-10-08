@@ -8,7 +8,7 @@ from decouple import config
 IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 
 if IS_DEVELOPMENT == 'True':
-    webhook_url    = 'https://8aee-2405-204-1389-91d5-1de0-c93-c74f-968d.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
+    webhook_url    = 'https://1e50-2405-204-1389-91d5-e1dc-29cb-3441-de61.ngrok-free.app/premium-plan-api/autopay/payment/webhook/'
     TestMerchantId = config('PHONEPE_TEST_MERCHANT_ID')
     merchantID     = config('MERCHANT_ID')
     TestsaltKey    = config('PHONEPE_TEST_SALT_KEY') # test key
@@ -29,21 +29,20 @@ else:
 
 # Phonepe Autopay
 class PremiumPlanPhonepeAutoPayPayment:
-        
+
     # Create User Subscription API
     def Create_user_Subscription(subscriptionID, userID, amount):
-
         sent_amount = amount * 100
 
         payload = {
             "merchantId": merchantID,
             "merchantSubscriptionId": subscriptionID,
-            "merchantUserId": userID,
+            "merchantUserId": "FVSGHHSB3456AFFS89876GH",
             "authWorkflowType": "TRANSACTION",
             "amountType": "FIXED",
             "amount": sent_amount ,
             "frequency": "DAILY",
-            "recurringCount": 3,
+            "recurringCount": 5,
             "mobileNumber": "9883835373",
         }
 
@@ -75,13 +74,12 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
     # Submit Auth API Request for UPI Collect
-    def SubmitAuthRequestUPICollect(susubscriptionID, userID, amount, authRequestId, upiID):
-
+    def SubmitAuthRequestUPICollect(susubscriptionID, amount, authRequestId, upiID):
         sent_amount = amount * 100
 
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": userID,
+            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
             "amount": sent_amount,
@@ -120,13 +118,13 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
     # Submit Auth API Request for UPI Collect
-    def SubmitAuthRequestQR(susubscriptionID, userID, amount, authRequestId):
+    def SubmitAuthRequestQR(susubscriptionID, amount, authRequestId):
 
         sent_amount = amount * 100
 
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": userID,
+            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
             "amount": sent_amount,
@@ -170,7 +168,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         
         payload = {
             "merchantId": TestMerchantId,
-            "merchantUserId": userID,
+            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
             "subscriptionId": susubscriptionID,
             "transactionId": authRequestId,
             "autoDebit": True,
@@ -202,11 +200,11 @@ class PremiumPlanPhonepeAutoPayPayment:
         response.raise_for_status()
         responseData = response.json()
 
-
         return responseData
     
 
-    # Check subnit auth status
+
+    # Check submit auth status
     def CheckPaymentStatus(authRequestId):
         INDEX = "1"
         ENDPOINT = f"/v3/recurring/auth/status/{merchantID}/{authRequestId}"

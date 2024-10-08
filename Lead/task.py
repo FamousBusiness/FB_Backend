@@ -214,7 +214,7 @@ def send_whatsapp_message_enqiury_form_user(data):
     for business_data in data:
         api_url = "https://bhashsms.com/api/sendmsg.php"
         mobile_number  = business_data.get('mobile_number') 
-        user_name      = business_data.get('user_name') 
+        user_name      = business_data.get('customer_name') 
         lead_id        = business_data.get('lead_id') 
 
         params = {
