@@ -41,8 +41,8 @@ class PremiumPlanPhonepeAutoPayPayment:
             "authWorkflowType": "TRANSACTION",
             "amountType": "FIXED",
             "amount": sent_amount ,
-            "frequency": "DAILY",
-            "recurringCount": 5,
+            "frequency": "MONTHLY",
+            "recurringCount": 120,
             "mobileNumber": "9883835373",
         }
 
