@@ -965,6 +965,31 @@ class LeadExcelUploadView(View):
                 self.assign_premium_plan_lead_to_users(categories, lead_city, lead_id)
                 
 
+                # Create User from Lead data
+                try:
+                    user, created = User.objects.get_or_create(
+                        mobile_number = lead_mobile_number
+                        # name          = lead_created_by
+                    )
+
+                    if created:
+                        user.name = lead_created_by
+                        user.save()
+
+                        user_data = [{
+                        'customer_name': lead_created_by,
+                        'lead_id': lead.pk, 
+                        'mobile_number': lead_mobile_number
+                        }]
+                        send_whatsapp_message_enqiury_form_user.delay(user_data)
+
+                except Exception as e:
+                    pass
+
+                # try:
+                #     send_category_wise_business_mail_excel_upload.delay(data)
+                # except Exception as e:
+                #     return HttpResponse(f"Not able to sent mail {str(e)}")
                 data = [
                 {
                     'business_email': business.email,
@@ -976,30 +1001,6 @@ class LeadExcelUploadView(View):
                 }
                 for business in business_pages
                 ]
-
-                # Create User from Lead data
-                try:
-                    user, created = User.objects.get_or_create(
-                        mobile_number = lead_mobile_number,
-                        name          = lead_created_by
-                    )
-                    print(user)
-
-                    if created:
-                        data = [{
-                        'customer_name': lead_created_by,
-                        'lead_id': lead.pk, 
-                        'mobile_number': lead_mobile_number
-                        }]
-                        send_whatsapp_message_enqiury_form_user.delay(data)
-
-                except Exception as e:
-                    pass
-
-                # try:
-                #     send_category_wise_business_mail_excel_upload.delay(data)
-                # except Exception as e:
-                #     return HttpResponse(f"Not able to sent mail {str(e)}")
 
                 try:
                     send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
