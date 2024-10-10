@@ -61,7 +61,7 @@ class User(AbstractBaseUser):
     name          = models.CharField(verbose_name='User Name',max_length=200)
     password2     = models.CharField(max_length=30, blank=True, null=True)
     mobile_number = models.CharField(max_length=16, blank=True, null=True, unique=True)
-    business_name = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    business_name = models.CharField(max_length=255, blank=True, null=True, unique=False)
     location      = models.CharField(max_length=255, blank=True, null=True)
     # auth_provider = models.CharField(
     #     max_length=255, blank=False,

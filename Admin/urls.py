@@ -5,7 +5,8 @@ from .import views
 
 urlpatterns = [
     path('', views.AdminDashBoardView, name='home_page'),
-    path('excel-upload/', views.AdminExcelUploadView, name='users_excel_upload'),
+    # path('excel-upload/', views.AdminExcelUploadView, name='users_excel_upload'),
+    path('excel-upload/', views.ExcelUploadView, name='users_excel_upload'),
     path('password-reset/<uid>/', views.PasswordResetAfterMailView.as_view(), name='password_reset_before_page_owner'),
     path('aws-email-list/', views.AWSBounceMailListView.as_view(), name='aws_email_list'),
 

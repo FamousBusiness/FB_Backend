@@ -46,7 +46,7 @@ class SubCategory(models.Model):
 
 class Business(models.Model):
     owner           = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Business Owner', related_name='business')
-    business_name   = models.CharField(max_length=255, unique=True,
+    business_name   = models.CharField(max_length=255, unique=False,
                                      verbose_name='Business Name')
     brand           = models.ManyToManyField(BrandBusinessPage, verbose_name='Brand Name', blank=True)
     mobile_number   = models.CharField(max_length=16, null=True, blank=True, unique=True)

@@ -168,8 +168,6 @@ def AdminExcelUploadView(request):
                     user = User.objects.filter(
                             Q(mobile_number=mobile_number) | 
                             Q(email=email) 
-                            # Q(business_name=business_name) | 
-                            # Q(name=business_name)
                             ).first()
 
                     if not user:
@@ -455,38 +453,108 @@ def AdminExcelUploadView(request):
 
 
 
-
-
-
-# @user_passes_test(is_admin)
-# @transaction.atomic
-# def AdminExcelUploadView(request):
+@user_passes_test(is_admin)
+def ExcelUploadView(request):
     
-#     if request.method == 'POST':
-#         form = AdminExcelUploadForm(request.POST, request.FILES)
+    if request.method == 'POST':
+        form = AdminExcelUploadForm(request.POST, request.FILES)
 
-#         if not form.is_valid():
-#             return HttpResponse('Invalid Excel File')
-#         excel_file = form.cleaned_data['excel_file']
+        if not form.is_valid():
+            return HttpResponse('Invalid Excel File')
+        excel_file = form.cleaned_data['excel_file']
 
-#         excel_file_path = os.path.join(settings.MEDIA_ROOT, 'excel_files', 'files.xlsx')
-#         # print(excel_file_path)
+        try:
+            df = pd.read_excel(excel_file)
+            df = df.fillna('')
+        except Exception as e:
+            return HttpResponse('error: Failed to Parse the file')
 
-#         with open(excel_file_path, 'wb') as destination:
-#             for chunk in excel_file.chunks():
-#                 destination.write(chunk)
+        skipped_business_names = []
+        existing_user = []
+        skipped_numbers = []
 
-#         if os.path.exists(excel_file_path):
-#             process_excel_file.delay(excel_file_path)
-#             response_data = {'msg': 'Excel file is being processed'}
-#         else:
-#             response_data = {'msg': 'Excel file not found'}
-#             return HttpResponse(response_data['msg'])
+        for index, row in df.iterrows():
+            try:
+                mobile_number = row.get('Mobile No', '')
 
-#     else:
-#         response_data = {'msg': 'Invalid request method'}
+                if not mobile_number:
+                    return HttpResponse("Dont left any blank mobile number field")
+                
+                if mobile_number and len(str(mobile_number)) > 15:
+                    skipped_numbers.append(mobile_number)
+                    return HttpResponse(f'Error: Mobile number in row {index + 2} has more than 15 digit')
 
-#     return render(request, 'Admin/excel_upload.html', response_data)
+            except:
+                return HttpResponse(f"""Please provide a valid mobile number(Number Should be less than 12 Digit) and 
+                        donot left blank space While Uploading the Mobile Number in row {index + 2}:{','.join(map(str, skipped_numbers))}""")
+            
+            try:
+                category_type     = row.get('Category', '')
+                business_name     = row.get('Business Name', '')
+                state             = row.get('State', '')
+                city              = row.get('City', '')
+                pincode           = row.get('Pin', '')
+                Address           = row.get('Address', '')
+                Website           = row.get('Website', '')
+
+            except Exception as e:
+                    return HttpResponse(f"Error While getting the value from excel data: {str(e)}")
+            
+            # Get or create user from mobile number
+            try:
+                user, created = User.objects.get_or_create(
+                    mobile_number = mobile_number)
+            except Exception as e:
+                return HttpResponse("Error while detecting email")
+            
+            if user:
+                user.name          = business_name
+                user.business_name = business_name
+
+                user.save()
+                
+            #Category
+            category, create = Category.objects.get_or_create(type=category_type)
+
+            try:
+                # Create Business page
+                business_page, created = Business.objects.get_or_create(
+                    owner = user
+                )
+
+                if business_page:
+                    business_page.business_name = business_name
+                    business_page.mobile_number = mobile_number
+                    business_page.category      = category
+                    business_page.state         = state
+                    business_page.city          = city
+                    business_page.pincode       = pincode
+                    business_page.address       = Address
+                    business_page.website_url   = Website
+                    business_page.save()
+
+                    uid   = urlsafe_base64_encode(force_bytes(business_page.business_name))
+                    link = f'https://famousbusiness.in/userprofile/{business_page.business_name}?z_id={business_page.pk}&mail=mail&uuid={uid}'
+
+                    data = {
+                        'subject': 'Elevate Your Business with Exclusive PAN India Leads',
+                        'to_email': user.email,
+                        'link': link,
+                        'business_name': business_page.business_name,
+                        'mobile_number': business_page.mobile_number,
+                        'business_category': business_page.category.type
+                        }
+                    
+                    send_whatsapp_msg_while_registration.delay(data)
+
+            except Exception as e:
+                return HttpResponse(f"Error while assigning mobile number to Business Page: {str(e)}")
+            
+    return render(request, 'Admin/excel_upload.html')
+
+
+
+
 
 
 
