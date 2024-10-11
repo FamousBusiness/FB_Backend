@@ -227,7 +227,7 @@ def send_whatsapp_message_enqiury_form_user(data):
             "text": "leads_final1",
             "priority" : "wa",
             "stype" : "normal",
-            "Params": f"{user_name}, {lead_id}, {category}",
+            "Params": f"{user_name},{lead_id},{category}",
             "htype" : "image",
             "imageUrl" : "https://mdwebzotica.famousbusiness.in/EnwaryBanner.jpg"
         }
