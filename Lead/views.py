@@ -889,11 +889,33 @@ class LeadExcelUploadView(View):
             #     beat_task_to_send_lead_mail_every_10_minute.apply_async(countdown=20)
 
             if drop_down_value == 'W/O_Premium_Plan':
-                premium_plan = PremiumPlanBenefits.objects.filter(is_paid=True)
+                # premium_plan = PremiumPlanBenefits.objects.filter(is_paid=True)
 
-                businesses = Business.objects.filter(city=lead_city, category=categories)
+                business_pages = Business.objects.filter(city=lead_city, category=categories)
 
-                business_pages = businesses.exclude(owner__in=premium_plan.values('user'))
+                # business_pages = businesses.exclude(owner__in=premium_plan.values('user'))
+
+                # Create User from Lead data
+                try:
+                    user, created = User.objects.get_or_create(
+                        mobile_number = lead_mobile_number
+                    )
+
+                    if created:
+                        user.name = lead_created_by
+                        user.save()
+
+                        user_data = [{
+                        'customer_name': lead_created_by,
+                        'lead_id': lead.pk, 
+                        'mobile_number': lead_mobile_number,
+                        'category': categories,
+                        }]
+                        send_whatsapp_message_enqiury_form_user.delay(user_data)
+
+                except Exception as e:
+                    pass
+
 
                 data = [
                     {
@@ -917,10 +939,10 @@ class LeadExcelUploadView(View):
                 # except Exception as e:
                 #     return HttpResponse(f"Not able to sent mail {str(e)}")
 
-                try:
-                    send_category_wise_business_message_excel_upload.delay(data)
-                except Exception as e:
-                    return HttpResponse(f"Not able to sent mail {str(e)}")
+                # try:
+                #     send_category_wise_business_message_excel_upload.delay(data)
+                # except Exception as e:
+                #     return HttpResponse(f"Not able to sent mail {str(e)}")
                 
 
             elif drop_down_value == 'combo_lead':
@@ -956,20 +978,19 @@ class LeadExcelUploadView(View):
                     return HttpResponse(f"Not able to sent mail {str(e)}")
                 
             else:
-                user_premium_plan = PremiumPlanBenefits.objects.filter(is_paid=True)
+                # user_premium_plan = PremiumPlanBenefits.objects.filter(is_paid=True)
 
-                businesses = Business.objects.filter(city=lead_city, category=categories)
+                business_pages = Business.objects.filter(city=lead_city, category=categories)
 
-                business_pages = businesses.filter(owner__in=user_premium_plan.values('user'))
+                # business_pages = businesses.filter(owner__in=user_premium_plan.values('user'))
                 
-                self.assign_premium_plan_lead_to_users(categories, lead_city, lead_id)
+                # self.assign_premium_plan_lead_to_users(categories, lead_city, lead_id)
                 
 
                 # Create User from Lead data
                 try:
                     user, created = User.objects.get_or_create(
                         mobile_number = lead_mobile_number
-                        # name          = lead_created_by
                     )
 
                     if created:
@@ -979,7 +1000,8 @@ class LeadExcelUploadView(View):
                         user_data = [{
                         'customer_name': lead_created_by,
                         'lead_id': lead.pk, 
-                        'mobile_number': lead_mobile_number
+                        'mobile_number': lead_mobile_number,
+                        'category': categories,
                         }]
                         send_whatsapp_message_enqiury_form_user.delay(user_data)
 

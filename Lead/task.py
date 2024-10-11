@@ -210,23 +210,24 @@ def send_category_wise_business_whatsapp_message_enquiry_form_submit(data):
 
 
 # Send Message to user who filled the enquiry form
-@shared_task()
+@shared_task(task_rate_limit='4/m')
 def send_whatsapp_message_enqiury_form_user(data):
     for business_data in data:
         api_url = "https://bhashsms.com/api/sendmsg.php"
         mobile_number  = business_data.get('mobile_number') 
         user_name      = business_data.get('customer_name') 
         lead_id        = business_data.get('lead_id') 
+        category       = business_data.get('category')
 
         params = {
             "user" : "WEBZOTICA",
             "pass" : "123456",
             "sender" : "BUZWAP",
             "phone" : mobile_number,
-            "text": "lead_no",
+            "text": "leads_final1",
             "priority" : "wa",
             "stype" : "normal",
-            "Params": f"{user_name}, {lead_id}",
+            "Params": f"{user_name}, {lead_id}, {category}",
             "htype" : "image",
             "imageUrl" : "https://mdwebzotica.famousbusiness.in/EnwaryBanner.jpg"
         }

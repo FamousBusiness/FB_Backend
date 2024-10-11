@@ -275,12 +275,12 @@ class SendWhatsAppTestMessage(APIView):
         "pass" : "123456",
         "sender" : "BUZWAP",
         "phone" : "8249258412",
-        "text": "lead_no",
+        "text": "leads_final1", # Name, Lead id, Category 
         "priority" : "wa",
         "stype" : "normal",
-        "Params": "1,2",
+        "Params": "1,2,3",
         "htype" : "image",
-        "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
+        "imageUrl" : "https://mdwebzotica.famousbusiness.in/EnwaryBanner.jpg"
         }
 
         url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
