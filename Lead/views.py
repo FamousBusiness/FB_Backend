@@ -909,7 +909,7 @@ class LeadExcelUploadView(View):
                         'customer_name': lead_created_by,
                         'lead_id': lead.pk, 
                         'mobile_number': lead_mobile_number,
-                        'category': categories,
+                        'category': categories.type,
                         }]
                         send_whatsapp_message_enqiury_form_user.delay(user_data)
 
@@ -1001,8 +1001,9 @@ class LeadExcelUploadView(View):
                         'customer_name': lead_created_by,
                         'lead_id': lead.pk, 
                         'mobile_number': lead_mobile_number,
-                        'category': categories,
+                        'category': categories.type,
                         }]
+
                         send_whatsapp_message_enqiury_form_user.delay(user_data)
 
                 except Exception as e:
