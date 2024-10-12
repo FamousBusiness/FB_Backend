@@ -141,7 +141,7 @@ def send_category_wise_business_message_excel_upload(data):
 
 
 ## Send whatsapp message while uploading excel
-@shared_task()
+@shared_task(task_rate_limit='4/m')
 def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
     for business_data in data:
         api_url = "https://bhashsms.com/api/sendmsg.php"
