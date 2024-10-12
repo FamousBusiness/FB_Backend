@@ -137,11 +137,12 @@ class LoginUserThroughOTP(APIView):
 
                     response = Response({
                         'token': token,
-                        'msg': "You are successfully logged in", 
+                        'msg': "You are successfully logged in",
                         'user_name': check_user.name, 'business_id': business.pk, 
                         'mobile_number': check_user.mobile_number, 
-                        'plan_status': plan_status}, status=status.HTTP_200_OK)
-                    
+                        'plan_status': plan_status}, status=status.HTTP_200_OK
+                        )
+
                 except PremiumPlanBenefits.DoesNotExist:
                     response = Response({
                                 'token': token,
@@ -152,7 +153,7 @@ class LoginUserThroughOTP(APIView):
                             }, status=status.HTTP_200_OK)
                 
                 return response
-            
+
             except Business.DoesNotExist:
                 try:
                     brand = BrandBusinessPage.objects.get(owner=check_user)
@@ -163,6 +164,7 @@ class LoginUserThroughOTP(APIView):
                                     'brand_id': brand.pk, 
                                     'mobile_number': check_user.mobile_number }, status=status.HTTP_200_OK)
                     return response
+
                 except:
                     response =  Response({
                                     'token': token,

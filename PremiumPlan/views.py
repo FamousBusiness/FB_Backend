@@ -211,12 +211,13 @@ class ReceivePhonepeAutoPayWebhook(APIView):
     def post(self, request):
         response_data = request.data.get('response')
 
-        print(response_data)
+        # print(response_data)
 
         # Decode the response
         decoded_data = base64_decode(response_data)
 
-        if decoded_data['success'] == True and decoded_data['message']:
+        if decoded_data['success'] == True and decoded_data['data']['transactionDetails']['state'] == 'COMPLETED' and decoded_data['data']['subscriptionDetails']['state'] == 'ACTIVE':
+
             authRequestID = decoded_data['data']['authRequestId']
             subscriptionID = decoded_data['data']['subscriptionDetails']['subscriptionId']
 
@@ -240,14 +241,18 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                     id = auto_pay_order.user_id
                 )
 
-                order = PremiumPlanOrder.objects.create(
-                    user           = user_obj,
-                    transaction_id = auto_pay_order.authRequestId,
-                    amount         = auto_pay_order.amount,
-                    status         = 'Paid',
-                    details        = f'Purchased Premium plan - {premium_plan.plan.name} {premium_plan.plan.type}',
-                    isPaid         = True
+                order, created = PremiumPlanOrder.objects.get_or_create(
+                    user = user_obj,
                 )
+
+                if created:
+                    order.transaction_id = auto_pay_order.authRequestId
+                    order.amount         = auto_pay_order.amount
+                    order.status         = 'Paid'
+                    order.details        = f'Purchased Premium plan - {premium_plan.plan.name} {premium_plan.plan.type}'
+                    order.isPaid         = True
+
+                    order.save()
 
                 try:
                     business_instance = Business.objects.get(owner=user_obj)
