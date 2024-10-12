@@ -140,8 +140,8 @@ def send_category_wise_business_message_excel_upload(data):
 
 
 
-#  Send whatsapp message while uploading excel
-@shared_task(task_rate_limit='4/m')
+## Send whatsapp message while uploading excel
+@shared_task()
 def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
     for business_data in data:
         api_url = "https://bhashsms.com/api/sendmsg.php"
@@ -173,6 +173,7 @@ def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
 
         return response_data
     
+
 
 # Send Message to Business owner while user fill form through enquiry form
 @shared_task()
@@ -296,7 +297,7 @@ def Lead_purchase_mail(data):
 
 
 
-
+### Send whatsapp message while receive Lead from Zapier
 @shared_task
 def beat_task_to_send_lead_mail_every_10_minute():
     current_date = timezone.now().date()
@@ -310,15 +311,15 @@ def beat_task_to_send_lead_mail_every_10_minute():
         mail_sent=False,
         category_lead=False
         )
-    
-    tasks = []
+
+    # tasks = []
 
     for lead in leads:
         business_pages = Business.objects.filter(category=lead.category, city=lead.city).values('email','business_name', 'mobile_number')
 
         for business in business_pages:
             data = [{
-                        'business_email': business["email"],
+                        # 'business_email': business["email"],
                         'business_name': business["business_name"],
                         'location': lead.city, 
                         'customer_name': lead.created_by,
@@ -327,15 +328,16 @@ def beat_task_to_send_lead_mail_every_10_minute():
             } ]
 
             # tasks.append(send_category_wise_business_mail_excel_upload.s(data))
-            tasks.append(send_category_wise_business_message_excel_upload.s(data))
-            tasks.append(send_category_wise_business_whatsapp_message_lead_excel_upload.s(data))
+            # tasks.append(send_category_wise_business_message_excel_upload.s(data))
+            # tasks.append(send_category_wise_business_whatsapp_message_lead_excel_upload.s(data))
+            send_category_wise_business_whatsapp_message_lead_excel_upload(data)
 
         lead.mail_sent = True
         lead.save()
 
         break
 
-    group(*tasks).apply_async()
+    # group(*tasks).apply_async()
 
 
 

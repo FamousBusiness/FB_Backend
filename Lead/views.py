@@ -542,23 +542,22 @@ class LeadCheckView(APIView):
     def post(self, request):
         data = request.data
 
-        print(data)
-
         with open('fb_lead_data.txt', 'a') as file:
             file.write(str(data) + '\n')
-       
+
         return Response(status=status.HTTP_200_OK)
-    
+
     def get(self, request):
         verify_token = request.GET.get('hub.verify_token')
 
         if verify_token == 'c8WNVaKHZaDlXbbFrltmlQtunhxT9W':
             challenge = request.GET.get('hub.challenge')
-            chl = int(challenge)
+            chl       = int(challenge)
+
             return Response(chl, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        # return Response("Success")
+            # return Response("Success")
     
 
 

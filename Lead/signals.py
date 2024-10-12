@@ -72,6 +72,7 @@ def generate_unique_transaction_id(sender, instance, **kwargs):
         while sender.objects.filter(transaction_id=instance.transaction_id).exists():
             instance.transaction_id = str(uuid.uuid4().hex)[:40]
 
+
 pre_save.connect(generate_unique_transaction_id, sender=LeadOrder)
 
 

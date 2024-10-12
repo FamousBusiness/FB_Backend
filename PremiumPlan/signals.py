@@ -50,30 +50,30 @@ pre_save.connect(generate_unique_transaction_id, sender=PremiumPlanOrder)
 
 
 # Expire the premium plans after the period ends
-@receiver(post_save, sender=PremiumPlanBenefits)
-def check_user_premium_plan_duration(sender, instance, created, **kwargs):
-    if not created:  
-        premium_plan = instance.plan.plan
-        duration = premium_plan.duration
-        duration_length = premium_plan.duration_quantity
+# @receiver(post_save, sender=PremiumPlanBenefits)
+# def check_user_premium_plan_duration(sender, instance, created, **kwargs):
+#     if not created:  
+#         premium_plan = instance.plan.plan
+#         duration = premium_plan.duration
+#         duration_length = premium_plan.duration_quantity
 
-        if duration == 'Monthly':
-            time_to_check = timedelta(days=30 * int(duration_length))
-        elif duration == 'Yearly':
-            time_to_check = timedelta(days=365 * int(duration_length))
-        else:
-            time_to_check = timedelta(days=1 * int(duration_length))
+#         if duration == 'Monthly':
+#             time_to_check = timedelta(days=30 * int(duration_length))
+#         elif duration == 'Yearly':
+#             time_to_check = timedelta(days=365 * int(duration_length))
+#         else:
+#             time_to_check = timedelta(days=1 * int(duration_length))
 
-        now = timezone.now()
+#         now = timezone.now()
 
-        if now - instance.purchased_at > time_to_check:
-            instance.lead_assigned = 0
-            instance.jobpost_allowed = 0
-            instance.ads_allowed = 0
-            instance.banner_allowed = 0
-            instance.expired = True
+#         if now - instance.purchased_at > time_to_check:
+#             instance.lead_assigned = 0
+#             instance.jobpost_allowed = 0
+#             instance.ads_allowed = 0
+#             instance.banner_allowed = 0
+#             instance.expired = True
 
-            instance.save()
+#             instance.save()
 
 
 
