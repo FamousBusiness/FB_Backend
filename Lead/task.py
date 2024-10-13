@@ -125,8 +125,7 @@ def send_category_wise_business_message_excel_upload(data):
                 "pass": '123456',
                 "sender": 'WBFSPL',
                 "phone": mobile_number,
-                # "text": "New%20Lead%20has%20been%20assign%20for%20your%20Business.%0A%20Please%20Share%20the%20Quotation.              %0A%20Regards%2C%20WFBSPL%20famousbusiness.in%0A%209871475373",
-                "text": "LeadAlart",
+                "text": "New%20Lead%20Alert%20from%20Famous%20Business.%0A%20Please%20view%20the%20Leads%20and%20contact%20to%20the%20Buyer:%0A%20https%3A%2F%2Ffamousbusiness.in%2Fleads.%0A%20Regards%2C%20WFBSPL.",
                 "priority": 'ndnd',
                 "stype": 'normal'
             }
@@ -162,7 +161,7 @@ def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
             "stype" : "normal",
             "Params": f"{business_name}, {customer_name}, {requirements}",
             "htype" : "image",
-            "imageUrl" : "https://mdwebzotica.famousbusiness.in/lead_uplaod_img.jpg"
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/final_001.jpg"
         }
 
         url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"

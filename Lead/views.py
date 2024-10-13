@@ -938,10 +938,10 @@ class LeadExcelUploadView(View):
                 # except Exception as e:
                 #     return HttpResponse(f"Not able to sent mail {str(e)}")
 
-                # try:
-                #     send_category_wise_business_message_excel_upload.delay(data)
-                # except Exception as e:
-                #     return HttpResponse(f"Not able to sent mail {str(e)}")
+                try:
+                    send_category_wise_business_message_excel_upload.delay(data)
+                except Exception as e:
+                    return HttpResponse(f"Not able to sent mail {str(e)}")
                 
 
             elif drop_down_value == 'combo_lead':
@@ -1029,10 +1029,10 @@ class LeadExcelUploadView(View):
                 except Exception as e:
                     return HttpResponse(f"Not able to sent mail {str(e)}")
 
-                # try:
-                #     send_category_wise_business_message_excel_upload.delay(data)
-                # except Exception as e:
-                #     return HttpResponse(f"Not able to sent mail {str(e)}")
+                try:
+                    send_category_wise_business_message_excel_upload.delay(data)
+                except Exception as e:
+                    return HttpResponse(f"Not able to sent mail {str(e)}")
                 
 
             response_data = {'msg': 'Mail has been sent to the user'}
