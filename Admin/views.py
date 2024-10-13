@@ -525,6 +525,7 @@ def ExcelUploadView(request):
                 if business_page:
                     business_page.business_name = business_name
                     business_page.mobile_number = mobile_number
+                    business_page.whatsapp_number = mobile_number
                     business_page.category      = category
                     business_page.state         = state
                     business_page.city          = city
