@@ -213,7 +213,7 @@ def send_category_wise_business_whatsapp_message_enquiry_form_submit(data):
 
 
 # Send Message to user who filled the enquiry form
-@shared_task(task_rate_limit='4/m')
+@shared_task(task_rate_limit='6/m')
 def send_whatsapp_message_enqiury_form_user(data):
     for business_data in data:
         api_url = "https://bhashsms.com/api/sendmsg.php"
@@ -319,11 +319,18 @@ def beat_task_to_send_lead_mail_every_10_minute():
     for lead in leads:
         business_pages = Business.objects.filter(category=lead.category, city=lead.city).values('email','business_name', 'mobile_number')
 
-        # Create User from Lead data
+
+        if lead.mobile_number.startswith('+91'):
+            mobile_number = lead.mobile_number.replace('+91', '').strip()
+        else:
+            mobile_number = lead.mobile_number
+
+        ## Create User from Lead data
         try:
             user, created = User.objects.get_or_create(
-                mobile_number = lead.mobile_number
+                mobile_number = mobile_number
             )
+
             # Get the category
             category = Category.objects.get(id = lead.category.pk)
             
@@ -334,7 +341,7 @@ def beat_task_to_send_lead_mail_every_10_minute():
                 user_data = [{
                 'customer_name': lead.created_by,
                 'lead_id': lead.pk, 
-                'mobile_number': lead.mobile_number,
+                'mobile_number': mobile_number,
                 'category': category.type,
                 }]
                 send_whatsapp_message_enqiury_form_user.delay(user_data)
