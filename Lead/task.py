@@ -125,11 +125,11 @@ def send_category_wise_business_message_excel_upload(data):
                 "pass": '123456',
                 "sender": 'WBFSPL',
                 "phone": mobile_number,
-                "text": "New%20Lead%20Alert%20from%20Famous%20Business.%0A%20Please%20view%20the%20Leads%20and%20contact%20to%20the%20Buyer:%0A%20https%3A%2F%2Ffamousbusiness.in%2Fleads.%0A%20Regards%2C%20WFBSPL.",
+                "text": "New%20Lead%20has%20been%20assign%20for%20your%20Business.%0A%20Please%20Share%20the%20Quotation.%0A%20Regards%2C%20WFBSPL%20famousbusiness.in%0A%209871475373",
                 "priority": 'ndnd',
                 "stype": 'normal'
             }
-        
+
         response = requests.get(url, params=params)
 
         response_data = {
@@ -343,7 +343,7 @@ def beat_task_to_send_lead_mail_every_10_minute():
                 'mobile_number': mobile_number,
                 'category': category.type,
                 }]
-                send_whatsapp_message_enqiury_form_user.delay(user_data)
+                # send_whatsapp_message_enqiury_form_user.delay(user_data)
 
         except Exception as e:
             # print(f"{str(e)}")
@@ -362,7 +362,10 @@ def beat_task_to_send_lead_mail_every_10_minute():
             # tasks.append(send_category_wise_business_mail_excel_upload.s(data))
             # tasks.append(send_category_wise_business_message_excel_upload.s(data))
             # tasks.append(send_category_wise_business_whatsapp_message_lead_excel_upload.s(data))
-            send_category_wise_business_whatsapp_message_lead_excel_upload(data)
+
+            # send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
+
+            send_category_wise_business_message_excel_upload.delay(data)
 
         lead.mail_sent = True
         lead.save()
