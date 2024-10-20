@@ -218,7 +218,7 @@ class LeadOrder(models.Model):
 
 
 
-#Lead assigned for Premium users
+# Lead assigned for Premium users
 class AssignedLeadPerPremiumPlan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True)
@@ -229,6 +229,7 @@ class AssignedLeadPerPremiumPlan(models.Model):
     class Meta:
         ordering = ["-id"]
     
+
 
 
 #Lead viewed by Business Page of Enquired lead
@@ -256,6 +257,14 @@ class BusinessPageLeadView(models.Model):
     
     class Meta:
         ordering = ['-id']
-    
-    
 
+
+
+### Manual Lead Expired Quantity
+class LeadViewQuantity(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=5)
+
+    def __str__(self) -> str:
+        return f"{self.category.type} Lead View Quantity"
+    

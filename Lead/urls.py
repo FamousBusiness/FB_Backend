@@ -3,7 +3,7 @@ from .views import (
     EnquiryFormAPIView, BusinessPageLeadAPIView, AllLeadWithoutAllDataView, 
     ShowBusinessPageAssignedLeadView, LeadPaymentAPIView, LeadExcelUploadView, LeadCheckView,
     ComboLeadPaymentInitiationView, ComboLeadPaymentCompleteView, IDWiseComboLeadView, ComboLeadCheckAfterPaymentCompleteView,
-    LeadPaymentCompleteView
+    LeadPaymentCompleteView, ViewLeadData
     # welcome, pay, payment_return
     )
 
@@ -14,7 +14,8 @@ urlpatterns = [
     path('individual-business-page-leads/', BusinessPageLeadAPIView.as_view(), name='individual_leads'),
     path('all-leads/<str:city>/<str:state>/', AllLeadWithoutAllDataView.as_view(), name='get_all_leads'),
     #View Lead Data
-    path('business-page-lead-view/', ShowBusinessPageAssignedLeadView.as_view(), name='show-business-lead-data'),
+    path('business-page-lead-view/', ViewLeadData.as_view(), name='show-business-lead-data'),
+    # path('business-page-lead-view/', ShowBusinessPageAssignedLeadView.as_view(), name='show-business-lead-data'),
     path('lead-payment/', LeadPaymentAPIView.as_view(), name='lead-payment'),
     path('lead-payment-complete/', LeadPaymentCompleteView, name='lead-payment-complete'),
 

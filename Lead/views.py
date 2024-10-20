@@ -561,7 +561,7 @@ class LeadCheckView(APIView):
     
 
 
-
+## This portion is used in ViewLeadData class
 class ShowBusinessPageAssignedLeadView(generics.ListAPIView):
      permission_classes = [permissions.IsAuthenticated]
 
@@ -580,7 +580,7 @@ class ShowBusinessPageAssignedLeadView(generics.ListAPIView):
                 user_id       = business_page.owner
 
                 try:
-                    lead = Lead.objects.get(id=lead_id)
+                    lead         = Lead.objects.get(id=lead_id)
                     expired_lead = lead.expired
                 except Lead.DoesNotExist:
                     return Response({'msg': 'Provided lead does not exists'})
@@ -601,7 +601,7 @@ class ShowBusinessPageAssignedLeadView(generics.ListAPIView):
                     premium_plan_assigned_lead = None
 
                 try:
-                    available_plan = PremiumPlanBenefits.objects.filter(user=user)
+                    available_plan      = PremiumPlanBenefits.objects.filter(user=user)
                     available_plan_lead = available_plan.aggregate(total_lead=Sum('lead_assigned'))['total_lead']
                 except PremiumPlanBenefits.DoesNotExist:
                     available_plan_lead = 0
@@ -702,7 +702,7 @@ class ShowBusinessPageAssignedLeadView(generics.ListAPIView):
 
                 try:
                     page_enquired_lead = BusinessPageLead.objects.get(id=individual_lead_id)
-                    expired_lead = lead.expired
+                    # expired_lead = lead.expired
                 except BusinessPageLead.DoesNotExist:
                     return Response({'msg': 'Provided lead does not exists'})
                 
@@ -758,6 +758,149 @@ class ShowBusinessPageAssignedLeadView(generics.ListAPIView):
             except Business.DoesNotExist:
                 #Assign the brand lead to the user
                 pass
+
+        return Response({'msg': 'Lead Data Fetched Successfully', 'data': lead_serializer.data if lead_serializer else None}, status=status.HTTP_200_OK)
+
+
+
+### View the details of a Lead
+class ViewLeadData(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user               = request.user
+        lead_id            = request.data.get('lead')
+        individual_lead_id = request.data.get('individual_lead_id')
+        lead_serializer    = None
+
+        if not (lead_id or individual_lead_id):
+            return Response({'msg': 'Please provide any lead to show the data'})
+
+        if lead_id:
+            try:
+                business_page = Business.objects.get(owner=user)
+                user_id      = business_page.owner
+
+                ### Get the Lead
+                try:
+                    lead = Lead.objects.get(id=lead_id)
+                except Lead.DoesNotExist:
+                    return Response({'msg': 'Provided lead does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+                if lead:
+                    expired_lead = lead.expired
+                
+                ### Get the Business page Lead view
+                try:
+                    viewed_lead = BusinessPageLeadView.objects.get(business_page=business_page, lead=lead, viewed=True)
+                except BusinessPageLeadView.DoesNotExist:
+                    viewed_lead = None
+
+                ## Check for premium plan benefits available
+                try:
+                    available_plan = PremiumPlanBenefits.objects.filter(user=user)
+                except PremiumPlanBenefits.DoesNotExist:
+                    available_plan_lead = 0
+
+                ## Sum the total lead quantity
+                if available_plan:
+                    available_plan_lead = available_plan.aggregate(total_lead=Sum('lead_assigned'))['total_lead']
+                else:
+                    available_plan_lead = 0
+
+                ## Available Lead in Trial plan request
+                try:
+                    trial_plan = TrialPlanRequest.objects.filter(user=user, is_active=True)
+                except TrialPlanRequest.DoesNotExist:
+                    available_trial_plan_lead = 0
+                
+                ## Calculate lead available in trial plan
+                if trial_plan:
+                    available_trial_plan_lead = trial_plan.aggregate(total_lead=Sum('lead_view'))['total_lead']
+                else:
+                    available_trial_plan_lead = 0
+
+                ## Total available lead which is the sum of trial plan and Premium plan
+                total_available_lead = (available_plan_lead or 0) + (available_trial_plan_lead or 0)
+
+                ## If the lead has been expired
+                if expired_lead:
+                    lead_serializer = LeadWithoutAllDataSerializer(lead)
+                
+                ## If the Business owner has viewed the lead
+                elif viewed_lead:
+                    lead_serializer = LeadSerializer(lead)
+
+                # if the business owner has available lead quantity in Premium plan
+                elif total_available_lead > 0:
+                    if lead.category == business_page.category:
+                        lead_serializer = LeadSerializer(lead)
+
+                        if not BusinessPageLeadView.objects.filter(business_page = business_page, lead = lead, viewed=True).exists():
+                            BusinessPageLeadView.objects.create(
+                                business_page = business_page,
+                                lead          = lead,
+                                viewed        = True
+                            )
+                            lead.views += 1
+                            lead.save()
+
+                            if (available_trial_plan_lead or 0) > 0:
+                                for benefits in trial_plan:
+                                    benefits.lead_view -= 1
+                                    benefits.save()
+                                    break
+
+                            elif (available_plan_lead or 0) > 0:
+                                for lead_benefits in available_plan:
+                                    lead_benefits.lead_assigned -= 1
+                                    lead_benefits.save()
+                                    break 
+
+                    else:
+                        return Response({'msg': 'You can not view this category lead has to purchase the lead'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                else:
+                    return Response({'msg': 'No Available Premium Plan balance to view the lead Please Purchase'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            except Exception as e:
+                return Response({
+                    'msg': 'Do not have business page'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        ## If the Lead is Enquired to the Page
+        elif individual_lead_id:
+            try:
+                business_page = Business.objects.get(owner=user)
+                user_id       = business_page.owner
+
+                try:
+                    page_enquired_lead = BusinessPageLead.objects.get(id=individual_lead_id)
+                except BusinessPageLead.DoesNotExist:
+                    return Response({'msg': 'Provided lead does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                if page_enquired_lead:
+                    lead_serializer = IndividualLeadsSerializer(page_enquired_lead)
+
+                    # for benefits in assigned_benefits:
+                    if not BusinessPageEnquiredLeadViews.objects.filter(business_page = business_page, page_lead = page_enquired_lead, viewed=True).exists():
+                        BusinessPageEnquiredLeadViews.objects.create(
+                            business_page = business_page,
+                            page_lead      = page_enquired_lead,
+                            viewed        = True
+                        )
+
+                        page_enquired_lead.views += 1
+                        page_enquired_lead.save()
+
+                else:
+                    return Response({'message': 'Requested Lead does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                    
+            except Exception as e:
+                return Response({
+                    'message': 'Invalid Business Page'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'msg': 'Lead Data Fetched Successfully', 'data': lead_serializer.data if lead_serializer else None}, status=status.HTTP_200_OK)
 
