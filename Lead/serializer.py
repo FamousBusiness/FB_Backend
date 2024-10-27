@@ -255,11 +255,11 @@ class GetLeadFormSerializer(serializers.ModelSerializer):
         domain_name = media_domain_name
 
         if representation.get('background_img'):
-            representation['background_img'] = f"{domain_name}{representation['background_img']}"
+            representation['background_img'] = f"{representation['background_img']}"
 
         if representation.get('logo'):
-            representation['logo'] = f"{domain_name}{representation['logo']}"
-            
+            representation['logo'] = f"{representation['logo']}"
+
         return representation
     
 
