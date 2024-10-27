@@ -15,7 +15,7 @@ IS_DEVELOPMENT = config('IS_DEVELOPMENT')
 if IS_DEVELOPMENT == 'True':
     media_domain_name = 'http://127.0.0.1:8000'
 else:
-    media_domain_name = 'https://api.famousbusiness.in'
+    media_domain_name = 'https://mdwebzotica.famousbusiness.in'
 
 
 #Include in Client Lead
@@ -256,9 +256,10 @@ class GetLeadFormSerializer(serializers.ModelSerializer):
 
         if representation.get('background_img'):
             representation['background_img'] = f"{domain_name}{representation['background_img']}"
+
         if representation.get('logo'):
             representation['logo'] = f"{domain_name}{representation['logo']}"
-
+            
         return representation
     
 
