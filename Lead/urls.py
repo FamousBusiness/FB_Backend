@@ -3,7 +3,7 @@ from .views import (
     EnquiryFormAPIView, BusinessPageLeadAPIView, AllLeadWithoutAllDataView, 
     ShowBusinessPageAssignedLeadView, LeadPaymentAPIView, LeadExcelUploadView, LeadCheckView,
     ComboLeadPaymentInitiationView, ComboLeadPaymentCompleteView, IDWiseComboLeadView, ComboLeadCheckAfterPaymentCompleteView,
-    LeadPaymentCompleteView, ViewLeadData
+    LeadPaymentCompleteView, ViewLeadData, LeadFormDetails, LeadGenerateFromLeadForm, LeadFormUpdateQuestionView
     # welcome, pay, payment_return
     )
 
@@ -32,6 +32,11 @@ urlpatterns = [
     # path('category-lead/', CategoryLeadApiView.as_view(), name='lead_generation_by_category'),
     
     path('fb-lead-capture/', LeadCheckView.as_view(), name='fb_auto_lead_capture'),
+
+    path('lead/form/', LeadFormDetails.as_view(), name='lead_form_detail'),
+    path('lead/form/lead/generate/', LeadGenerateFromLeadForm.as_view(), name='lead_form_generate_lead'),
+    path('lead/form/question/', LeadFormUpdateQuestionView.as_view(), name='lead_form_question'),
+
     # path('initiation/', welcome, name='welcome'),
     # path('pay/', pay, name='pay'),
     # path('return-to-me/', payment_return, name='payment_return'),

@@ -13,14 +13,14 @@ from Listings.models import (
     )
 from Lead.models import (
     BusinessPageLeadView, Lead, BusinessPageLeadBucket, BusinessPageLead, AssignedLeadPerPremiumPlan, 
-    LeadBucket, LeadPrice, ComboLead, ComboLeadBucket, LeadOrder, 
+    LeadBucket, LeadPrice, ComboLead, ComboLeadBucket, LeadOrder, LeadFrorm,
     BusinessPageEnquiredLeadViews, ComboLeadOrder
     )
 from .serializer import (BusinessPageleadViewSerializer, LeadSerializer, LeadPaymentSerializer,PriceLeadWithoutAllDataSerializer,
             IndividualLeadsSerializer, EnquiryFormSerializer, BusinessPageLeadSerializer,
             LeadWithoutAllDataSerializer, IndividualPageLeadWithoutAllDataSerializer,
             PaidLeadSerializers, LeadExcelUploadFrom, ComboLeadPaymentSerializer,
-            ComboLeadSerializer, AssignedPremiumPlanLeadSerializer, UsersPaidLeadSerializer
+            ComboLeadSerializer, AssignedPremiumPlanLeadSerializer, UsersPaidLeadSerializer, GetLeadFormSerializer
     )
 from rest_framework import status, generics
 from Listings.RazorpayPayment.razorpay.main import RazorpayClient
@@ -824,11 +824,11 @@ class ViewLeadData(APIView):
                 total_available_lead = (available_plan_lead or 0) + (available_trial_plan_lead or 0)
 
                 ## If the lead has been expired
-                if expired_lead:
+                if viewed_lead:
                     lead_serializer = LeadWithoutAllDataSerializer(lead)
                 
                 ## If the Business owner has viewed the lead
-                elif viewed_lead:
+                elif expired_lead:
                     lead_serializer = LeadSerializer(lead)
 
                 # if the business owner has available lead quantity in Premium plan
@@ -1617,3 +1617,107 @@ class IDWiseComboLeadView(generics.ListAPIView):
 
 
 
+### Get all the details of a lead form category wise
+class LeadFormDetails(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        lead_form_category = request.data.get("category")
+
+        ## Get the category
+        try:
+            get_category = Category.objects.get(type=lead_form_category)
+        except Exception as e:
+            return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            category_lead_form  = LeadFrorm.objects.get(category = get_category)
+        except Exception as e:
+            return Response({
+                'message': 'Lead Form not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = GetLeadFormSerializer(category_lead_form)
+
+        return Response({
+            'success': True,
+            'lead_form_data': serializer.data
+            }
+            , status=status.HTTP_200_OK)
+
+
+### Generate Lead from Lead form
+class LeadGenerateFromLeadForm(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        full_name    = request.data.get('full_name')
+        phone_number = request.data.get('mobile_number')
+        category_name = request.data.get('category')
+
+        ## Category
+        try:
+            category_obj = Category.objects.get(type = category_name)
+        except Exception as e:
+            return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        ## Generate Lead
+        try:
+            new_lead = Lead.objects.create(
+                created_by    = full_name,
+                category      = category_obj,
+                mobile_number = phone_number,
+                state         = 'Not updated',
+                city          = 'Not Updated',
+                status        = 'Open'
+            )
+
+            return Response({
+                'message': 'Lead generated successfully',
+                'success': True,
+                'lead_id': new_lead.pk
+
+                }, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({'message': 'Lead not generated'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+### Update Lead with Lead form Questions
+class LeadFormUpdateQuestionView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        requirements = request.data.get('requirements')
+        state        = request.data.get('city')
+        city         = request.data.get('state')
+        lead_id      = request.data.get('lead_id')
+
+        ## get the lead
+        try:
+            Lead_obj = Lead.objects.get(id = lead_id)
+        except Exception as e:
+            return Response({'message': 'Invalid Lead'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        Lead_obj.requirement = requirements
+
+        if city and state:
+            Lead_obj.city        = city
+            Lead_obj.state       = state
+
+            Lead_obj.save()
+
+        else:
+            try:
+                lead_form_obj   = LeadFrorm.objects.get(category = Lead_obj.category)
+                Lead_obj.city   = lead_form_obj.city
+                Lead_obj.state  = lead_form_obj.state
+
+            except Exception as e:
+                pass
+
+            Lead_obj.save()
+
+        return Response({'message': 'Lead updated Successfully'}, status=status.HTTP_200_OK)
+    

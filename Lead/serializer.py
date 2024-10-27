@@ -2,10 +2,20 @@ from Listings.models import Category
 from rest_framework import serializers
 from users.models import User
 from Lead.models import (
-    LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, LeadPrice,
+    LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, LeadPrice, LeadFrorm, LeadFormQuestion, 
     ComboLead, AssignedLeadPerPremiumPlan, BusinessPageLeadView
     )
 from django import forms
+from decouple import config
+
+
+IS_DEVELOPMENT = config('IS_DEVELOPMENT')
+
+
+if IS_DEVELOPMENT == 'True':
+    media_domain_name = 'http://127.0.0.1:8000'
+else:
+    media_domain_name = 'https://api.famousbusiness.in'
 
 
 #Include in Client Lead
@@ -210,6 +220,47 @@ class BusinessPageleadViewSerializer(serializers.ModelSerializer):
         fields = ('lead',)
 
 
+### Lead form questions
+class GetLeadFormQuestionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeadFormQuestion
+        fields = '__all__' 
+
+
+
+### Serializer to get all Lead form data category wise
+class GetLeadFormSerializer(serializers.ModelSerializer):
+    question_1_data = GetLeadFormQuestionSerializer(source='question_1', read_only=True)
+    question_2_data = GetLeadFormQuestionSerializer(source='question_2', read_only=True)
+    question_3_data = GetLeadFormQuestionSerializer(source='question_3', read_only=True)
+    question_4_data = GetLeadFormQuestionSerializer(source='question_4', read_only=True)
+
+    class Meta:
+        model = LeadFrorm
+        fields = [
+            'id', 'category', 'headline', 'description_1', 'd1_required',
+            'description_2', 'd2_required', 'description_3', 'd3_required',
+            'question_1_data', 'q1_required', 
+            'question_2_data', 'q2_required', 
+            'question_3_data', 'q3_required', 
+            'question_4_data', 'q4_required', 
+            'background_img', 'logo',
+            'city', 'city_required', 'state', 'state_required',
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        domain_name = media_domain_name
+
+        if representation.get('background_img'):
+            representation['background_img'] = f"{domain_name}{representation['background_img']}"
+        if representation.get('logo'):
+            representation['logo'] = f"{domain_name}{representation['logo']}"
+
+        return representation
+    
 
 
 

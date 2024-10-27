@@ -268,3 +268,59 @@ class LeadViewQuantity(models.Model):
     def __str__(self) -> str:
         return f"{self.category.type} Lead View Quantity"
     
+
+
+
+## Lead Form Questions
+class LeadFormQuestion(models.Model):
+    question = models.CharField(max_length=100)
+
+
+    def __str__(self) -> str:
+        return f'{self.question}'
+    
+
+
+### Lead Form
+class LeadFrorm(models.Model):
+    category        = models.ForeignKey(Category, verbose_name=_("Category"), on_delete=models.CASCADE)
+    headline        = models.CharField(max_length=100)
+
+    city            = models.CharField(_("City"), max_length=20, null=True, blank=True)
+    city_required   = models.BooleanField(_("City Required"), default=False, null=True, blank=True)
+
+    state            = models.CharField(_("State"), max_length=20, null=True, blank=True)
+    state_required   = models.BooleanField(_("State Required"), default=False, null=True, blank=True)
+
+    description_1   = models.CharField(_("Description 1"), max_length=100)
+    d1_required     = models.BooleanField(_("Description 1 Required"), default=False)
+
+    description_2   = models.CharField(_("Description 2"), max_length=100, null=True, blank=True)
+    d2_required     = models.BooleanField(_("Description 2 Required"), default=False)
+
+    description_3   = models.CharField(_("Description 3"), max_length=100, null=True, blank=True)
+    d3_required     = models.BooleanField(_("Description 3 Required"), default=False)
+
+    question_1      = models.ForeignKey(LeadFormQuestion, verbose_name=_("Question 1"), on_delete=models.CASCADE, related_name="leadform_question_1")
+    q1_required     = models.BooleanField(_("Question 1 Required"), default=False)
+
+    question_2      = models.ForeignKey(LeadFormQuestion, verbose_name=_("Question 2"), on_delete=models.CASCADE, related_name="leadform_question_2", null=True, blank=True)
+    q2_required     = models.BooleanField(_("Question 2 Required"), default=False)
+
+    question_3      = models.ForeignKey(LeadFormQuestion, verbose_name=_("Question 3"), on_delete=models.CASCADE, related_name="leadform_question_3", null=True, blank=True)
+    q3_required     = models.BooleanField(_("Question 3 Required"), default=False)
+
+    question_4      = models.ForeignKey(LeadFormQuestion, verbose_name=_("Question 4"), on_delete=models.CASCADE, related_name="leadform_question_4", null=True, blank=True)
+    q4_required     = models.BooleanField(_("Question 4 Required"), default=False)
+
+    background_img  = models.ImageField(_("Background Image"), upload_to='LeadForm/', null=True, blank=True)
+    logo            = models.ImageField(_("Logo"), upload_to='LeadForm', null=True, blank=True)
+
+
+    def __str__(self) -> str:
+        return f"{self.headline}"
+    
+
+
+
+    
