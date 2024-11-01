@@ -329,7 +329,9 @@ class LeadBanner(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     image    = models.ImageField(_("Banner Image"), upload_to="LeadBannerImage/", null=True, blank=True)
     video    = models.FileField(_("Banner Video"), upload_to="LeadBannerVedio/", null=True, blank=True)
-
+    state    = models.CharField(_("State"), max_length=10, null=True, blank=True)
+    city     = models.CharField(_("City"), max_length=10, null=True, blank=True)
+    url      = models.URLField(_("Business page url"), null=True, blank=True)
 
     def __str__(self):
         return f"{self.category.type} Lead Banner"
