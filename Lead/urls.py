@@ -3,7 +3,7 @@ from .views import (
     EnquiryFormAPIView, BusinessPageLeadAPIView, AllLeadWithoutAllDataView, 
     ShowBusinessPageAssignedLeadView, LeadPaymentAPIView, LeadExcelUploadView, LeadCheckView,
     ComboLeadPaymentInitiationView, ComboLeadPaymentCompleteView, IDWiseComboLeadView, ComboLeadCheckAfterPaymentCompleteView,
-    LeadPaymentCompleteView, ViewLeadData, LeadFormDetails, LeadGenerateFromLeadForm, LeadFormUpdateQuestionView
+    LeadPaymentCompleteView, ViewLeadData, LeadFormDetails, LeadGenerateFromLeadForm, LeadFormUpdateQuestionView, LeadBannerView
     # welcome, pay, payment_return
     )
 
@@ -36,7 +36,7 @@ urlpatterns = [
     path('lead/form/', LeadFormDetails.as_view(), name='lead_form_detail'),
     path('lead/form/lead/generate/', LeadGenerateFromLeadForm.as_view(), name='lead_form_generate_lead'),
     path('lead/form/question/', LeadFormUpdateQuestionView.as_view(), name='lead_form_question'),
-
+    path('lead/banner/', LeadBannerView.as_view(), name='lead_banner'),
     # path('initiation/', welcome, name='welcome'),
     # path('pay/', pay, name='pay'),
     # path('return-to-me/', payment_return, name='payment_return'),

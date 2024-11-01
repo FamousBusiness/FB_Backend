@@ -14,13 +14,13 @@ from Listings.models import (
 from Lead.models import (
     BusinessPageLeadView, Lead, BusinessPageLeadBucket, BusinessPageLead, AssignedLeadPerPremiumPlan, 
     LeadBucket, LeadPrice, ComboLead, ComboLeadBucket, LeadOrder, LeadFrorm,
-    BusinessPageEnquiredLeadViews, ComboLeadOrder
+    BusinessPageEnquiredLeadViews, ComboLeadOrder, LeadBanner
     )
 from .serializer import (BusinessPageleadViewSerializer, LeadSerializer, LeadPaymentSerializer,PriceLeadWithoutAllDataSerializer,
             IndividualLeadsSerializer, EnquiryFormSerializer, BusinessPageLeadSerializer,
             LeadWithoutAllDataSerializer, IndividualPageLeadWithoutAllDataSerializer,
             PaidLeadSerializers, LeadExcelUploadFrom, ComboLeadPaymentSerializer,
-            ComboLeadSerializer, AssignedPremiumPlanLeadSerializer, UsersPaidLeadSerializer, GetLeadFormSerializer
+            ComboLeadSerializer, AssignedPremiumPlanLeadSerializer, UsersPaidLeadSerializer, GetLeadFormSerializer, LeadBannerSerializer
     )
 from rest_framework import status, generics
 from Listings.RazorpayPayment.razorpay.main import RazorpayClient
@@ -1721,3 +1721,41 @@ class LeadFormUpdateQuestionView(APIView):
 
         return Response({'message': 'Lead updated Successfully'}, status=status.HTTP_200_OK)
     
+
+
+
+
+### Get all the Lead Banner data according to state, city and Category
+class LeadBannerView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+
+    def get(self, request):
+        state    = request.query_params.get("state")
+        city     = request.query_params.get('city')
+        category = request.query_params.get('category')
+
+        ### Get the category
+        try:
+            category_obj = Category.objects.get(type = category)
+        except Exception as e:
+            return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if category_obj:
+            ## get the banner related to the category
+            lead_banners = LeadBanner.objects.get(
+                category = category_obj,
+                state    = state,
+                city     = city
+            )
+
+            serializer = LeadBannerSerializer(lead_banners)
+
+        else:
+            serializer = None
+
+            
+        return Response({
+            'success': True,
+            'lead_banner_data': serializer.data
+        }, status=status.HTTP_200_OK)

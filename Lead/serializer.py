@@ -3,7 +3,8 @@ from rest_framework import serializers
 from users.models import User
 from Lead.models import (
     LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, LeadPrice, LeadFrorm, LeadFormQuestion, 
-    ComboLead, AssignedLeadPerPremiumPlan, BusinessPageLeadView
+    ComboLead, AssignedLeadPerPremiumPlan, BusinessPageLeadView,
+    LeadBanner
     )
 from django import forms
 from decouple import config
@@ -262,6 +263,15 @@ class GetLeadFormSerializer(serializers.ModelSerializer):
 
         return representation
     
+
+
+
+### Serialize banner for Lead Banner
+class LeadBannerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeadBanner
+        fields = "__all__"
 
 
 
