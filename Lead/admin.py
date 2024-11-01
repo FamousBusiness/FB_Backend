@@ -2,7 +2,7 @@ from django.contrib import admin
 from Lead.models import (
     LeadPrice, LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, BusinessPageLeadView,
     ComboLead, ComboLeadBucket, AssignedLeadPerPremiumPlan, LeadOrder, ComboLeadOrder, LeadViewQuantity, LeadFormQuestion,
-    LeadFrorm
+    LeadFrorm, LeadBanner
     )
 
 
@@ -40,4 +40,5 @@ admin.site.register(BusinessPageLeadView)
 admin.site.register(LeadViewQuantity)
 admin.site.register(LeadFormQuestion)
 admin.site.register(LeadFrorm)
+admin.site.register(LeadBanner)
 
