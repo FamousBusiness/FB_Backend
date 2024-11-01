@@ -1727,35 +1727,40 @@ class LeadFormUpdateQuestionView(APIView):
 
 ### Get all the Lead Banner data according to state, city and Category
 class LeadBannerView(APIView):
-    permission_classes = [permissions.AllowAny]
-
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         state    = request.query_params.get("state")
         city     = request.query_params.get('city')
-        category = request.query_params.get('category')
+        user     = request.user
 
+        # Get the Business pag
+        try:
+            business_page = Business.objects.get(owner = user)
+        except Exception as e:
+            return Response({'message': "Business page does not exists"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
         ### Get the category
         try:
-            category_obj = Category.objects.get(type = category)
+            category_obj = Category.objects.get(type = business_page.category)
         except Exception as e:
             return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if category_obj:
             ## get the banner related to the category
             lead_banners = LeadBanner.objects.get(
                 category = category_obj,
-                state    = state,
+                # state    = state,
                 city     = city
             )
-
             serializer = LeadBannerSerializer(lead_banners)
 
         else:
             serializer = None
 
-            
         return Response({
             'success': True,
             'lead_banner_data': serializer.data
+
         }, status=status.HTTP_200_OK)
