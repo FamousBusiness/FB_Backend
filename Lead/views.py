@@ -1071,10 +1071,10 @@ class LeadExcelUploadView(View):
                     for business in business_pages
                 ]
 
-                # try:
-                #     send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
-                # except Exception as e:
-                #     return HttpResponse(f"Not able to sent mail {str(e)}")
+                try:
+                    send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
+                except Exception as e:
+                    return HttpResponse(f"Not able to sent mail {str(e)}")
                 
                 # try:
                 #     send_category_wise_business_mail_excel_upload.delay(data)
@@ -1167,15 +1167,15 @@ class LeadExcelUploadView(View):
                 for business in business_pages
                 ]
 
-                # try:
-                #     send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
-                # except Exception as e:
-                #     return HttpResponse(f"Not able to sent mail {str(e)}")
-
                 try:
-                    send_category_wise_business_message_excel_upload.delay(data)
+                    send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
                 except Exception as e:
                     return HttpResponse(f"Not able to sent mail {str(e)}")
+
+                # try:
+                #     send_category_wise_business_message_excel_upload.delay(data)
+                # except Exception as e:
+                #     return HttpResponse(f"Not able to sent mail {str(e)}")
                 
 
             response_data = {'msg': 'Mail has been sent to the user'}
