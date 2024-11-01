@@ -1747,20 +1747,29 @@ class LeadBannerView(APIView):
         except Exception as e:
             return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
 
+
         if category_obj:
             ## get the banner related to the category
-            lead_banners = LeadBanner.objects.get(
-                category = category_obj,
-                # state    = state,
-                city     = city
-            )
-            serializer = LeadBannerSerializer(lead_banners)
+            try:
+                lead_banners = LeadBanner.objects.filter(
+                    category = category_obj,
+                    city     = city
+                )
+            except Exception as e:
+                return Response({'message': f'Lead banner not found {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if lead_banners.exists():
+                serializer = LeadBannerSerializer(lead_banners, many=True)
+            else:
+                serializer = None
 
         else:
             serializer = None
 
+
         return Response({
             'success': True,
-            'lead_banner_data': serializer.data
+            'lead_banner_data': serializer.data if serializer else None
 
         }, status=status.HTTP_200_OK)
+
