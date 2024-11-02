@@ -96,9 +96,11 @@ class IndividualLeadsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class LeadPaymentSerializer(serializers.Serializer):
     lead_id = serializers.IntegerField()
     amount  = serializers.IntegerField()
+
 
 
 class ComboLeadPaymentSerializer(serializers.Serializer):
