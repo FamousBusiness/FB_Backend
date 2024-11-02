@@ -125,7 +125,7 @@ class LeadWithoutAllDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lead
-        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'status', 'pincode', 'views']
+        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'status', 'pincode', 'views', 'created_by']
 
 
     # def get_remaining_lead_viewed(self, obj):
