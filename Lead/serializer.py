@@ -114,7 +114,7 @@ class IndividualPageLeadWithoutAllDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessPageLead
-        fields = ['id', 'requirement', 'state', 'city', 'pincode', 'created_at', 'status', 'created_by' ]
+        fields = ['id', 'requirement', 'state', 'city', 'pincode', 'created_at', 'status', 'created_by', 'expired' ]
 
 
 
@@ -125,7 +125,7 @@ class LeadWithoutAllDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lead
-        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'status', 'pincode', 'views', 'created_by']
+        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'status', 'pincode', 'views', 'created_by', 'expired']
 
 
     # def get_remaining_lead_viewed(self, obj):
@@ -154,7 +154,7 @@ class PriceLeadWithoutAllDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lead
-        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'price', 'status', 'pincode', 'views', 'created_by']
+        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'price', 'status', 'pincode', 'views', 'created_by', 'expired']
 
     # def get_remaining_lead_viewed(self, obj):
     #     business_viewed_lead_count = BusinessPageLeadBucket.count_viewed_users(lead_id=obj.id)
