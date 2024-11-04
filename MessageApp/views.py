@@ -42,7 +42,7 @@ class SendTESTSMSView(APIView):
             "user": 'WEBZOTICAPROMO',
             "pass": '123456',
             "sender": 'WBFSPL',
-            "phone": '8920780083',
+            "phone": '8249258412',
             # "text": 'New%20Lead%20Alert%20from%20Famous%20Business.%20Please%20view%20the%20Leads%20and%20contact%20to%20the%20Buyer%3A%20https%3A%2F%2Ffamousbusiness.in%2Fleads.%20Regards%2C%20WFBSPL.',
             "text": 'New%20Lead%20has%20been%20assign%20for%20your%20Business.%0A%20Please%20Share%20the%20Quotation.%0A%20Regards%2C%20WFBSPL%20famousbusiness.in%0A%209871475373',
             "priority": 'ndnd',

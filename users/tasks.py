@@ -81,19 +81,18 @@ def send_otp_via_whatsapp(mobile_number,otp):
 # Send Otp in message while login
 @shared_task
 def send_login_otp_message(mobile_number, otp):
-    api_url = "https://trans.smsfresh.co/api/sendmsg.php"
+    api_url = "http://trans.smsfresh.co/api/sendmsg.php"
 
     message_text = f"Your OTP is {otp}. Valid for 10 minutes. Do not share it. WEBZOTICA BUSINESS FAMOUS SOFTWARE PVT.LTD"
 
     params = {
-            "user" : "WEBZOTICAPROMO",
-            "pass" : "123456",
-            "sender" : "WBFSPL",
-            "phone" : mobile_number,
-            "text": message_text,
-            "priority" : "ndnd",
-            "stype" : "normal",
-            "stype" : "normal",
+        "user" : "WEBZOTICAPROMO",
+        "pass" : "123456",
+        "sender" : "WBFSPL",
+        "phone" : mobile_number,
+        "text": message_text,
+        "priority" : "ndnd",
+        "stype" : "normal"
         }
 
     response = requests.get(api_url, params=params)
