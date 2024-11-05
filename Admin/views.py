@@ -774,14 +774,12 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
 
         except PhonepeAutoPayOrder.DoesNotExist:
             messages.error(request, 'Phonepe AutoPay order does not exist.')
-            count = 0
             
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
-            count = 0
 
         # Return count or error message to the template
-        return render(request, self.template_name, {'count': count})
+        return render(request, self.template_name)
     
 
 
