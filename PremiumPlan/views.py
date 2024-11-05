@@ -27,6 +27,8 @@ from Phonepe.payment import calculate_sha256_string
 from Phonepe.encoded import base64_decode
 from PremiumPlan.models import PhonepeAutoPayOrder
 from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment
+from django.utils import timezone
+from datetime import datetime
 
 
             
@@ -60,7 +62,7 @@ class AllPremiumPlanView(APIView):
 
 
 
-# Premium plan payment
+## Premium plan payment
 class PremiumPlanPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -352,41 +354,95 @@ class RecurringInitPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        user = request.user
 
         try:
-            # premium_plan = PremiumPlanOrder.objects.get(user = user)
             orders_to_deduct = PremiumPlanOrder.objects.all()
-            # count            = orders_to_deduct.count()
         except Exception as e:
             return Response({'message': 'Premium plan does not exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # transaction_id = premium_plan.transaction_id
+        current_date = timezone.now()
+
         for order in orders_to_deduct:
-            transactionID = order.transaction_id
-            phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
+            days_since_purchase = (current_date - order.purchased_at).days
 
-        # phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transaction_id)
-            try:
-                recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                    phonepe_order.subscriptionId,
-                    phonepe_order.merchantUserId,
-                    phonepe_order.amount,
-                    phonepe_order.authRequestId
-                )
+            if days_since_purchase == 29:
+                transactionID = order.transaction_id
+                phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
-            except Exception as e:
-                return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                        phonepe_order.subscriptionId,
+                        phonepe_order.merchantUserId,
+                        phonepe_order.amount,
+                        phonepe_order.authRequestId
+                    )
 
-            print('recurring_payment', recurring_payment)
+                except Exception as e:
+                    return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+                print('recurring_payment', recurring_payment)
 
         return Response({'message': 'Recurring payment deducted successfully'}, status=status.HTTP_200_OK)
 
 
 
 
+### Webhook Response for Recurring payment
+class RecurringPaymentWebhook(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        ### get the payload data from phonepe
+        payload_data = request.data
+        response = payload_data['response']
+
+        ## Decode the response
+        try:
+            decoded_payload = base64_decode(response)
+        except Exception as e:
+            return Response({"message": "Error decoding payload", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not decoded_payload:
+            return Response({"message": "Invalid decoded payload"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        ## Get the transaction ID
+        transactionID = decoded_payload['data']['transactionId']
+
+        if decoded_payload['data']['transactionDetails']['state'] == 'COMPLETED' and decoded_payload['data']['transactionDetails']['responseCode'] == 'PAYMENT_SUCCESS':
+            ### Assign Premium Plan benefits to the user
+            try:
+                premium_plan_order = PremiumPlanOrder.objects.get(transaction_id = transactionID)
+            except Exception as e:
+                return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+            premium_plan_order.month_paid = (premium_plan_order.month_paid or 0) + 1
+            premium_plan_order.repayment_date = timezone.now()
+            premium_plan_order.status = 'Paid'
+            premium_plan_order.save()
+
+            try:
+                premium_plan_benefit = PremiumPlanBenefits.objects.get(user = premium_plan_order)
+            except Exception as e:
+                return Response({'message': 'Invalid Plan Benefit'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            ### Get the premium plan related to the benefit
+            premium_plan_lead_quantity = premium_plan_benefit.plan.lead_view
+
+            premium_plan_benefit.lead_assigned = premium_plan_lead_quantity
+
+            premium_plan_benefit.save()
+            
+            return Response({'success': True}, status=status.HTTP_200_OK)
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
+
+
+
+
 # Cancel the Plan
-class CancelAutopayPayment(APIView):
+class CancelAutopayPayment(APIView): 
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):

@@ -127,6 +127,7 @@ class PlanCancelRequest(models.Model):
     
 
 
+### Premium Plan Order
 class PremiumPlanOrder(models.Model):
     user                   = models.ForeignKey(User, on_delete=models.CASCADE)
     transaction_id         = models.CharField(_("Transaction ID"), max_length=100, unique=True)
@@ -137,15 +138,9 @@ class PremiumPlanOrder(models.Model):
        ) # Pending, Paid, Failed
     details               = models.CharField(max_length=255, null=True, blank=True)
     purchased_at          = models.DateTimeField(_("Purchased Date"), auto_now_add=True)
+    repayment_date        = models.DateTimeField(_("Repayment Date"), null=True, blank=True)
+    month_paid            = models.PositiveIntegerField(default=0, null=True, blank=True)
     isPaid                = models.BooleanField(default=False)
-    # provider_reference_id  = models.CharField(
-    #     _("Provider Reference ID"), max_length=40, null=False, blank=False
-    # )
-    # merchant_id            = models.CharField(_("Merchant ID"), null=True, blank=True)
-    # merchant_order_id      = models.CharField(_("Merchant Order ID"), null=True, blank=True, max_length=100)
-    # checksum               = models.CharField(_("Checksum"), null=True, blank=True)
-    # currency              = models.CharField(max_length=50, default='INR')
-    # message               = models.CharField(_("Phonepe Message"), default="Phonpe Message", blank=True, null=True, max_length=100)
 
 
     def __str__(self):

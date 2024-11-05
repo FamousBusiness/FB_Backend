@@ -740,35 +740,37 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
 
 
     def post(self, request):
-
-        current_date = timezone.now()
-        one_day_ago = current_date - timedelta(days=1)
-        
         try:
-            # Filter PremiumPlanOrder objects
-            # orders_to_deduct = PremiumPlanOrder.objects.filter(purchased_at__date=one_day_ago.date())
             orders_to_deduct = PremiumPlanOrder.objects.all()
-            count            = orders_to_deduct.count()  # Count the number of orders
+        except Exception as e:
+            return Response({'message': 'Premium plan does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        current_date = timezone.now()
 
-            # Loop through the orders and process payments
+        try:
             for order in orders_to_deduct:
-                transactionID = order.transaction_id
+                days_since_purchase = (current_date - order.purchased_at).days
 
-                # Get the Phonepe autopay order
-                phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
+                if days_since_purchase == 29:
+                    transactionID = order.transaction_id
+                    phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
-                # Process the recurring payment
-                # recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                #     phonepe_order.subscriptionId,
-                #     phonepe_order.merchantUserId,
-                #     phonepe_order.amount,
-                #     phonepe_order.authRequestId
-                # )
+                    try:
+                        recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                            phonepe_order.subscriptionId,
+                            phonepe_order.merchantUserId,
+                            phonepe_order.amount,
+                            phonepe_order.authRequestId
+                        )
 
-                print('phonepe_order', phonepe_order)
+                    except Exception as e:
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # If everything succeeds, show success message
-            messages.success(request, f'Successfully processed {count} orders.')
+                    # If everything succeeds, show success message
+                    messages.success(request, f'Successfully processed orders, {recurring_payment}')
+
+                else:
+                    messages.success(request, 'Payment time has not reached yet')
 
         except PhonepeAutoPayOrder.DoesNotExist:
             messages.error(request, 'Phonepe AutoPay order does not exist.')

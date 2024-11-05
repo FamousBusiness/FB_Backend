@@ -168,7 +168,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         sent_amount = amount * 100
         
         payload = {
-            "merchantId": TestMerchantId,
+            "merchantId": merchantID,
             "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
             "subscriptionId": susubscriptionID,
             "transactionId": authRequestId,
@@ -178,7 +178,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
         INDEX = "1"
         ENDPOINT = "/v3/recurring/debit/init"
-        SALTKEY = TestsaltKey
+        SALTKEY = SaltKey
         base64String = base64_encode(payload)
         mainString = base64String + ENDPOINT + SALTKEY
         sha256Val = calculate_sha256_string(mainString)
@@ -187,7 +187,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         headers = {
             'Content-Type': 'application/json',
             'X-Verify': checkSum,
-            'X-CALLBACK-URL': 'https://webhook.site/14c7dd78-d157-4222-b34c-1b5aff841d37'
+            'X-CALLBACK-URL': 'https://api.famousbusiness.in/premium-plan-api/recurring/payment/webhook/'
         }
 
         json_data = {

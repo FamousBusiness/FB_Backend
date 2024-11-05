@@ -21,12 +21,11 @@ else:
 
 
 if DEBUG:
-    ALLOWED_HOSTS = ["1e50-2405-204-1389-91d5-e1dc-29cb-3441-de61.ngrok-free.app/", "127.0.0.1"]
+    ALLOWED_HOSTS = ["dd3a-2405-204-148c-769c-f5eb-41ec-da55-984a.ngrok-free.app", "127.0.0.1"]
 
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
-    # STATIC_ROOT = [ os.path.join(BASE_DIR, "static"), ]
     STATICFILES_DIRS = [ os.path.join(BASE_DIR, "static"), ]
 
 else:
