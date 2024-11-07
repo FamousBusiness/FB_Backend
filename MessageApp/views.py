@@ -266,22 +266,23 @@ class SendWhatsAppTestMessage(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        api_url = "https://trans.smsfresh.co/api/sendmsg.php"
+        api_url = "https://bhashsms.com/api/sendmsg.php"
+        # api_url = "http://trans.smsfresh.co/api/sendmsg.php"
         business_name = "Ranjit"
         category = "Interior"
         Email    = "ranjit@mail.com"
 
         params = {
-        "user" : "WEBZOTICA",
-        "pass" : "123456",
-        "sender" : "BUZWAP",
-        "phone" : "8249258412",
-        "text": "leads_final1", # Name, Lead id, Category 
-        "priority" : "wa",
-        "stype" : "normal",
-        "Params": "1,2,3",
-        "htype" : "image",
-        "imageUrl" : "https://mdwebzotica.famousbusiness.in/EnwaryBanner.jpg"
+            "user" : "WEBZOTICA",
+            "pass" : "123456",
+            "sender" : "BUZWAP",
+            "phone" : "8249258412",
+            "text": "leadnew1", # Name, Lead id, Category leads_final1
+            "priority" : "wa",
+            "stype" : "normal",
+            "Params": "1,2,3",
+            "htype" : "image",
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/EnwaryBanner.jpg"
         }
 
         url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"

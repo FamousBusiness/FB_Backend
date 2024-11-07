@@ -365,7 +365,7 @@ def beat_task_to_send_lead_mail_every_10_minute():
 
             send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
 
-            # send_category_wise_business_message_excel_upload.delay(data)
+            send_category_wise_business_message_excel_upload.delay(data)
 
         lead.mail_sent = True
         lead.save()
