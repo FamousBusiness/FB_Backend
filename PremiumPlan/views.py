@@ -416,14 +416,30 @@ class RecurringPaymentWebhook(APIView):
             except Exception as e:
                 return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
             
-
+            
             premium_plan_order.month_paid = (premium_plan_order.month_paid or 0) + 1
             premium_plan_order.repayment_date = timezone.now()
             premium_plan_order.status = 'Paid'
             premium_plan_order.save()
 
             try:
-                premium_plan_benefit = PremiumPlanBenefits.objects.get(user = premium_plan_order)
+                auto_pay_order = PhonepeAutoPayOrder.objects.get(
+                    authRequestId = transactionID
+                )
+            except Exception as e:
+                return Response({'message': 'Invalid Transaction ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+            # Get the premium plan ID related to order
+            premium_plan_id  = auto_pay_order.premium_plan_id
+
+            try:
+                premium_plan = PremiumPlan.objects.get(id = premium_plan_id)
+            except Exception as e:
+                return Response({'message': 'Invalid Plan'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                premium_plan_benefit = PremiumPlanBenefits.objects.get(user = premium_plan_order.user, plan=premium_plan)
             except Exception as e:
                 return Response({'message': 'Invalid Plan Benefit'}, status=status.HTTP_400_BAD_REQUEST)
             

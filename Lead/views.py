@@ -864,7 +864,7 @@ class ViewLeadData(APIView):
                                     lead_benefits.lead_assigned -= 1
                                     lead_benefits.save()
                                     break 
-
+                                
                     else:
                         return Response({'msg': 'You can not view this category lead has to purchase the lead'}, status=status.HTTP_400_BAD_REQUEST)
                 
