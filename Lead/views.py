@@ -825,15 +825,19 @@ class ViewLeadData(APIView):
 
                 ## If the lead has been expired
                 if viewed_lead:
-                    if viewed_lead.business_page == business_page:
-                        lead_serializer = LeadSerializer(lead)
-                    else:
-                        lead_serializer = LeadWithoutAllDataSerializer(lead)
+                    lead_serializer = LeadSerializer(lead)
+                  
+                    # lead_serializer = LeadWithoutAllDataSerializer(lead)
 
 
                 ## If the Business owner has viewed the lead
                 elif expired_lead:
-                    lead_serializer = LeadSerializer(lead)
+                    # lead_serializer = LeadSerializer(lead)
+                    if viewed_lead:
+                        lead_serializer = LeadSerializer(lead)
+                    else:
+                        lead_serializer = LeadWithoutAllDataSerializer(lead)
+
 
                 # if the business owner has available lead quantity in Premium plan
                 elif total_available_lead > 0:
