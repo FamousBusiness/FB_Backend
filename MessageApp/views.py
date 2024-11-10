@@ -277,10 +277,10 @@ class SendWhatsAppTestMessage(APIView):
             "pass" : "123456",
             "sender" : "BUZWAP",
             "phone" : "8249258412",
-            "text": "leadnew1", # Name, Lead id, Category leads_final1
+            "text": "leads_final1", # Name, Lead id, Category leads_final1
             "priority" : "wa",
             "stype" : "normal",
-            "Params": "1,2,3",
+            "Params": "1",
             "htype" : "image",
             "imageUrl" : "https://mdwebzotica.famousbusiness.in/EnwaryBanner.jpg"
         }

@@ -13,6 +13,7 @@ urlpatterns = [
     path('enquiry-form/', EnquiryFormAPIView.as_view(), name='enquiry_form_api'),
     path('individual-business-page-leads/', BusinessPageLeadAPIView.as_view(), name='individual_leads'),
     path('all-leads/<str:city>/<str:state>/', AllLeadWithoutAllDataView.as_view(), name='get_all_leads'),
+    
     #View Lead Data
     path('business-page-lead-view/', ViewLeadData.as_view(), name='show-business-lead-data'),
     # path('business-page-lead-view/', ShowBusinessPageAssignedLeadView.as_view(), name='show-business-lead-data'),
