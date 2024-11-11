@@ -380,8 +380,6 @@ class RecurringInitPaymentView(APIView):
                 except Exception as e:
                     return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-                print('recurring_payment', recurring_payment)
-
         return Response({'message': 'Recurring payment deducted successfully'}, status=status.HTTP_200_OK)
 
 

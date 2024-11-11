@@ -764,10 +764,11 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                         )
 
                     except Exception as e:
-                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                        # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                        messages.error(request, f"Problem occured while deducting payment - {str(e)}")
 
                     # If everything succeeds, show success message
-                    messages.success(request, f'Successfully processed orders, {recurring_payment}')
+                    messages.success(request, f'Successfully processed orders')
 
                 else:
                     messages.success(request, 'Payment time has not reached yet')
