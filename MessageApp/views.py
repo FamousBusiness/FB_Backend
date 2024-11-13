@@ -247,15 +247,9 @@ class LeadCheck(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        order = LeadOrder.objects.get(user_id=29)
-        # print(order.user.pk)
-        try:
-            business = Business.objects.get(owner=order.user)
+        current_date = timezone.now()
+        # days_since_purchase = (current_date - order.purchased_at).days
 
-            if business:
-                print(business)
-        except Exception as e:
-            return Response("No Business page found")
         return Response("Done")
     
 

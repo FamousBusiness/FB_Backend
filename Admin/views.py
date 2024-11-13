@@ -750,8 +750,8 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         try:
             for order in orders_to_deduct:
                 days_since_purchase = (current_date - order.purchased_at).days
-
-                if days_since_purchase == 29:
+                
+                if days_since_purchase >= 29:
                     transactionID = order.transaction_id
                     phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
