@@ -762,15 +762,15 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                             phonepe_order.authRequestId
                         )
 
+                        if recurring_payment and recurring_payment['success'] == True:
+                            order.payment_response         = str(recurring_payment)
+                            phonepe_order.payment_response = str(recurring_payment)
+                            phonepe_order.save()
+                            order.save()
+
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
                         messages.error(request, f"Problem occured while deducting payment - {str(e)}")
-                    
-                    if recurring_payment['success'] == True:
-                        order.payment_response        = str(recurring_payment)
-                        phonepe_order.payment_response = str(recurring_payment)
-                        phonepe_order.save()
-                        order.save()
 
                         # If everything succeeds, show success message
                         messages.success(request, f'Successfully processed orders')
