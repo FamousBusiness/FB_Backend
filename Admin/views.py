@@ -753,9 +753,9 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                 transactionID = order.transaction_id
                 
                 if days_since_purchase >= 29:
-                    transactionID = order.transaction_id
-
+                    
                     try:
+                        transactionID = order.transaction_id
                         phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
                         subscriptionID = phonepe_order.subscriptionId
