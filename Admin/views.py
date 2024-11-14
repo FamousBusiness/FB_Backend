@@ -761,7 +761,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                         subscriptionID = phonepe_order.subscriptionId
                         amount         = phonepe_order.amount
                     except Exception as e:
-                        return messages.error(request, "Not able to get the Phonepe order")
+                        messages.error(request, "Not able to get the Phonepe order")
 
                     try:
                         recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
