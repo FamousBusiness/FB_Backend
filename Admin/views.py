@@ -776,7 +776,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                         messages.success(request, f'Successfully processed orders')
 
                     else:
-                        messages.error(request, f"Not able to deduct paayment {str(recurring_payment)}")
+                        messages.error(request, f"Not able to deduct paayment")
 
                 else:
                     messages.success(request, 'Payment time has not reached yet')
