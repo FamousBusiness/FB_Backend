@@ -750,6 +750,11 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         try:
             for order in orders_to_deduct:
                 days_since_purchase = (current_date - order.purchased_at).days
+                transactionID = order.transaction_id
+                phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
+
+                amount         = phonepe_order.amount
+                subscriptionID = phonepe_order.subscriptionId
                 
                 if days_since_purchase >= 29:
                     transactionID = order.transaction_id
@@ -758,6 +763,8 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     amount         = phonepe_order.amount
                     subscriptionID = phonepe_order.subscriptionId
 
+                    messages.success(f"{amount} and {subscriptionID}")
+                    
                     try:
                         # recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
                         #     subscriptionID,
@@ -782,8 +789,8 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                 else:
                     messages.success(request, 'Payment time has not reached yet')
 
-        except PhonepeAutoPayOrder.DoesNotExist:
-            messages.error(request, 'Phonepe AutoPay order does not exist.')
+        except Exception as e:
+            messages.error(request, f'Phonepe AutoPay order does not exist {str(e)}')
             
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
