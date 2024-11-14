@@ -759,17 +759,18 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     subscriptionID = phonepe_order.subscriptionId
 
                     try:
-                        recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                            subscriptionID,
-                            amount,
-                            transactionID
-                        )
+                        # recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                        #     subscriptionID,
+                        #     amount,
+                        #     transactionID
+                        # )
 
-                        if recurring_payment and recurring_payment['success'] == True:
-                            order.payment_response         = str(recurring_payment)
-                            phonepe_order.payment_response = str(recurring_payment)
-                            phonepe_order.save()
-                            order.save()
+                        # if recurring_payment and recurring_payment['success'] == True:
+                        #     order.payment_response         = str(recurring_payment)
+                        #     phonepe_order.payment_response = str(recurring_payment)
+                        #     phonepe_order.save()
+                        #     order.save()
+                        messages.success(f"{amount} and {subscriptionID}")
 
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
