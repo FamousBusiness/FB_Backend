@@ -755,7 +755,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     transactionID = order.transaction_id
                     phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
-                    amount         = int(phonepe_order.amount)
+                    amount         = phonepe_order.amount
                     subscriptionID = phonepe_order.subscriptionId
 
                     try:
@@ -765,11 +765,11 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                             transactionID
                         )
 
-                        # if recurring_payment and recurring_payment['success'] == True:
-                        #     order.payment_response         = str(recurring_payment)
-                        #     phonepe_order.payment_response = str(recurring_payment)
-                        #     phonepe_order.save()
-                        #     order.save()
+                        if recurring_payment and recurring_payment['success'] == True:
+                            order.payment_response         = str(recurring_payment)
+                            phonepe_order.payment_response = str(recurring_payment)
+                            phonepe_order.save()
+                            order.save()
 
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
