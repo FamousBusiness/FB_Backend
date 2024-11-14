@@ -757,9 +757,9 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
             messages.error(request, f'Error {str(e)}')
         
         if recurring_payment and recurring_payment['success'] == True:
-            order = PremiumPlanOrder.objects.get(transaction_id = '89ee1cfa-a59b-4289-a')
-            order.payment_response = str(recurring_payment)
-            order.save()
+            # order = PremiumPlanOrder.objects.get(transaction_id = '89ee1cfa-a59b-4289-a')
+            # order.payment_response = str(recurring_payment)
+            # order.save()
 
             messages.success(request, "successfully deduct the amount")
 
