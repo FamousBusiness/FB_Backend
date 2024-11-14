@@ -751,33 +751,30 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
             for order in orders_to_deduct:
                 days_since_purchase = (current_date - order.purchased_at).days
                 transactionID = order.transaction_id
-                phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
-
-                amount         = phonepe_order.amount
-                subscriptionID = phonepe_order.subscriptionId
                 
                 if days_since_purchase >= 29:
                     transactionID = order.transaction_id
-                    phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
-                    amount         = phonepe_order.amount
-                    subscriptionID = phonepe_order.subscriptionId
-
-                    messages.success(f"{amount} and {subscriptionID}")
-                    
                     try:
-                        # recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                        #     subscriptionID,
-                        #     amount,
-                        #     transactionID
-                        # )
+                        phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
-                        # if recurring_payment and recurring_payment['success'] == True:
-                        #     order.payment_response         = str(recurring_payment)
-                        #     phonepe_order.payment_response = str(recurring_payment)
-                        #     phonepe_order.save()
-                        #     order.save()
-                        messages.success(f"{amount} and {subscriptionID}")
+                        subscriptionID = phonepe_order.subscriptionId
+                        amount         = phonepe_order.amount
+                    except Exception as e:
+                        return messages.error(request, "Not able to get the Phonepe order")
+
+                    try:
+                        recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                            subscriptionID,
+                            amount,
+                            transactionID
+                        )
+
+                        if recurring_payment and recurring_payment['success'] == True:
+                            order.payment_response         = str(recurring_payment)
+                            phonepe_order.payment_response = str(recurring_payment)
+                            phonepe_order.save()
+                            order.save()
 
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
