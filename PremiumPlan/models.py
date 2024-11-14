@@ -141,6 +141,8 @@ class PremiumPlanOrder(models.Model):
     repayment_date        = models.DateTimeField(_("Repayment Date"), null=True, blank=True)
     month_paid            = models.PositiveIntegerField(default=0, null=True, blank=True)
     isPaid                = models.BooleanField(default=False)
+    payment_response      = models.TextField(_("Payment Response"), null=True)
+    webhook_response      = models.TextField(_("Webhook Response"), null=True)
 
 
     def __str__(self):
@@ -160,6 +162,8 @@ class PhonepeAutoPayOrder(models.Model):
     subscriptionId          = models.CharField(_("Subscription ID"), max_length=50, unique=True, null=True)  # Received from phonepe
     amount                  = models.IntegerField(_("Amount"))
     authRequestId           = models.CharField(_("Auth Request ID"), max_length=50, unique=True, null=True)
+    payment_response        = models.TextField(_("Payment Response"), max_length=2000, null=True)
+    webhook_response        = models.TextField(_("Webhook Response"), null=True)
 
 
     def save(self, *args, **kwargs) -> None:

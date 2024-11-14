@@ -733,7 +733,7 @@ def GoogleLoginView(request):
     return render(request, 'User/google_login.html')
 
 
-
+#### Deduct Monthly Payment
 class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
     model = PremiumPlanOrder
     template_name = 'PremiumPlan/deduct_payment.html'
@@ -758,7 +758,6 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     try:
                         recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
                             phonepe_order.subscriptionId,
-                            phonepe_order.merchantUserId,
                             phonepe_order.amount,
                             phonepe_order.authRequestId
                         )
@@ -766,9 +765,18 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
                         messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+                    
+                    if recurring_payment['success'] == True:
+                        order.payment_response        = str(recurring_payment)
+                        phonepe_order.payment_response = str(recurring_payment)
+                        phonepe_order.save()
+                        order.save()
 
-                    # If everything succeeds, show success message
-                    messages.success(request, f'Successfully processed orders')
+                        # If everything succeeds, show success message
+                        messages.success(request, f'Successfully processed orders')
+
+                    else:
+                        messages.error(request, f"Not able to deduct paayment {str(recurring_payment)}")
 
                 else:
                     messages.success(request, 'Payment time has not reached yet')
