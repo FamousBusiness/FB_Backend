@@ -755,11 +755,14 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     transactionID = order.transaction_id
                     phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
 
+                    amount         = int(phonepe_order.amount)
+                    subscriptionID = phonepe_order.subscriptionId
+
                     try:
                         recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                            phonepe_order.subscriptionId,
-                            phonepe_order.amount,
-                            phonepe_order.authRequestId
+                            subscriptionID,
+                            amount,
+                            transactionID
                         )
 
                         if recurring_payment and recurring_payment['success'] == True:
@@ -770,13 +773,10 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
 
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-                        messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+                        return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
 
-                        # If everything succeeds, show success message
-                        messages.success(request, f'Successfully processed orders')
-
-                    else:
-                        messages.error(request, f"Not able to deduct paayment")
+                    # If everything succeeds, show success message
+                    messages.success(request, f'Successfully processed orders')
 
                 else:
                     messages.success(request, 'Payment time has not reached yet')

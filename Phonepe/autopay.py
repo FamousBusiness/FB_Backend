@@ -165,7 +165,7 @@ class PremiumPlanPhonepeAutoPayPayment:
     # Recurring Init API for monthly deduction
     def RecurringInit(susubscriptionID, amount, authRequestId):
 
-        # sent_amount = amount * 100
+        sent_amount = amount * 100
         
         payload = {
             "merchantId": merchantID,
@@ -173,7 +173,7 @@ class PremiumPlanPhonepeAutoPayPayment:
             "subscriptionId": susubscriptionID,
             "transactionId": authRequestId,
             "autoDebit": True,
-            "amount": amount
+            "amount": sent_amount
         }
 
         INDEX = "1"
