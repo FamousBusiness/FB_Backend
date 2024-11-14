@@ -765,11 +765,11 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                             transactionID
                         )
 
-                        if recurring_payment and recurring_payment['success'] == True:
-                            order.payment_response         = str(recurring_payment)
-                            phonepe_order.payment_response = str(recurring_payment)
-                            phonepe_order.save()
-                            order.save()
+                        # if recurring_payment and recurring_payment['success'] == True:
+                        #     order.payment_response         = str(recurring_payment)
+                        #     phonepe_order.payment_response = str(recurring_payment)
+                        #     phonepe_order.save()
+                        #     order.save()
 
                     except Exception as e:
                         # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
