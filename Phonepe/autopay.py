@@ -163,7 +163,8 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
     # Recurring Init API for monthly deduction
-    def RecurringInit(susubscriptionID, amount, authRequestId):
+    # def RecurringInit(susubscriptionID, amount, authRequestId):
+    def RecurringInit():
 
         sent_amount = 1299 * 100
         # sent_amount = amount * 100
