@@ -748,22 +748,20 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         current_date = timezone.now()
 
         try:
-            recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                            'OMS2410122346089614518068D',
-                            9,
-                            '89ee1cfa-a59b-4289-a'
-                    )
+             recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit()
+
+             if recurring_payment and recurring_payment['success'] == True:
+                # order.payment_response         = str(recurring_payment)
+                # phonepe_order.payment_response = str(recurring_payment)
+                # phonepe_order.save()
+                # order.save()
+                messages.success(request, f"request sent successfully- {str(recurring_payment)}")
+
         except Exception as e:
-            messages.error(request, f'Error {str(e)}')
+            messages.error(request, f"Error {str(e)}")
         
-        # if recurring_payment and recurring_payment['success'] == True:
-            # order = PremiumPlanOrder.objects.get(transaction_id = '89ee1cfa-a59b-4289-a')
-            # order.payment_response = str(recurring_payment)
-            # order.save()
 
-            messages.success(request, "successfully deduct the amount")
 
-        messages.success(request, "Not able to deduct the amount")
 
         # try:
         #     for order in orders_to_deduct:
@@ -771,7 +769,6 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         #         transactionID = order.transaction_id
                 
         #         if days_since_purchase >= 29:
-                    
         #             try:
         #                 transactionID = order.transaction_id
         #                 phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
