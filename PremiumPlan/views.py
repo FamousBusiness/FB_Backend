@@ -402,34 +402,34 @@ class RecurringPaymentWebhook(APIView):
         
         if not decoded_payload:
             return Response({"message": "Invalid decoded payload"}, status=status.HTTP_400_BAD_REQUEST)
-        
 
         ## Get the transaction ID
-        transactionID = decoded_payload['data']['transactionId']
+        subscriptionID = decoded_payload['data']['subscriptionDetails']['subscriptionId']
 
-        if decoded_payload['data']['transactionDetails']['state'] == 'COMPLETED' and decoded_payload['data']['transactionDetails']['responseCode'] == 'PAYMENT_SUCCESS':
+        if decoded_payload['data']['notificationDetails']['state'] == 'NOTIFIED' and decoded_payload['code'] == 'SUCCESS' and decoded_payload['success'] == True:
             ### Assign Premium Plan benefits to the user
+
             try:
-                premium_plan_order = PremiumPlanOrder.objects.get(transaction_id = transactionID)
+                phonepe_order                  = PhonepeAutoPayOrder.objects.get(subscriptionId = subscriptionID)
+                phonepe_order.webhook_response = str(decoded_payload)
+
+                phonepe_order.save()
+            except Exception as e:
+                return Response({'message': 'Not able to get the order'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                premium_plan_order = PremiumPlanOrder.objects.get(transaction_id = phonepe_order.authRequestId)
             except Exception as e:
                 return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
             
             premium_plan_order.webhook_response = str(decoded_payload)
-            premium_plan_order.month_paid = (premium_plan_order.month_paid or 0) + 1
-            premium_plan_order.repayment_date = timezone.now()
-            premium_plan_order.status = 'Paid'
+            premium_plan_order.month_paid       = (premium_plan_order.month_paid or 0) + 1
+            premium_plan_order.repayment_date   = timezone.now()
+            premium_plan_order.status           = 'Paid'
             premium_plan_order.save()
 
-            try:
-                auto_pay_order = PhonepeAutoPayOrder.objects.get(
-                    authRequestId = transactionID
-                )
-            except Exception as e:
-                return Response({'message': 'Invalid Transaction ID'}, status=status.HTTP_400_BAD_REQUEST)
-
-
             # Get the premium plan ID related to order
-            premium_plan_id  = auto_pay_order.premium_plan_id
+            premium_plan_id  = phonepe_order.premium_plan_id
 
             try:
                 premium_plan = PremiumPlan.objects.get(id = premium_plan_id)
@@ -442,8 +442,7 @@ class RecurringPaymentWebhook(APIView):
                 return Response({'message': 'Invalid Plan Benefit'}, status=status.HTTP_400_BAD_REQUEST)
             
             ### Get the premium plan related to the benefit
-            premium_plan_lead_quantity = premium_plan_benefit.plan.lead_view
-
+            premium_plan_lead_quantity         = premium_plan_benefit.plan.lead_view
             premium_plan_benefit.lead_assigned = premium_plan_lead_quantity
 
             premium_plan_benefit.save()

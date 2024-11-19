@@ -30,6 +30,7 @@ from django.utils import timezone
 from datetime import timedelta
 from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment
 from django.contrib import messages
+import uuid
 # import boto3
 
 
@@ -746,66 +747,54 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
             return Response({'message': 'Premium plan does not exists'}, status=status.HTTP_400_BAD_REQUEST)
         
         current_date = timezone.now()
-
+        
         try:
-             recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit()
+            for order in orders_to_deduct:
+                days_since_purchase = (current_date - order.purchased_at).days
+                
+                if days_since_purchase >= 29:
+                    try:
+                        transactionID = str(uuid.uuid4()[:20])
+                        phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=order.transaction_id)
 
-             if recurring_payment and recurring_payment['success'] == True:
-                # order.payment_response         = str(recurring_payment)
-                # phonepe_order.payment_response = str(recurring_payment)
-                # phonepe_order.save()
-                # order.save()
-                messages.success(request, f"request sent successfully- {str(recurring_payment)}")
+                        phonepe_order.recurring_transaction_id = transactionID
+                        order.recurring_transaction_id = transactionID
+
+                        phonepe_order.save()
+                        order.save()
+
+                        subscriptionID = phonepe_order.subscriptionId
+                        amount         = phonepe_order.amount
+
+                    except Exception as e:
+                        messages.error(request, "Not able to get the Phonepe order")
+
+                    try:
+                        recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                            subscriptionID,
+                            amount,
+                            transactionID
+                        )
+
+                        if recurring_payment and recurring_payment['success'] == True:
+                            order.payment_response         = str(recurring_payment)
+                            phonepe_order.payment_response = str(recurring_payment)
+                            phonepe_order.save()
+                            order.save()
+
+                            messages.success(request, f"Successfully Sent payment Request")
+
+                    except Exception as e:
+                        return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+
+                    # If everything succeeds, show success message
+                    # messages.success(request, f'Successfully processed orders')
+
+                else:
+                    messages.info(request, 'Payment time has not reached yet')
 
         except Exception as e:
-            messages.error(request, f"Error {str(e)}")
-        
-
-
-
-        # try:
-        #     for order in orders_to_deduct:
-        #         days_since_purchase = (current_date - order.purchased_at).days
-        #         transactionID = order.transaction_id
-                
-        #         if days_since_purchase >= 29:
-        #             try:
-        #                 transactionID = order.transaction_id
-        #                 phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=transactionID)
-
-        #                 subscriptionID = phonepe_order.subscriptionId
-        #                 amount         = phonepe_order.amount
-        #             except Exception as e:
-        #                 messages.error(request, "Not able to get the Phonepe order")
-
-        #             try:
-        #                 recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-        #                     subscriptionID,
-        #                     amount,
-        #                     transactionID
-        #                 )
-
-        #                 if recurring_payment and recurring_payment['success'] == True:
-        #                     order.payment_response         = str(recurring_payment)
-        #                     phonepe_order.payment_response = str(recurring_payment)
-        #                     phonepe_order.save()
-        #                     order.save()
-
-        #             except Exception as e:
-        #                 # return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-        #                 return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
-
-        #             # If everything succeeds, show success message
-        #             messages.success(request, f'Successfully processed orders')
-
-        #         else:
-        #             messages.success(request, 'Payment time has not reached yet')
-
-        # except Exception as e:
-        #     messages.error(request, f'Phonepe AutoPay order does not exist {str(e)}')
-            
-        # except Exception as e:
-        #     messages.error(request, f'An error occurred: {str(e)}')
+            messages.error(request, f'Phonepe AutoPay order does not exist {str(e)}')
 
         # Return count or error message to the template
         return render(request, self.template_name)

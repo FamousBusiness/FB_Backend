@@ -163,28 +163,17 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
     # Recurring Init API for monthly deduction
-    # def RecurringInit(susubscriptionID, amount, authRequestId):
-    def RecurringInit():
-
-        sent_amount = 1299 * 100
-        # sent_amount = amount * 100
-        
+    def RecurringInit(susubscriptionID, amount, authRequestId):
+        sent_amount = amount * 100
+    
         payload = {
             "merchantId": merchantID,
             "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
-            "subscriptionId": 'OMS2410122346089614518068D',
-            "transactionId": '89ee1cfa-a59b-4289-a',
+            "subscriptionId": susubscriptionID,
+            "transactionId": authRequestId,
             "autoDebit": True,
             "amount": sent_amount
         }
-        # payload = {
-        #     "merchantId": merchantID,
-        #     "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
-        #     "subscriptionId": susubscriptionID,
-        #     "transactionId": authRequestId,
-        #     "autoDebit": True,
-        #     "amount": sent_amount
-        # }
 
         INDEX = "1"
         ENDPOINT = "/v3/recurring/debit/init"
