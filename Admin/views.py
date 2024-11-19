@@ -769,23 +769,28 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     except Exception as e:
                         messages.error(request, "Not able to get the Phonepe order")
 
-                    try:
-                        recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
-                            subscriptionID,
-                            amount,
-                            transactionID
-                        )
 
-                        if recurring_payment and recurring_payment['success'] == True:
-                            order.payment_response         = str(recurring_payment)
-                            phonepe_order.payment_response = str(recurring_payment)
-                            phonepe_order.save()
-                            order.save()
+                    if subscriptionID:
+                        try:
+                            recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                                subscriptionID,
+                                amount,
+                                transactionID
+                            )
 
-                            messages.success(request, f"Successfully Sent payment Request")
+                            if recurring_payment and recurring_payment['success'] == True:
+                                order.payment_response         = str(recurring_payment)
+                                phonepe_order.payment_response = str(recurring_payment)
+                                phonepe_order.save()
+                                order.save()
 
-                    except Exception as e:
-                        return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+                                messages.success(request, f"Successfully Sent payment Request")
+
+                        except Exception as e:
+                            return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+                    
+                    else:
+                        messages.error(request, f'Not able to get Subscripton ID {str(e)}')
 
                     # If everything succeeds, show success message
                     # messages.success(request, f'Successfully processed orders')
