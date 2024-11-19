@@ -742,7 +742,10 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
 
     def post(self, request):
         try:
-            orders_to_deduct = PremiumPlanOrder.objects.all()
+            # orders_to_deduct = PremiumPlanOrder.objects.all()
+            orders_to_deduct = PremiumPlanOrder.objects.filter(
+                purchased_at__lte=timezone.now() - timedelta(days=29)
+            )
         except Exception as e:
             return Response({'message': 'Premium plan does not exists'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -750,11 +753,15 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         
         try:
             for order in orders_to_deduct:
-                days_since_purchase = (current_date - order.purchased_at).days
+                # days_since_purchase = (current_date - order.purchased_at).days
                 
-                if days_since_purchase >= 29:
+                # if days_since_purchase >= 29:
+                    ### Initialize the request
+                    subscriptionID = None
+                    amount = 0
+
                     try:
-                        transactionID = str(uuid.uuid4()[:20])
+                        transactionID = str(uuid.uuid4())[:20]
                         phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=order.transaction_id)
 
                         phonepe_order.recurring_transaction_id = transactionID
@@ -784,19 +791,19 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                                 phonepe_order.save()
                                 order.save()
 
-                                messages.success(request, f"Successfully Sent payment Request")
+                                messages.success(request, f"Successfully processed payment for order")
 
                         except Exception as e:
                             return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
                     
                     else:
-                        messages.error(request, f'Not able to get Subscripton ID {str(e)}')
+                        messages.error(request, 'Not able to get Subscripton ID')
 
                     # If everything succeeds, show success message
                     # messages.success(request, f'Successfully processed orders')
 
-                else:
-                    messages.info(request, 'Payment time has not reached yet')
+                # else:
+                #     messages.info(request, 'Payment time has not reached yet')
 
         except Exception as e:
             messages.error(request, f'Phonepe AutoPay order does not exist {str(e)}')
