@@ -794,7 +794,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                                 messages.success(request, f"Successfully processed payment for order")
 
                         except Exception as e:
-                            return messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+                            messages.error(request, f"Problem occured while deducting payment - {str(e)}")
                     
                     else:
                         messages.error(request, 'Not able to get Subscripton ID')
