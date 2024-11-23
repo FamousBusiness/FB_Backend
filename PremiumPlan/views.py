@@ -405,6 +405,7 @@ class RecurringPaymentWebhook(APIView):
 
         ## Get the transaction ID
         subscriptionID = decoded_payload['data']['subscriptionDetails']['subscriptionId']
+
         try:
             phonepe_order                  = PhonepeAutoPayOrder.objects.get(subscriptionId = subscriptionID)
             phonepe_order.webhook_response = str(decoded_payload)
@@ -415,7 +416,7 @@ class RecurringPaymentWebhook(APIView):
             return Response({'message': 'Not able to get the order'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-        if decoded_payload['data']['notificationDetails']['state'] == 'NOTIFIED' and decoded_payload['code'] == 'SUCCESS' and decoded_payload['success'] == True:
+        if decoded_payload['data']['notificationDetails']['state'] == 'NOTIFIED' and decoded_payload['data']['subscriptionDetails']['state'] == 'ACTIVE' and decoded_payload['data']['transactionDetails']['state'] == 'COMPLETED':
             ### Assign Premium Plan benefits to the user
             
             try:
