@@ -44,6 +44,8 @@ urlpatterns = [
 
     path('message-api/', include('MessageApp.urls')),
 
+    path('api/ecom/', include('Ecommerce.urls')),
+
     # path('admin-auth/', include('Admin.urls')),
 
     path('', include('Admin.urls')),

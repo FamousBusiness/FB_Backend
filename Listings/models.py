@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from PremiumPlan.models import PremiumPlan
 from Brands.models import BrandBusinessPage
+from Ecommerce.models import ProductTag, ProductOffers, ProductSpecification
 
 
 
@@ -17,12 +18,13 @@ CATEGORY_TYPE = [
 
 
 
-
+### Category table
 class Category(models.Model):
     type     = models.CharField(max_length=30, unique=True)
     B2B2C    = models.CharField(max_length=5, choices=CATEGORY_TYPE, null=True, blank=True)
     image    = models.FileField(default='category_pics/B2B.svg', upload_to='category_pics') 
     trending = models.BooleanField(default=False)
+    is_store = models.BooleanField(_("Store Category"), default=False, null=True, blank=True)
 
 
     def __str__(self):
@@ -325,12 +327,24 @@ class FrontCarousel(models.Model):
         ordering = ["-id"]
     
 
+
 class ProductService(models.Model):
     business     = models.ForeignKey(Business, on_delete=models.CASCADE)
     name         = models.CharField(max_length=200, verbose_name='Product & Service Name')
     picture      = models.FileField(upload_to='product_service/', default='product_service/default.png')
     price        = models.CharField(max_length=15, verbose_name='Product Price', null=True, blank=True)
-    description  = models.TextField(null=True, blank=True, verbose_name='Product Description')
+    description  = models.TextField(null=True, blank=True, verbose_name='Product Small Description')
+    description2 = models.TextField(_("Extra Description"), null=True, blank=True)
+    product_tag  = models.ForeignKey(ProductTag, on_delete=models.CASCADE, null=True, blank=True)
+    category     = models.ForeignKey(Category, null=True, blank=True, on_delete=models.CASCADE, verbose_name=_("Category")) 
+    subcategory  = models.ForeignKey(SubCategory, null=True, blank=True, on_delete=models.CASCADE, verbose_name=_("Sub Category"))
+    rating       = models.FloatField(_("Product Rating"), null=True, blank=True)
+    discount_price = models.CharField(_("Discount Price"), max_length=20,  null=True, blank=True)
+    percentage_off = models.CharField(_("Percentage Off"), max_length=30, null=True, blank=True)
+    emi_amount     = models.CharField(_("EMI Amount"), max_length=10, null=True, blank=True)
+    offers         = models.ManyToManyField(ProductOffers, blank=True, related_name='product_offers')
+    brand          = models.ForeignKey(BrandBusinessPage, null=True, blank=True, on_delete=models.CASCADE, verbose_name='Brand Name')
+    specification  = models.ManyToManyField(ProductSpecification, blank=True, related_name='product_specifications')
 
 
     def __str__(self):

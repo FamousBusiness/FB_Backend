@@ -739,10 +739,10 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
     model = PremiumPlanOrder
     template_name = 'PremiumPlan/deduct_payment.html'
 
+    
 
     def post(self, request):
         try:
-            # orders_to_deduct = PremiumPlanOrder.objects.all()
             orders_to_deduct = PremiumPlanOrder.objects.filter(
                 purchased_at__lte=timezone.now() - timedelta(days=29)
             )
@@ -753,12 +753,14 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         
         try:
             for order in orders_to_deduct:
-                # days_since_purchase = (current_date - order.purchased_at).days
-                
-                # if days_since_purchase >= 29:
-                    ### Initialize the request
-                    subscriptionID = None
-                    amount = 0
+                purchased_date = order.purchased_at
+                recurring_date = order.repayment_date
+
+                subscriptionID = None
+                amount = 0
+
+                ### Monthly Payment
+                if recurring_date and recurring_date <= (current_date - timedelta(days=29)):
 
                     try:
                         transactionID = str(uuid.uuid4())[:20]
@@ -799,11 +801,48 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     else:
                         messages.error(request, 'Not able to get Subscripton ID')
 
-                    # If everything succeeds, show success message
-                    # messages.success(request, f'Successfully processed orders')
+                #### If request has not sent yet
+                elif not recurring_date and purchased_date <= (current_date - timedelta(days=29)):
 
-                # else:
-                #     messages.info(request, 'Payment time has not reached yet')
+                    try:
+                        transactionID = str(uuid.uuid4())[:20]
+                        phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=order.transaction_id)
+
+                        phonepe_order.recurring_transaction_id = transactionID
+                        order.recurring_transaction_id = transactionID
+
+                        phonepe_order.save()
+                        order.save()
+
+                        subscriptionID = phonepe_order.subscriptionId
+                        amount         = phonepe_order.amount
+
+                    except Exception as e:
+                        messages.error(request, "Not able to get the Phonepe order")
+
+
+                    if subscriptionID:
+                        try:
+                            recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
+                                subscriptionID,
+                                amount,
+                                transactionID
+                            )
+
+                            if recurring_payment and recurring_payment['success'] == True:
+                                order.payment_response         = str(recurring_payment)
+                                phonepe_order.payment_response = str(recurring_payment)
+                                phonepe_order.save()
+                                order.save()
+
+                                messages.success(request, f"Successfully processed payment for order")
+
+                        except Exception as e:
+                            messages.error(request, f"Problem occured while deducting payment - {str(e)}")
+                    
+                    else:
+                        messages.error(request, 'Not able to get Subscripton ID')
+        
 
         except Exception as e:
             messages.error(request, f'Phonepe AutoPay order does not exist {str(e)}')

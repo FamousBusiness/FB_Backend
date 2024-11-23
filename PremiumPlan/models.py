@@ -156,18 +156,18 @@ class PremiumPlanOrder(models.Model):
 
 # Phonepe Autopay System
 class PhonepeAutoPayOrder(models.Model):
-    premium_plan_id         = models.IntegerField(null=True)
-    user_id                 = models.IntegerField(null=True)
-    merchantUserId          = models.CharField(_("Merchant User ID"), max_length=50, unique=False)
-    MerchantSubscriptionId  = models.CharField(_("Merchant Subscription ID"), max_length=50, unique=True) # Sent to phonepe
-    subscriptionId          = models.CharField(_("Subscription ID"), max_length=50, unique=True, null=True)  # Received from phonepe
-    amount                  = models.IntegerField(_("Amount"))
-    authRequestId           = models.CharField(_("Auth Request ID"), max_length=50, unique=True, null=True)
-    payment_response        = models.TextField(_("Payment Response"), max_length=2000, null=True)
-    webhook_response        = models.TextField(_("Webhook Response"), null=True)
+    premium_plan_id          = models.IntegerField(null=True)
+    user_id                  = models.IntegerField(null=True)
+    merchantUserId           = models.CharField(_("Merchant User ID"), max_length=50, unique=False)
+    MerchantSubscriptionId   = models.CharField(_("Merchant Subscription ID"), max_length=50, unique=True) # Sent to phonepe
+    subscriptionId           = models.CharField(_("Subscription ID"), max_length=50, unique=True, null=True)  # Received from phonepe
+    amount                   = models.IntegerField(_("Amount"))
+    authRequestId            = models.CharField(_("Auth Request ID"), max_length=50, unique=True, null=True)
+    payment_response         = models.TextField(_("Payment Response"), max_length=2000, null=True)
+    webhook_response         = models.TextField(_("Webhook Response"), null=True)
     recurring_transaction_id = models.CharField(max_length=30, null=True, blank=True)
-
-
+    
+    
     def save(self, *args, **kwargs) -> None:
         if not self.MerchantSubscriptionId:
             self.MerchantSubscriptionId = generate_unique_id(PhonepeAutoPayOrder, 'MerchantSubscriptionId')
