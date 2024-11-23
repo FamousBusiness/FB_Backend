@@ -747,8 +747,10 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                 purchased_at__lte=timezone.now() - timedelta(days=29)
             )
         except Exception as e:
-            return Response({'message': 'Premium plan does not exists'}, status=status.HTTP_400_BAD_REQUEST)
+            messages.error(request, 'No premium plans eligible for payment deduction.')
+            return render(request, self.template_name)
         
+
         current_date = timezone.now()
         
         try:
@@ -842,7 +844,6 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                     
                     else:
                         messages.error(request, 'Not able to get Subscripton ID')
-        
 
         except Exception as e:
             messages.error(request, f'Phonepe AutoPay order does not exist {str(e)}')
