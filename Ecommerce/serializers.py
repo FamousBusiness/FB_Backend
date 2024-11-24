@@ -1,6 +1,6 @@
 from Listings.models import Category, ProductService
 from rest_framework import serializers
-from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag
+from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages
 
 
 ### Categories visible at the top bar on store homepage
@@ -66,15 +66,23 @@ class ProductSpecificationsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+### Product Images
+class ProductImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductImages
+        fields = "__all__"
+
 
 ### Product page
 class ProductServiceSerializer(serializers.ModelSerializer):
     offers        = ProductOfferSerializer(many=True, read_only=True)
     specification = ProductSpecificationsSerializer(many=True, read_only=True)
+    multiple_img  = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = ProductService
         fields = [
-            'id', 'name', 'picture', 'price', 'description', 'category', 'subcategory', 'rating', 'discount_price', 'percentage_off',
-            'offers', 'specification', 
+            'id', 'name', 'picture', 'price', 'description', 'description2', 'category', 'subcategory', 'rating','reviews', 'discount_price', 'percentage_off', 'emi_amount', 'is_available',
+            'offers', 'specification', 'multiple_img', 'is_sponsored', 'reviews'
         ]

@@ -7,7 +7,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from PremiumPlan.models import PremiumPlan
 from Brands.models import BrandBusinessPage
-from Ecommerce.models import ProductTag, ProductOffers, ProductSpecification
+from Ecommerce.models import ProductTag, ProductOffers, ProductSpecification, ProductImages
+
 
 
 
@@ -332,6 +333,7 @@ class ProductService(models.Model):
     business     = models.ForeignKey(Business, on_delete=models.CASCADE)
     name         = models.CharField(max_length=200, verbose_name='Product & Service Name')
     picture      = models.FileField(upload_to='product_service/', default='product_service/default.png')
+    multiple_img = models.ManyToManyField(ProductImages, blank=True, related_name="product_images", verbose_name="Product Images")
     price        = models.CharField(max_length=15, verbose_name='Product Price', null=True, blank=True)
     description  = models.TextField(null=True, blank=True, verbose_name='Product Small Description')
     description2 = models.TextField(_("Extra Description"), null=True, blank=True)
@@ -347,6 +349,7 @@ class ProductService(models.Model):
     brand          = models.ForeignKey(BrandBusinessPage, null=True, blank=True, on_delete=models.CASCADE, verbose_name='Brand Name')
     specification  = models.ManyToManyField(ProductSpecification, blank=True, related_name='product_specifications')
     is_sponsored   = models.BooleanField(default=False, null=True, blank=True)
+    is_available   = models.BooleanField(default=True, null=True, blank=True)
 
 
     def __str__(self):

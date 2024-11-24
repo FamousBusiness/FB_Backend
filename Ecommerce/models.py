@@ -53,3 +53,13 @@ class ProductSpecification(models.Model):
 
     def __str__(self) -> str:
         return f"Specification - {self.name}"
+    
+
+#### Multiple images of Product
+class ProductImages(models.Model):
+    name = models.CharField(_("Image Nae"), max_length=50)
+    image = models.ImageField(upload_to='Productimages/', default='product_service/default.png')
+
+    def __str__(self) -> str:
+        return f'Image - {self.name}'
+    
