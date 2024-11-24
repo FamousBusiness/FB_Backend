@@ -339,12 +339,14 @@ class ProductService(models.Model):
     category     = models.ForeignKey(Category, null=True, blank=True, on_delete=models.CASCADE, verbose_name=_("Category")) 
     subcategory  = models.ForeignKey(SubCategory, null=True, blank=True, on_delete=models.CASCADE, verbose_name=_("Sub Category"))
     rating       = models.FloatField(_("Product Rating"), null=True, blank=True)
+    reviews      = models.CharField(max_length=20, null=True, blank=True)
     discount_price = models.CharField(_("Discount Price"), max_length=20,  null=True, blank=True)
     percentage_off = models.CharField(_("Percentage Off"), max_length=30, null=True, blank=True)
     emi_amount     = models.CharField(_("EMI Amount"), max_length=10, null=True, blank=True)
     offers         = models.ManyToManyField(ProductOffers, blank=True, related_name='product_offers')
     brand          = models.ForeignKey(BrandBusinessPage, null=True, blank=True, on_delete=models.CASCADE, verbose_name='Brand Name')
     specification  = models.ManyToManyField(ProductSpecification, blank=True, related_name='product_specifications')
+    is_sponsored   = models.BooleanField(default=False, null=True, blank=True)
 
 
     def __str__(self):

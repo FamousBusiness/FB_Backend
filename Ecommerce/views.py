@@ -1,11 +1,14 @@
+from rest_framework.response import Response
+from rest_framework import status
 from Listings.models import Category, ProductService, SubCategory
 from .models import StoreBanner, ProductTag
 from rest_framework import viewsets
 from .serializers import (
-    StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, StoreHomePageProductSerializer, CategoryWiseProductSerializer,
+    StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer,
     ProductServiceSerializer, StoreHomePageProductTagSerializer
     )
-from .pagination import StoreHomepageProductPagination
+from .pagination import StoreHomepageProductPagination, StoreCategoryWiseProductViewSetPagination
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -44,21 +47,25 @@ class StoreHomePageProductViewSet(viewsets.ReadOnlyModelViewSet):
 #### Procts inside Category wise store page
 class StoreCategoryWiseProductViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategoryWiseProductSerializer
+    pagination_class = StoreCategoryWiseProductViewSetPagination
 
     def get_queryset(self):
         category_id = self.request.query_params.get("category_id")
         subcategory_name = self.request.query_params.get("subcategory")
 
-        ### Get the subcategory
-        subcategory = SubCategory.objects.get(name = subcategory_name)
+        if not category_id:
+            return Response({"error": "category_id is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = ProductService.objects.all()
 
-        if category_id:
-            queryset = queryset.filter(category_id = category_id)
+        queryset = queryset.filter(category_id=category_id)
 
-        if subcategory:
-            queryset = queryset.filter(subcategory = subcategory)
+        if subcategory_name:
+            try:
+                subcategory = SubCategory.objects.get(name=subcategory_name)
+                queryset = queryset.filter(subcategory=subcategory)
+            except ObjectDoesNotExist:
+                return Response({"error": f"SubCategory with name '{subcategory_name}' does not exist."},status=status.HTTP_404_NOT_FOUND)
 
         return queryset
     

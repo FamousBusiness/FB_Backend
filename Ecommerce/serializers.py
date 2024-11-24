@@ -46,7 +46,7 @@ class CategoryWiseProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductService
-        fields = ['id', 'name', 'picture', 'price', 'description', 'category', 'subcategory', 'rating', 'discount_price', 'percentage_off']
+        fields = ['id', 'name', 'picture', 'price', 'description', 'category', 'subcategory', 'rating', 'discount_price', 'percentage_off', 'is_sponsored', 'reviews']
 
 
 
