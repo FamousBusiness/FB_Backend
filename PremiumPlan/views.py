@@ -439,8 +439,7 @@ class AutoPayPaymentStatusCheck(APIView):
             elif check_payment_status['success'] == True and check_payment_status['data']['transactionDetails']['state'] == 'PENDING':
                 return Response({'message': "Transaction is pending"}, status=status.HTTP_201_CREATED)
             
-
-            return Response({'success': True}, status=status.HTTP_200_OK)
+            return Response({'success': True}, status=status.HTTP_302_FOUND)
         
         else:
             return Response({'message': 'Did not found autopay order'}, status=status.HTTP_400_BAD_REQUEST)
