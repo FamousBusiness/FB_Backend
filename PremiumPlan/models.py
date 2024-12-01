@@ -153,6 +153,7 @@ class PremiumPlanOrder(models.Model):
     payment_response      = models.TextField(_("Payment Response"), null=True)
     webhook_response      = models.TextField(_("Webhook Response"), null=True)
     recurring_transaction_id = models.CharField(max_length=40, null=True, blank=True)
+    is_active                = models.BooleanField(_("Active"), default=True, null=True, blank=True)
 
 
     def __str__(self):

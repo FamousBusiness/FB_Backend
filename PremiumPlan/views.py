@@ -182,6 +182,7 @@ class PremiumPlanPaymentView(APIView):
         
 
 
+
 # Pay through UPI ID
 class PaythorughUPIID(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -220,14 +221,13 @@ class PaythorughUPIID(APIView):
                     try:
                         create_user = PhoenepePennyDropAutopay.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.amount)
                     except Exception as e:
-                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-                    
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)  
         else:
             try:
                 create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
             except Exception as e:
                 return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-            
+        
         #######################################
         #### Create user Subscription ends here
         ########################################
@@ -304,6 +304,7 @@ class ReceivePhonepeAutoPayWebhook(APIView):
         # Decode the response
         decoded_data = base64_decode(response_data)
 
+
         if decoded_data['success'] == True and decoded_data['data']['transactionDetails']['state'] == 'COMPLETED' and decoded_data['data']['subscriptionDetails']['state'] == 'ACTIVE':
 
             authRequestID = decoded_data['data']['authRequestId']
@@ -342,13 +343,22 @@ class ReceivePhonepeAutoPayWebhook(APIView):
 
                     order.save()
 
+                else:
+                    order.transaction_id = auto_pay_order.authRequestId
+                    order.amount         = auto_pay_order.amount
+                    order.status         = 'Paid'
+                    order.details        = f'Purchased Premium plan - {premium_plan.plan.name} {premium_plan.plan.type}'
+                    order.isPaid         = True
+
+                    order.save()
+
+
                 try:
                     business_instance = Business.objects.get(owner=user_obj)
                 except Exception as e:
                     order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'
                     order.save()
                     return Response({'success': True}, status=status.HTTP_200_OK)
-
 
                 data = {
                     'business_mail': business_instance.email,
@@ -362,6 +372,7 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                 except Exception as e:
                     order.details = f'Amount paid but unable to Assign the benefits, user name - {user_obj.name}, user iD - {user_obj.pk}'
                     order.save()
+
                     return Response({'success': True}, status=status.HTTP_200_OK)
 
                 try:
@@ -393,6 +404,7 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                 except Exception as e:
                     order.details = f'Amount paid but unable to Assign all the benefits, user name - {user_obj.name}, user iD - {user_obj.pk}'
                     order.save()
+
                     return Response({'success': True}, status=status.HTTP_200_OK)
 
                 return Response({'success': True}, status=status.HTTP_200_OK)

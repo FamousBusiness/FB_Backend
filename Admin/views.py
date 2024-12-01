@@ -738,7 +738,6 @@ def GoogleLoginView(request):
 class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
     model = PremiumPlanOrder
     template_name = 'PremiumPlan/deduct_payment.html'
-
     
 
     def post(self, request):
@@ -757,12 +756,13 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
             for order in orders_to_deduct:
                 purchased_date = order.purchased_at
                 recurring_date = order.repayment_date
+                active_status  = order.is_active
 
                 subscriptionID = None
                 amount = 0
 
                 ### Monthly Payment
-                if recurring_date and recurring_date <= (current_date - timedelta(days=29)):
+                if recurring_date and recurring_date <= (current_date - timedelta(days=29)) and active_status == True:
 
                     try:
                         transactionID = str(uuid.uuid4())[:20]
@@ -804,7 +804,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                         messages.error(request, 'Not able to get Subscripton ID')
 
                 #### If request has not sent yet
-                elif not recurring_date and purchased_date <= (current_date - timedelta(days=29)):
+                elif not recurring_date and purchased_date <= (current_date - timedelta(days=29)) and active_status == True:
 
                     try:
                         transactionID = str(uuid.uuid4())[:20]
