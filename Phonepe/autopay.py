@@ -232,3 +232,132 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
 
+
+##### Penny Drop Payment
+class PhoenepePennyDropAutopay:
+    # Create User Subscription API
+    def Create_user_Subscription(subscriptionID, amount):
+        sent_amount = amount * 100
+
+        payload = {
+            "merchantId": merchantID,
+            "merchantSubscriptionId": subscriptionID,
+            "merchantUserId": "FVSGHHSB3456AFFS89876GH",
+            "authWorkflowType": "PENNY_DROP",
+            "amountType": "VARIABLE",
+            "amount": sent_amount ,
+            "frequency": "MONTHLY",
+            "recurringCount": 120,
+            "mobileNumber": "9883835373",
+        }
+
+        INDEX = "1"
+        ENDPOINT = "/v3/recurring/subscription/create"
+        SALTKEY = SaltKey
+        base64String = base64_encode(payload)
+        mainString = base64String + ENDPOINT + SALTKEY
+        sha256Val = calculate_sha256_string(mainString)
+        checkSum = sha256Val + '###' + INDEX
+
+        headers = {
+            'Content-Type': 'application/json',
+            'X-Verify': checkSum,
+        }
+
+        json_data = {
+            'request': base64String,
+        }
+
+        response = requests.post(
+            f'{prodURL}/v3/recurring/subscription/create', headers=headers, json=json_data)
+
+        response.raise_for_status()
+        responseData = response.json()
+
+        return responseData
+
+
+
+    # Submit Auth API Request for UPI Collect
+    def SubmitAuthRequestUPICollect(susubscriptionID, authRequestId, upiID):
+
+        payload = {
+            "merchantId": merchantID,
+            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "subscriptionId": susubscriptionID,
+            "authRequestId": authRequestId,
+            "paymentInstrument": {
+                "type": "UPI_COLLECT",
+                "vpa": upiID
+            }
+        }
+
+        INDEX = "1"
+        ENDPOINT = "/v3/recurring/auth/init"
+        SALTKEY = SaltKey
+        base64String = base64_encode(payload)
+        mainString = base64String + ENDPOINT + SALTKEY
+        sha256Val = calculate_sha256_string(mainString)
+        checkSum = sha256Val + '###' + INDEX
+
+        headers = {
+            'Content-Type': 'application/json',
+            'X-Verify': checkSum,
+            'X-CALLBACK-URL': f'{webhook_url}'
+        }
+
+        json_data = {
+            'request': base64String,
+        }
+
+        response = requests.post(
+            f'{prodURL}/v3/recurring/auth/init', headers=headers, json=json_data)
+
+        response.raise_for_status()
+        responseData = response.json()
+
+        return responseData
+
+
+
+    # Submit Auth API Request for UPI Collect
+    def SubmitAuthRequestQR(susubscriptionID, authRequestId):
+
+        payload = {
+            "merchantId": merchantID,
+            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "subscriptionId": susubscriptionID,
+            "authRequestId": authRequestId,
+            "paymentInstrument": {
+                "type": "UPI_QR"
+            }
+        }
+
+        INDEX = "1"
+        ENDPOINT = "/v3/recurring/auth/init"
+        SALTKEY = SaltKey
+        base64String = base64_encode(payload)
+        mainString = base64String + ENDPOINT + SALTKEY
+        sha256Val = calculate_sha256_string(mainString)
+        checkSum = sha256Val + '###' + INDEX
+
+        headers = {
+            'Content-Type': 'application/json',
+            'X-Verify': checkSum,
+            'X-CALLBACK-URL': f'{webhook_url}'
+        }
+
+        json_data = {
+            'request': base64String,
+        }
+
+        response = requests.post(
+            f'{prodURL}/v3/recurring/auth/init', headers=headers, json=json_data)
+
+        response.raise_for_status()
+        responseData = response.json()
+
+        return responseData
+
+
+

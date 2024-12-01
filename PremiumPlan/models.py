@@ -10,6 +10,7 @@ from Phonepe.uniqueID import generate_unique_id
 
 PREMIUM_PLAN_TYPE = [
     ('Trial Period', 'Trial Period'),
+    ('One Month Free', 'One Month Free'),
     ('Page Owner', 'Page Owner'),
     ('Ads', 'Ads'),
     ('Bulk Email', 'Bulk Email'),
@@ -19,11 +20,18 @@ PREMIUM_PLAN_TYPE = [
 
 PREMIUM_PLAN = [
     ('Trial', 'Trial'),
+    ('One Month Free', 'One Month Free'),
     ('Starter', 'Starter'),
     ('Business', 'Business'),
     ('Enterprises', 'Enterprises'),
     ('Silver', 'Silver'),
     ('Gold', 'Gold')
+]
+
+
+PHONEPE_AUTOPAY_TYPE = [
+    ('One Month Free', 'One Month Free'),
+    ('Paid', 'Paid')
 ]
 
 
@@ -52,7 +60,7 @@ class PlanDetail(models.Model):
     name                = models.CharField(choices=PREMIUM_PLAN, max_length=25)
     type                = models.CharField(choices=PREMIUM_PLAN_TYPE, max_length=25,
                                            verbose_name='Marketing Type')
-    duration            = models.CharField(choices=PLAN_DURATION, max_length=10, null=True, blank=True, verbose_name='Duration')
+    duration            = models.CharField(choices=PLAN_DURATION, max_length=20, null=True, blank=True, verbose_name='Duration')
     duration_quantity   = models.CharField(max_length=3, blank=True, null=True, choices=DURATION_PERIOD, verbose_name='Duration Length')
     
     tag_line            = models.CharField(max_length=50, null=True, blank=True)
@@ -96,6 +104,7 @@ class PremiumPlan(models.Model):
     super           = models.BooleanField(default=False,     verbose_name='Super Tag')
     premium         = models.BooleanField(default=False,     verbose_name='Premium Tag')
     industry_leader = models.BooleanField(default=False,     verbose_name='Industry Leader Tag')
+    autopay_payment_type = models.CharField(choices=PHONEPE_AUTOPAY_TYPE, null=True, blank=True, verbose_name="Autopay Payment Type")
 
 
     def __str__(self):

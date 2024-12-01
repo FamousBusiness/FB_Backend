@@ -26,7 +26,7 @@ import requests
 from Phonepe.payment import calculate_sha256_string
 from Phonepe.encoded import base64_decode
 from PremiumPlan.models import PhonepeAutoPayOrder
-from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment
+from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment, PhoenepePennyDropAutopay
 from django.utils import timezone
 from datetime import datetime
 
@@ -45,7 +45,7 @@ class AllPremiumPlanView(APIView):
 
         monthly_premium_plan = PremiumPlan.objects.filter(plan__duration='Monthly')
         yearly_premium_plan  = PremiumPlan.objects.filter(plan__duration='Yearly')
-        trial_plan           = PremiumPlan.objects.filter(plan__duration='Day')
+        trial_plan           = PremiumPlan.objects.filter(autopay_payment_type='One Month Free')
 
         monthly_serializer    = PremiumPlanSerializer(monthly_premium_plan, many=True)
         yearly_serializer     = PremiumPlanSerializer(yearly_premium_plan, many=True)
@@ -87,12 +87,31 @@ class PremiumPlanPaymentView(APIView):
                 user_id         = int(current_user.id)
             )
 
-
-            # 1st step Create user subscription
-            try:
-                create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
-            except Exception as e:
-                return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            #### Create user subscription step
+            if premium_plan_instance.autopay_payment_type:
+                if premium_plan_instance.autopay_payment_type == 'Paid':
+                    # 1st step Create user subscription
+                    try:
+                        create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+                    except Exception as e:
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                elif premium_plan_instance.autopay_payment_type == 'One Month Free':
+                    # 1st step Create user subscription
+                    try:
+                        create_user = PhoenepePennyDropAutopay.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.amount)
+                    except Exception as e:
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+            else:
+                # 1st step Create user subscription
+                try:
+                    create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+                except Exception as e:
+                    return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            #### Create user subscription step Ends here
+            
 
             subscriptionID = create_user['data']['subscriptionId']
 
@@ -104,13 +123,40 @@ class PremiumPlanPaymentView(APIView):
                 authRequestID = phonePeOrder.authRequestId
                 order_amount  = phonePeOrder.amount
 
-                try:
-                    # 2nd step Submit QR Auth Request
-                    create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
-                        subscriptionID, order_amount, authRequestID
-                    )
-                except Exception as e:
-                    return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                ###################################
+                # SubmitAuth QR Request Starts Here
+                ###################################
+                if premium_plan_instance.autopay_payment_type:
+                    if premium_plan_instance.autopay_payment_type == 'Paid':
+                        try:
+                            # 2nd step Submit QR Auth Request
+                            create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
+                                subscriptionID, order_amount, authRequestID
+                            )
+                        except Exception as e:
+                            return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                    elif premium_plan_instance.autopay_payment_type == 'One Month Free':
+                        try:
+                            # 2nd step Submit QR Auth Request
+                            create_qr_subscription_auth_request = PhoenepePennyDropAutopay.SubmitAuthRequestQR(
+                                subscriptionID, authRequestID
+                            )
+                        except Exception as e:
+                            return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                else:
+                    try:
+                        # 2nd step Submit QR Auth Request
+                        create_qr_subscription_auth_request = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestQR(
+                            subscriptionID, order_amount, authRequestID
+                        )
+                    except Exception as e:
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                ################################
+                #### SUBMITAUTH REQUEST ENDS HERE
+                #################################
 
                 QRCOde = create_qr_subscription_auth_request['data']['redirectUrl']
                 
@@ -124,17 +170,6 @@ class PremiumPlanPaymentView(APIView):
             
             else:
                 return Response({'message': 'Error occures'}, status=status.HTTP_400_BAD_REQUEST)
-        
-            # try:
-            #     order = PremiumPlanOrder.objects.create(amount=received_amount, user=current_user,
-            #                                         details=f'Purchased {premium_plan_instance.plan.name} {premium_plan_instance.plan.type}' )
-            #     transaction_id   = order.transaction_id
-            #     payment_response = PremiumPlanPaymentInitiation(transaction_id, amount, plan_id)
-
-            #     return Response({'msg': 'Payment initiation successful', 'payment_response': payment_response},
-            #                     status=status.HTTP_200_OK)
-            # except PremiumPlanOrder.DoesNotExist:
-            #     return Response({'msg': 'Unable to Create the Order'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         else:
             response = {
@@ -157,6 +192,10 @@ class PaythorughUPIID(APIView):
         amount          = request.data.get('amount')
         plan_id         = request.data.get('premium_plan_id')
 
+        try:
+            premium_plan_instance = PremiumPlan.objects.get(id=plan_id)
+        except PremiumPlan.DoesNotExist:
+            return Response({'msg': 'Premium Plan Does Not exists'})
 
         # Create Phonepe Order
         phonePeOrder = PhonepeAutoPayOrder.objects.create(
@@ -165,12 +204,33 @@ class PaythorughUPIID(APIView):
             user_id         = int(current_user.id)
         )
 
-        # 1st step Create user subscription
-        try:
-            create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
-        except Exception as e:
-            return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
+        #########################################
+        #### Create user subscription starts here
+        ###########################################
+        if premium_plan_instance.autopay_payment_type:
+            if premium_plan_instance.autopay_payment_type == 'Paid':
+                # 1st step Create user subscription
+                try:
+                    create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+                except Exception as e:
+                    return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            elif premium_plan_instance.autopay_payment_type == 'One Month Free':
+                # 1st step Create user subscription
+                    try:
+                        create_user = PhoenepePennyDropAutopay.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.amount)
+                    except Exception as e:
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+        else:
+            try:
+                create_user = PremiumPlanPhonepeAutoPayPayment.Create_user_Subscription(phonePeOrder.MerchantSubscriptionId, phonePeOrder.merchantUserId, phonePeOrder.amount)
+            except Exception as e:
+                return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        #######################################
+        #### Create user Subscription ends here
+        ########################################
         subscriptionID = create_user['data']['subscriptionId']
 
         if subscriptionID:
@@ -181,15 +241,41 @@ class PaythorughUPIID(APIView):
             authRequestID = phonePeOrder.authRequestId
             order_amount  = phonePeOrder.amount
 
-            try:
-                submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
-                    subscriptionID, order_amount, 
-                    authRequestID, upi_id
-                )
-            except Exception as e:
-                return Response({'message': f"{str(e)}"}, 400)
+            ######################################
+            ##### SubmitAuth Request Starts here
+            ########################################
+            if premium_plan_instance.autopay_payment_type:
+                if premium_plan_instance.autopay_payment_type == 'Paid':
+                    try:
+                        submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
+                            subscriptionID, order_amount, 
+                            authRequestID, upi_id
+                        )
+                    except Exception as e:
+                        return Response({'message': f"{str(e)}"}, 400)
+                    
+                elif premium_plan_instance.autopay_payment_type == 'One Month Free':  
+                    try:
+                        # 2nd step Submit QR Auth Request
+                        submit_auth_reuqest = PhoenepePennyDropAutopay.SubmitAuthRequestUPICollect(
+                            subscriptionID, authRequestID, upi_id
+                        )
+                    except Exception as e:
+                        return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+            else:
+                try:
+                    submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
+                        subscriptionID, order_amount, 
+                        authRequestID, upi_id
+                    )
+                except Exception as e:
+                    return Response({'message': f"{str(e)}"}, 400)
             
-
+            ############################################
+            ##### SubmiAuth Request Ends Here
+            #############################################
+            
             if submit_auth_reuqest['success'] == True:
                 return Response({
                     'success': True,
