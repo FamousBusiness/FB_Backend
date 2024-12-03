@@ -161,7 +161,7 @@ def send_category_wise_business_whatsapp_message_lead_excel_upload(data):
             "stype" : "normal",
             "Params": f"{business_name}, {customer_name}, {requirements}",
             "htype" : "image",
-            "imageUrl" : "https://mdwebzotica.famousbusiness.in/final_001.jpg"
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/Sale2_page-0001.jpg"
         }
 
         url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
@@ -365,7 +365,7 @@ def beat_task_to_send_lead_mail_every_10_minute():
 
             send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
 
-            send_category_wise_business_message_excel_upload.delay(data)
+            # send_category_wise_business_message_excel_upload.delay(data)
 
         lead.mail_sent = True
         lead.save()
