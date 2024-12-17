@@ -379,10 +379,12 @@ class BusinessPageLeadAPIView(APIView):
 class AllLeadWithoutAllDataView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     pagination_class   = PageNumberPagination
-    page_size = 50
+    page_size = 1
+
 
     def get(self, request, state, city):
         user = request.user
+        response_data = {}
 
         if user.is_authenticated:
             user_name = user.name
@@ -405,6 +407,7 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
             except Exception as e:
                 return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
             
+
             try:
                 business_page     = Business.objects.get(owner=user)
                 business_category = business_page.category
@@ -455,14 +458,17 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
                         unpaid_leads    = unpaid_leads.exclude(id__in=viewed_lead_ids)
 
                     filtered_lead  = unpaid_leads.exclude(id__in=assigned_leads_ids)
-
+    
                     if total_available_lead > 0:
-                        category_leads   = self.paginate_queryset(filtered_lead)
-                        lead_serializer  = LeadWithoutAllDataSerializer(category_leads, many=True)
+                        category_leads_pagination = self.paginate_queryset(filtered_lead)
+                        lead_serializer  = LeadWithoutAllDataSerializer(category_leads_pagination, many=True)
+
                     else:
-                        category_leads = self.paginate_queryset(filtered_lead)
-                        lead_serializer  = PriceLeadWithoutAllDataSerializer(category_leads, many=True)
+                        category_leads_pagination = self.paginate_queryset(filtered_lead)
+                        lead_serializer  = PriceLeadWithoutAllDataSerializer(category_leads_pagination, many=True)
                     
+                    print(self.paginator.get_next_link())
+
                     other_category_leads = leads.exclude(category=business_category)
 
                     other_category_leads_wo_paid_leads = other_category_leads.exclude(id__in = [business_lead_bucket.lead.id for   business_lead_bucket in paid_leads])
@@ -479,7 +485,6 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
                     individual_leads_serializer = IndividualPageLeadWithoutAllDataSerializer(individual_leads_pagination, many=True)
                     viewed_lead_serializer      = BusinessPageleadViewSerializer(viewed_lead_pagination, many=True)
 
-                
             except Business.DoesNotExist:
                 paid_leads                 = LeadBucket.objects.filter(owner=user, is_paid=True)
                 assigned_leads_per_plan    = AssignedLeadPerPremiumPlan.objects.all()
@@ -488,11 +493,11 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
                 unpaid_leads               = leads.exclude(id__in=[lead_bucket.lead.id for lead_bucket in paid_leads])
                 filtered_lead              = unpaid_leads.exclude(id__in=assigned_leads_ids)
 
-                filteres_lead_pagination   = self.paginate_queryset(filtered_lead)
+                filtered_lead_pagination   = self.paginate_queryset(filtered_lead)
                 paid_lead_pagination       = self.paginate_queryset(paid_leads)
 
                 paid_lead_serializer       = UsersPaidLeadSerializer(paid_lead_pagination, many=True)
-                lead_serializer            = PriceLeadWithoutAllDataSerializer(filteres_lead_pagination, many=True)
+                lead_serializer            = PriceLeadWithoutAllDataSerializer(filtered_lead_pagination, many=True)
 
                 individual_leads_serializer = None
                 other_category_serializer   = None
@@ -505,7 +510,7 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
                 'Individual_Leads': individual_leads_serializer.data if individual_leads_serializer else [],
                 'paid_leads': paid_lead_serializer.data if paid_lead_serializer else [],
                 'Other_Category_Leads': other_category_serializer.data if other_category_serializer else [],
-                'premium_plan_leads': [assigned_premium_plan_leads_serializer.data]if assigned_premium_plan_leads_serializer else [],
+                'premium_plan_leads': [assigned_premium_plan_leads_serializer.data] if assigned_premium_plan_leads_serializer else [],
                 'available_lead_view_quantity': total_available_lead,
                 'plan_viewed_leads': viewed_lead_serializer.data if viewed_lead_serializer else []
             }
@@ -530,7 +535,6 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
             }
 
         return self.get_paginated_response(response_data)
-        # return Response({'msg': 'Lead data fetched successfully', 'data': response_data})
 
 
 
@@ -1637,7 +1641,7 @@ class LeadFormDetails(APIView):
             get_category = Category.objects.get(type=lead_form_category)
         except Exception as e:
             return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         try:
             category_lead_form  = LeadFrorm.objects.get(category = get_category)
         except Exception as e:
@@ -1650,8 +1654,8 @@ class LeadFormDetails(APIView):
         return Response({
             'success': True,
             'lead_form_data': serializer.data
-            }
-            , status=status.HTTP_200_OK)
+            }, status=status.HTTP_200_OK)
+    
 
 
 ### Generate Lead from Lead form
@@ -1707,7 +1711,7 @@ class LeadFormUpdateQuestionView(APIView):
             Lead_obj = Lead.objects.get(id = lead_id)
         except Exception as e:
             return Response({'message': 'Invalid Lead'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            
         Lead_obj.requirement = requirements
 
         if city and state:

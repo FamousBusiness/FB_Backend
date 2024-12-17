@@ -17,7 +17,7 @@ def update_lead_status(sender, instance, created, **kwargs):
         lead_id = instance.id
         lead_view = instance.views
 
-        if lead_view >= 2:
+        if lead_view >= 4:
             try:
                 lead = Lead.objects.get(id=lead_id)
                 if not lead.expired:
@@ -32,7 +32,7 @@ def update_lead_status(sender, instance, created, **kwargs):
         lead_id = instance.id
         lead_view = instance.views
 
-        if lead_view >= 2:
+        if lead_view >= 4:
             try:
                 lead = Lead.objects.get(id=lead_id)
                 if not lead.expired:
