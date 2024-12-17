@@ -375,12 +375,11 @@ class BusinessPageLeadAPIView(APIView):
 
 
 
-#All Lead Data
+# All Lead Data
 class AllLeadWithoutAllDataView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     pagination_class   = PageNumberPagination
     page_size = 1
-
 
     def get(self, request, state, city):
         user = request.user
@@ -466,8 +465,6 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
                     else:
                         category_leads_pagination = self.paginate_queryset(filtered_lead)
                         lead_serializer  = PriceLeadWithoutAllDataSerializer(category_leads_pagination, many=True)
-                    
-                    print(self.paginator.get_next_link())
 
                     other_category_leads = leads.exclude(category=business_category)
 
@@ -507,8 +504,8 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
 
             response_data = {
                 'Leads': lead_serializer.data,
-                'Individual_Leads': individual_leads_serializer.data if individual_leads_serializer else [],
                 'paid_leads': paid_lead_serializer.data if paid_lead_serializer else [],
+                'Individual_Leads': individual_leads_serializer.data if individual_leads_serializer else [],
                 'Other_Category_Leads': other_category_serializer.data if other_category_serializer else [],
                 'premium_plan_leads': [assigned_premium_plan_leads_serializer.data] if assigned_premium_plan_leads_serializer else [],
                 'available_lead_view_quantity': total_available_lead,
@@ -529,6 +526,503 @@ class AllLeadWithoutAllDataView(generics.ListAPIView):
             
             leads_pagination = self.paginate_queryset(leads)
             lead_serializer = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
+
+            response_data = {
+                'Leads': lead_serializer.data
+            }
+
+        return self.get_paginated_response(response_data)
+
+
+
+
+### In Progress
+class BusinessCategoryLeadsView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class   = PageNumberPagination
+    page_size = 100
+
+
+    def get(self, request, city, state): 
+        user = request.user
+        response_data = {}
+
+        if user.is_authenticated:
+            user_name = user.name
+
+            try:
+                user_specific_lead = Lead.objects.filter(created_by=user_name)
+                all_leads = Lead.objects.all()
+
+                if user_specific_lead:
+                    if city:
+                        leads = all_leads.filter(city__iexact=city).exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                    elif state:
+                        leads = all_leads.filter(state__iexact=state).exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                else:
+                    if city:
+                        leads = all_leads.filter(city__iexact=city) 
+                    elif state:
+                        leads = all_leads.filter(state__iexact=state)
+
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+
+            try:
+                business_page = Business.objects.get(owner=user)
+
+                if business_page:
+                    business_page     = Business.objects.get(owner=user)
+                    business_category = business_page.category
+
+                    try:
+                        available_plan = PremiumPlanBenefits.objects.filter(user=user)
+                        available_plan_lead = available_plan.aggregate(total_lead=Sum('lead_assigned'))['total_lead']
+                    except PremiumPlanBenefits.DoesNotExist:
+                        available_plan_lead = 0
+
+                    try:
+                        trial_plan = TrialPlanRequest.objects.filter(user=user, is_active=True)
+                        available_trial_plan_lead = trial_plan.aggregate(total_lead=Sum('lead_view'))['total_lead']
+                    except TrialPlanRequest.DoesNotExist:
+                        available_trial_plan_lead = 0
+
+                    total_available_lead = (available_plan_lead or 0) + (available_trial_plan_lead or 0)
+
+                    try:
+                        viewed_lead = BusinessPageLeadView.objects.filter(business_page=business_page)
+                    except BusinessPageLeadView.DoesNotExist:
+                        viewed_lead = None
+
+                    paid_leads       = BusinessPageLeadBucket.objects.filter(business_page=business_page.pk)
+
+                    unpaid_leads = leads.filter(category=business_category).exclude(id__in = [business_lead_bucket.lead.id 
+                                                                                              for business_lead_bucket in paid_leads])
+                    
+                    assigned_leads_per_plan = AssignedLeadPerPremiumPlan.objects.all()
+                    assigned_leads_ids      = assigned_leads_per_plan.values_list('lead_id', flat=True)
+
+                    if viewed_lead is not None:
+                        viewed_lead_ids = viewed_lead.values_list('lead_id', flat=True)
+                        unpaid_leads    = unpaid_leads.exclude(id__in=viewed_lead_ids)
+
+                    filtered_lead  = unpaid_leads.exclude(id__in=assigned_leads_ids)
+    
+                    if total_available_lead > 0:
+                        category_leads_pagination = self.paginate_queryset(filtered_lead)
+                        lead_serializer  = LeadWithoutAllDataSerializer(category_leads_pagination, many=True)
+
+                    else:
+                        category_leads_pagination = self.paginate_queryset(filtered_lead)
+                        lead_serializer  = PriceLeadWithoutAllDataSerializer(category_leads_pagination, many=True)
+                    
+                    response_data = {
+                        'category_leads': lead_serializer.data
+                    }
+                    
+                    return self.get_paginated_response(response_data)
+
+            except Business.DoesNotExist as e:
+                unpaid_leads               = leads.exclude(id__in=[lead_bucket.lead.id for lead_bucket in paid_leads])
+                filtered_lead              = unpaid_leads.exclude(id__in=assigned_leads_ids)
+
+                filtered_lead_pagination   = self.paginate_queryset(filtered_lead)
+
+                lead_serializer            = PriceLeadWithoutAllDataSerializer(filtered_lead_pagination, many=True)
+
+                response_data = {
+                    'category_leads': lead_serializer.data
+                }
+
+                return self.get_paginated_response(response_data)
+            
+        else:
+            all_leads = Lead.objects.all()
+
+            try:
+                if city:
+                    leads = all_leads.filter(city__iexact=city, expired=False)
+                elif state:
+                    leads = all_leads.filter(state__iexact=state, expired=False)
+                
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+            
+            leads_pagination = self.paginate_queryset(leads)
+            lead_serializer  = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
+
+            response_data = {
+                'Leads': lead_serializer.data
+            }
+
+        return self.get_paginated_response(response_data)
+    
+
+
+
+## All paid Leads
+class PaidLeadView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class   = PageNumberPagination
+    page_size = 1
+
+
+    def get(self, request, state, city):
+        user          = request.user
+        response_data = {}
+
+        if user.is_authenticated:
+            try:
+                business_page = Business.objects.get(owner=user)
+
+                if business_page:
+                    paid_leads = BusinessPageLeadBucket.objects.filter(business_page=business_page.pk)
+
+                    paid_leads_pagination = self.paginate_queryset(paid_leads)
+                    paid_lead_serializer  = PaidLeadSerializers(paid_leads_pagination, many=True)
+
+            except Business.DoesNotExist:
+                paid_leads                 = LeadBucket.objects.filter(owner=user, is_paid=True)
+                paid_lead_pagination       = self.paginate_queryset(paid_leads)
+
+                paid_lead_serializer       = UsersPaidLeadSerializer(paid_lead_pagination, many=True)
+
+            response_data = {
+                'paid_leads': paid_lead_serializer.data if paid_lead_serializer else [],
+            }
+
+        else:
+            all_leads = Lead.objects.all()
+
+            try:
+                if city:
+                    leads = all_leads.filter(city__iexact=city, expired=False)
+                elif state:
+                    leads = all_leads.filter(state__iexact=state, expired=False)
+                
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+            
+            leads_pagination = self.paginate_queryset(leads)
+            lead_serializer  = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
+
+            response_data = {
+                'Leads': lead_serializer.data
+            }
+
+        return self.get_paginated_response(response_data)
+    
+
+
+
+#### Individual Leads
+class IndividualLeadsView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class   = PageNumberPagination
+    page_size = 1
+
+
+    def get(self, request, state, city):
+        user = request.user
+        response_data = {}
+
+        if user.is_authenticated:
+            
+            try:
+                business_page     = Business.objects.get(owner=user)
+
+                if business_page:
+                    business_page    = Business.objects.get(owner=user)
+                    individual_leads = BusinessPageLead.objects.filter(business_page=business_page)
+                    individual_leads_pagination = self.paginate_queryset(individual_leads)
+
+                    individual_leads_serializer = IndividualPageLeadWithoutAllDataSerializer(individual_leads_pagination, many=True)
+
+            except Business.DoesNotExist:
+                individual_leads_serializer = None
+
+            response_data = {
+                'Individual_Leads': individual_leads_serializer.data if individual_leads_serializer else []
+            }
+
+        else:
+            all_leads = Lead.objects.all()
+
+            try:
+                if city:
+                    leads = all_leads.filter(city__iexact=city, expired=False)
+                elif state:
+                    leads = all_leads.filter(state__iexact=state, expired=False)
+                
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+            
+            leads_pagination = self.paginate_queryset(leads)
+            lead_serializer  = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
+
+            response_data = {
+                'Leads': lead_serializer.data
+            }
+
+        return self.get_paginated_response(response_data)
+    
+
+
+
+## Other Category lead
+class OtherCategoryLeadView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class   = PageNumberPagination
+    page_size = 1
+
+
+    def get(self, request, state, city):
+        user = request.user
+        response_data = {}
+
+        if user.is_authenticated:
+            user_name = user.name
+
+            try:
+                user_specific_lead = Lead.objects.filter(created_by=user_name)
+                all_leads = Lead.objects.all()
+
+                if user_specific_lead:
+                    if city:
+                        leads = all_leads.filter(city__iexact=city).exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                    elif state:
+                        leads = all_leads.filter(state__iexact=state).exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                else:
+                    if city:
+                        leads = all_leads.filter(city__iexact=city) 
+                    elif state:
+                        leads = all_leads.filter(state__iexact=state)
+
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+
+            try:
+                business_page     = Business.objects.get(owner=user)
+
+                if business_page:
+                    business_page     = Business.objects.get(owner=user)
+                    business_category = business_page.category
+
+                    paid_leads = BusinessPageLeadBucket.objects.filter(business_page=business_page.pk)
+                    
+                    assigned_leads_per_plan = AssignedLeadPerPremiumPlan.objects.all()
+                    assigned_leads_ids      = assigned_leads_per_plan.values_list('lead_id', flat=True)
+
+                    other_category_leads = leads.exclude(category=business_category)
+
+                    other_category_leads_wo_paid_leads = other_category_leads.exclude(id__in = [business_lead_bucket.lead.id for   business_lead_bucket in paid_leads])
+                    
+                    other_category_leads_wo_assigned_premium_plan_lead = other_category_leads_wo_paid_leads.exclude(id__in=assigned_leads_ids)
+
+                    other_category_leads = self.paginate_queryset(other_category_leads_wo_assigned_premium_plan_lead)
+
+                    other_category_serializer = PriceLeadWithoutAllDataSerializer(other_category_leads, many=True)
+
+            except Business.DoesNotExist:
+                other_category_serializer   = None
+
+            response_data = {
+                'Other_Category_Leads': other_category_serializer.data if other_category_serializer else []
+            }
+
+        else:
+            all_leads = Lead.objects.all()
+
+            try:
+                if city:
+                    leads = all_leads.filter(city__iexact=city, expired=False)
+                elif state:
+                    leads = all_leads.filter(state__iexact=state, expired=False)
+                
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+            
+            leads_pagination = self.paginate_queryset(leads)
+            lead_serializer  = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
+
+            response_data = {
+                'Leads': lead_serializer.data
+            }
+
+        return self.get_paginated_response(response_data)
+
+
+
+
+#### Viewed Leads
+class PlanViewedLeadsView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class   = PageNumberPagination
+
+
+    def get(self, request, state, city):
+        user = request.user
+        response_data = {}
+
+        if user.is_authenticated:
+            try:
+                business_page = Business.objects.get(owner=user)
+
+                if business_page:
+                    business_page = Business.objects.get(owner=user)
+
+                    try:
+                        viewed_lead = BusinessPageLeadView.objects.filter(business_page=business_page)
+                    except BusinessPageLeadView.DoesNotExist:
+                        viewed_lead = None
+
+                    viewed_lead_pagination = self.paginate_queryset(viewed_lead)
+                    viewed_lead_serializer = BusinessPageleadViewSerializer(viewed_lead_pagination, many=True)
+
+            except Business.DoesNotExist:
+                viewed_lead_serializer      = None
+
+            response_data = {
+                'plan_viewed_leads': viewed_lead_serializer.data if viewed_lead_serializer else []
+            }
+
+        else:
+            all_leads = Lead.objects.all()
+
+            try:
+                if city:
+                    leads = all_leads.filter(city__iexact=city, expired=False)
+                elif state:
+                    leads = all_leads.filter(state__iexact=state, expired=False)
+                
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+            
+            leads_pagination = self.paginate_queryset(leads)
+            lead_serializer = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
+
+            response_data = {
+                'Leads': lead_serializer.data
+            }
+
+        return self.get_paginated_response(response_data)
+
+
+
+#### All Leads for Unethenticated and Category leads of Business
+class CategoryWiseAndAllLeadsView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
+    pagination_class   = PageNumberPagination
+
+
+    def get(self, request, city, state): 
+        user = request.user
+        response_data = {}
+
+
+        if user.is_authenticated:
+            user_name = user.name
+
+            try:
+                user_specific_lead = Lead.objects.filter(created_by=user_name)
+                all_leads = Lead.objects.all()
+
+                if user_specific_lead:
+                    if city:
+                        leads = all_leads.filter(city__iexact=city).exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                    elif state:
+                        leads = all_leads.filter(state__iexact=state).exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                else:
+                    if city:
+                        leads = all_leads.filter(city__iexact=city) 
+                    elif state:
+                        leads = all_leads.filter(state__iexact=state)
+
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+
+            try:
+                business_page = Business.objects.get(owner=user)
+
+                if business_page:
+                    business_page     = Business.objects.get(owner=user)
+                    business_category = business_page.category
+
+                    try:
+                        available_plan = PremiumPlanBenefits.objects.filter(user=user)
+                        available_plan_lead = available_plan.aggregate(total_lead=Sum('lead_assigned'))['total_lead']
+                    except PremiumPlanBenefits.DoesNotExist:
+                        available_plan_lead = 0
+
+                    try:
+                        trial_plan = TrialPlanRequest.objects.filter(user=user, is_active=True)
+                        available_trial_plan_lead = trial_plan.aggregate(total_lead=Sum('lead_view'))['total_lead']
+                    except TrialPlanRequest.DoesNotExist:
+                        available_trial_plan_lead = 0
+
+                    total_available_lead = (available_plan_lead or 0) + (available_trial_plan_lead or 0)
+
+                    try:
+                        viewed_lead = BusinessPageLeadView.objects.filter(business_page=business_page)
+                    except BusinessPageLeadView.DoesNotExist:
+                        viewed_lead = None
+
+                    paid_leads       = BusinessPageLeadBucket.objects.filter(business_page=business_page.pk)
+
+                    unpaid_leads = leads.filter(category=business_category).exclude(id__in = [business_lead_bucket.lead.id 
+                                                                                              for business_lead_bucket in paid_leads])
+                    
+                    assigned_leads_per_plan = AssignedLeadPerPremiumPlan.objects.all()
+                    assigned_leads_ids      = assigned_leads_per_plan.values_list('lead_id', flat=True)
+
+                    if viewed_lead is not None:
+                        viewed_lead_ids = viewed_lead.values_list('lead_id', flat=True)
+                        unpaid_leads    = unpaid_leads.exclude(id__in=viewed_lead_ids)
+
+                    filtered_lead  = unpaid_leads.exclude(id__in=assigned_leads_ids)
+    
+                    if total_available_lead > 0:
+                        category_leads_pagination = self.paginate_queryset(filtered_lead)
+                        lead_serializer  = LeadWithoutAllDataSerializer(category_leads_pagination, many=True)
+
+                    else:
+                        category_leads_pagination = self.paginate_queryset(filtered_lead)
+                        lead_serializer  = PriceLeadWithoutAllDataSerializer(category_leads_pagination, many=True)
+                    
+                    response_data = {
+                        'Leads': lead_serializer.data
+                    }
+                    
+                    return self.get_paginated_response(response_data)
+
+            except Business.DoesNotExist as e:
+                unpaid_leads               = leads.exclude(id__in=[lead_bucket.lead.id for lead_bucket in paid_leads])
+                filtered_lead              = unpaid_leads.exclude(id__in=assigned_leads_ids)
+
+                filtered_lead_pagination   = self.paginate_queryset(filtered_lead)
+
+                lead_serializer            = PriceLeadWithoutAllDataSerializer(filtered_lead_pagination, many=True)
+
+                response_data = {
+                    'Leads': lead_serializer.data
+                }
+
+                return self.get_paginated_response(response_data)
+            
+        else:
+            all_leads = Lead.objects.all()
+
+            try:
+                if city:
+                    leads = all_leads.filter(city__iexact=city, expired=False)
+                elif state:
+                    leads = all_leads.filter(state__iexact=state, expired=False)
+                
+            except Exception as e:
+                return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
+            
+            leads_pagination = self.paginate_queryset(leads)
+            lead_serializer  = PriceLeadWithoutAllDataSerializer(leads_pagination, many=True)
 
             response_data = {
                 'Leads': lead_serializer.data

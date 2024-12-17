@@ -3,7 +3,7 @@ from .views import (
     EnquiryFormAPIView, BusinessPageLeadAPIView, AllLeadWithoutAllDataView, 
     ShowBusinessPageAssignedLeadView, LeadPaymentAPIView, LeadExcelUploadView, LeadCheckView,
     ComboLeadPaymentInitiationView, ComboLeadPaymentCompleteView, IDWiseComboLeadView, ComboLeadCheckAfterPaymentCompleteView,
-    LeadPaymentCompleteView, ViewLeadData, LeadFormDetails, LeadGenerateFromLeadForm, LeadFormUpdateQuestionView, LeadBannerView
+    LeadPaymentCompleteView, ViewLeadData, LeadFormDetails, LeadGenerateFromLeadForm, LeadFormUpdateQuestionView, LeadBannerView, BusinessCategoryLeadsView, PaidLeadView, IndividualLeadsView, OtherCategoryLeadView, PlanViewedLeadsView, CategoryWiseAndAllLeadsView
     # welcome, pay, payment_return
     )
 
@@ -13,8 +13,15 @@ urlpatterns = [
     path('enquiry-form/', EnquiryFormAPIView.as_view(), name='enquiry_form_api'),
     path('individual-business-page-leads/', BusinessPageLeadAPIView.as_view(), name='individual_leads'),
     path('all-leads/<str:city>/<str:state>/', AllLeadWithoutAllDataView.as_view(), name='get_all_leads'),
+
+    path('business/category/leads/<str:city>/<str:state>/', BusinessCategoryLeadsView.as_view(), name='business_category_leads'),
+    path('paid/leads/<str:city>/<str:state>/', PaidLeadView.as_view(), name='paid_leads'),
+    path('individual/leads/<str:city>/<str:state>/', IndividualLeadsView.as_view(), name='individual_leads'),
+    path('business/other/category/leads/<str:city>/<str:state>/', OtherCategoryLeadView.as_view(), name='other_category_leads'),
+    path('viewed/leads/<str:city>/<str:state>/', PlanViewedLeadsView.as_view(), name='viewed_leads'),
+    path('all/leads/<str:city>/<str:state>/', CategoryWiseAndAllLeadsView.as_view(), name='unauthenticated_category_lead'),
     
-    #View Lead Data
+    # View Lead Data
     path('business-page-lead-view/', ViewLeadData.as_view(), name='show-business-lead-data'),
     # path('business-page-lead-view/', ShowBusinessPageAssignedLeadView.as_view(), name='show-business-lead-data'),
     path('lead-payment/', LeadPaymentAPIView.as_view(), name='lead-payment'),
