@@ -2206,8 +2206,8 @@ class LeadFormUpdateQuestionView(APIView):
 
     def post(self, request):
         requirements = request.data.get('requirements')
-        state        = request.data.get('city')
-        city         = request.data.get('state')
+        state        = request.data.get('state')
+        city         = request.data.get('city')
         lead_id      = request.data.get('lead_id')
 
         ## get the lead
