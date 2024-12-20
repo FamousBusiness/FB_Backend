@@ -932,14 +932,14 @@ class CategoryWiseAndAllLeadsView(generics.ListAPIView):
 
                 if user_specific_lead:
                     if city:
-                        leads = all_leads.filter(city__iexact=city, status = 'Open').exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                        leads = all_leads.filter(city__iexact=city, status = 'High Priority').exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
                     elif state:
-                        leads = all_leads.filter(state__iexact=state, status = 'Open').exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
+                        leads = all_leads.filter(state__iexact=state, status = 'High Priority').exclude(id__in=[user_leads.id for user_leads in user_specific_lead])
                 else:
                     if city:
-                        leads = all_leads.filter(city__iexact=city, status = 'Open') 
+                        leads = all_leads.filter(city__iexact=city, status = 'High Priority') 
                     elif state:
-                        leads = all_leads.filter(state__iexact=state, status = 'Open')
+                        leads = all_leads.filter(state__iexact=state, status = 'High Priority')
 
             except Exception as e:
                 return Response({'msg': 'No Lead Available in this Location'}, status=status.HTTP_204_NO_CONTENT)
