@@ -2,7 +2,7 @@ import contextlib
 from celery import group
 from django.shortcuts import render, redirect
 from rest_framework.response import Response
-from rest_framework import permissions
+from rest_framework import permissions, viewsets
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework.views import APIView
@@ -13,14 +13,14 @@ from Listings.models import (
     )
 from Lead.models import (
     BusinessPageLeadView, Lead, BusinessPageLeadBucket, BusinessPageLead, AssignedLeadPerPremiumPlan, 
-    LeadBucket, LeadPrice, ComboLead, ComboLeadBucket, LeadOrder, LeadFrorm,
+    LeadBucket, LeadPrice, ComboLead, ComboLeadBucket, LeadOrder, LeadFrorm, LeadFormTag,
     BusinessPageEnquiredLeadViews, ComboLeadOrder, LeadBanner
     )
 from .serializer import (BusinessPageleadViewSerializer, LeadSerializer, LeadPaymentSerializer,PriceLeadWithoutAllDataSerializer,
             IndividualLeadsSerializer, EnquiryFormSerializer, BusinessPageLeadSerializer,
             LeadWithoutAllDataSerializer, IndividualPageLeadWithoutAllDataSerializer,
             PaidLeadSerializers, LeadExcelUploadFrom, ComboLeadPaymentSerializer,
-            ComboLeadSerializer, AssignedPremiumPlanLeadSerializer, UsersPaidLeadSerializer, GetLeadFormSerializer, LeadBannerSerializer
+            ComboLeadSerializer, AssignedPremiumPlanLeadSerializer, UsersPaidLeadSerializer, GetLeadFormSerializer, LeadBannerSerializer, LeadFormSerializer
     )
 from rest_framework import status, generics
 from Listings.RazorpayPayment.razorpay.main import RazorpayClient
@@ -45,6 +45,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.utils.decorators import method_decorator
 from users.models import User
+from django.db.models import Prefetch
+
+
 
 
 
@@ -945,21 +948,22 @@ class CategoryWiseAndAllLeadsView(generics.ListAPIView):
                 business_page = Business.objects.get(owner=user)
 
                 if business_page:
-                    business_page     = Business.objects.get(owner=user)
                     business_category = business_page.category
 
                     try:
-                        available_plan = PremiumPlanBenefits.objects.filter(user=user)
+                        available_plan      = PremiumPlanBenefits.objects.filter(user=user)
                         available_plan_lead = available_plan.aggregate(total_lead=Sum('lead_assigned'))['total_lead']
                     except PremiumPlanBenefits.DoesNotExist:
                         available_plan_lead = 0
 
+                    ### Trial Plan 
                     try:
                         trial_plan = TrialPlanRequest.objects.filter(user=user, is_active=True)
                         available_trial_plan_lead = trial_plan.aggregate(total_lead=Sum('lead_view'))['total_lead']
                     except TrialPlanRequest.DoesNotExist:
                         available_trial_plan_lead = 0
 
+                    #### Total available Lead
                     total_available_lead = (available_plan_lead or 0) + (available_trial_plan_lead or 0)
 
                     try:
@@ -967,7 +971,7 @@ class CategoryWiseAndAllLeadsView(generics.ListAPIView):
                     except BusinessPageLeadView.DoesNotExist:
                         viewed_lead = None
 
-                    paid_leads       = BusinessPageLeadBucket.objects.filter(business_page=business_page.pk)
+                    paid_leads = BusinessPageLeadBucket.objects.filter(business_page=business_page.pk)
 
                     unpaid_leads = leads.filter(category=business_category).exclude(id__in = [business_lead_bucket.lead.id 
                                                                                               for business_lead_bucket in paid_leads])
@@ -983,12 +987,12 @@ class CategoryWiseAndAllLeadsView(generics.ListAPIView):
     
                     if total_available_lead > 0:
                         category_leads_pagination = self.paginate_queryset(filtered_lead)
-                        lead_serializer  = LeadWithoutAllDataSerializer(category_leads_pagination, many=True)
+                        lead_serializer = LeadWithoutAllDataSerializer(category_leads_pagination, many=True)
 
                     else:
                         category_leads_pagination = self.paginate_queryset(filtered_lead)
                         lead_serializer  = PriceLeadWithoutAllDataSerializer(category_leads_pagination, many=True)
-                    
+
                     response_data = {
                         'Leads': lead_serializer.data
                     }
@@ -2129,15 +2133,19 @@ class LeadFormDetails(APIView):
 
     def post(self, request):
         lead_form_category = request.data.get("category")
+        lead_form_id = request.data.get("lead_form_id")
 
         ## Get the category
+        # try:
+        #     get_category = Category.objects.get(type=lead_form_category)
+        # except Exception as e:
+        #     try:
+        #         get_category = Category.objects.get(id = lead_form_category)
+        #     except Exception as e:
+        #         return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            get_category = Category.objects.get(type=lead_form_category)
-        except Exception as e:
-            return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            category_lead_form  = LeadFrorm.objects.get(category = get_category)
+            category_lead_form  = LeadFrorm.objects.get(id = lead_form_id)
         except Exception as e:
             return Response({
                 'message': 'Lead Form not found'
@@ -2165,8 +2173,10 @@ class LeadGenerateFromLeadForm(APIView):
         try:
             category_obj = Category.objects.get(type = category_name)
         except Exception as e:
-            return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            try:
+                category_obj = Category.objects.get(id = category_name)
+            except Exception as e:
+                return Response({'message': 'Invalid Category'}, status=status.HTTP_400_BAD_REQUEST)
 
         ## Generate Lead
         try:
@@ -2278,4 +2288,37 @@ class LeadBannerView(APIView):
             'lead_banner_data': serializer.data if serializer else None
 
         }, status=status.HTTP_200_OK)
+    
+
+
+
+
+### Lead form tag wise viewset
+class LeadFormTagViewSet(viewsets.ModelViewSet):
+    """
+        A ViewSet to fetch all LeadFrorm instances grouped by LeadFormTag.
+    """
+    queryset = LeadFormTag.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        # Fetch all LeadFormTags with their respective LeadFrorm instances
+        lead_form_tags = LeadFormTag.objects.prefetch_related(
+            Prefetch('leadfrorm_set', queryset=LeadFrorm.objects.all())
+        )
+
+        # Structure the response
+        response_data = []
+        for tag in lead_form_tags:
+            response_data.append({
+                'tag': tag.name,
+                'leadforms': LeadFormSerializer(tag.leadfrorm_set, many=True).data
+            })
+
+        return Response(response_data)
+
+    
+
+
+
+
 

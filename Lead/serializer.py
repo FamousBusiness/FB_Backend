@@ -4,7 +4,7 @@ from users.models import User
 from Lead.models import (
     LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, LeadPrice, LeadFrorm, LeadFormQuestion, 
     ComboLead, AssignedLeadPerPremiumPlan, BusinessPageLeadView,
-    LeadBanner
+    LeadBanner, LeadFormTag
     )
 from django import forms
 from decouple import config
@@ -154,7 +154,7 @@ class PriceLeadWithoutAllDataSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lead
-        fields = ['id', 'requirement', 'state', 'city', 'created_at', 'price', 'status', 'pincode', 'views', 'created_by', 'expired']
+        fields = ['id', 'requirement', 'state', 'city', 'created_at','status', 'price', 'pincode', 'views', 'created_by', 'expired']
 
     # def get_remaining_lead_viewed(self, obj):
     #     business_viewed_lead_count = BusinessPageLeadBucket.count_viewed_users(lead_id=obj.id)
@@ -275,6 +275,20 @@ class LeadBannerSerializer(serializers.ModelSerializer):
         model = LeadBanner
         fields = "__all__"
 
+
+class LeadFormSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model  = LeadFrorm
+        fields = '__all__'
+
+
+
+class LeadFormTagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LeadFormTag
+        fields = '__all__'
 
 
 

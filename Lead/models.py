@@ -278,6 +278,14 @@ class LeadFormQuestion(models.Model):
 
     def __str__(self) -> str:
         return f'{self.question}'
+
+
+### Lead form tag
+class LeadFormTag(models.Model):
+    name = models.CharField(_("Lead Form Tag"), max_length=50)
+
+    def __str__(self):
+        return f'Lead Form - {str(self.name)}'
     
 
 
@@ -285,6 +293,7 @@ class LeadFormQuestion(models.Model):
 class LeadFrorm(models.Model):
     category        = models.ForeignKey(Category, verbose_name=_("Category"), on_delete=models.CASCADE)
     headline        = models.CharField(max_length=100)
+    form_tag        = models.ForeignKey(LeadFormTag, on_delete=models.CASCADE, null=True)
 
     city            = models.CharField(_("City"), max_length=20, null=True, blank=True)
     city_required   = models.BooleanField(_("City Required"), default=False, null=True, blank=True)
@@ -316,7 +325,7 @@ class LeadFrorm(models.Model):
     background_img  = models.ImageField(_("Background Image"), upload_to='LeadForm/', null=True, blank=True)
     logo            = models.ImageField(_("Logo"), upload_to='LeadForm', null=True, blank=True)
 
-
+    
     def __str__(self) -> str:
         return f"{self.headline}"
 

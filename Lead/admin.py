@@ -2,13 +2,14 @@ from django.contrib import admin
 from Lead.models import (
     LeadPrice, LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, BusinessPageLeadView,
     ComboLead, ComboLeadBucket, AssignedLeadPerPremiumPlan, LeadOrder, ComboLeadOrder, LeadViewQuantity, LeadFormQuestion,
-    LeadFrorm, LeadBanner
+    LeadFrorm, LeadBanner, LeadFormTag
     )
 
 
 
 class LeadPriceModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'price')
+
 
 class BusinessPageLeadModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'business_page', 'created_at', 'status')
@@ -18,11 +19,19 @@ class LeadModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_by', 'category', 'mobile_number', 'email', 'created_at', 'expired', 'city', 'mail_sent')
     empty_value_display = "-empty-"
 
+
 class BusinessPageLeadBucketModelAdmin(admin.ModelAdmin):
     list_display = ("id", "business_page", "lead", "is_paid")
 
+
 class LeadBucketModelAdmin(admin.ModelAdmin):
     list_display = ("id", "owner", "lead", "is_paid", "viewed")
+
+
+class LeadFormModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'category', 'headline', 'form_tag')
+
+
 
 
 
@@ -39,6 +48,7 @@ admin.site.register(AssignedLeadPerPremiumPlan)
 admin.site.register(BusinessPageLeadView)
 admin.site.register(LeadViewQuantity)
 admin.site.register(LeadFormQuestion)
-admin.site.register(LeadFrorm)
+admin.site.register(LeadFrorm, LeadFormModelAdmin)
 admin.site.register(LeadBanner)
+admin.site.register(LeadFormTag)
 
