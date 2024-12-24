@@ -32,11 +32,9 @@ class SendTESTSMSView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
-        # serializer = SMSSerializer(data=request.data)
-        # if serializer.is_valid():
-
-        #     sms_data = serializer.validated_data
         url = "http://trans.smsfresh.co/api/sendmsg.php"
+
+        message_text = f"Your OTP is. Valid for 10 minutes. Do not share it. WEBZOTICA BUSINESS FAMOUS SOFTWARE PVT.LTD"
 
         params = {
             "user": 'WEBZOTICAPROMO',
@@ -44,19 +42,19 @@ class SendTESTSMSView(APIView):
             "sender": 'WBFSPL',
             "phone": '8249258412',
             # "text": 'New%20Lead%20Alert%20from%20Famous%20Business.%20Please%20view%20the%20Leads%20and%20contact%20to%20the%20Buyer%3A%20https%3A%2F%2Ffamousbusiness.in%2Fleads.%20Regards%2C%20WFBSPL.',
-            "text": 'New%20Lead%20has%20been%20assign%20for%20your%20Business.%0A%20Please%20Share%20the%20Quotation.%0A%20Regards%2C%20WFBSPL%20famousbusiness.in%0A%209871475373',
+            "text": message_text,
             "priority": 'ndnd',
             "stype": 'normal'
         }
-
+        
         response = requests.get(url, params=params)
+        # print('response', response)
 
         if response.status_code == 200:
             return Response({"message": "API request successful", "response": response.text}, status=status.HTTP_200_OK)
         else:
             return Response({"message": f"API request failed with status code {response.status_code}", "response": response.text}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # else:
-        #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      
 
 
 

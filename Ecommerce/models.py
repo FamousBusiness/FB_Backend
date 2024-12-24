@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from users.models import User
+# from Listings.models import ProductService
 
 
 
@@ -63,3 +65,40 @@ class ProductImages(models.Model):
     def __str__(self) -> str:
         return f'Image - {self.name}'
     
+
+
+class Cart(models.Model):
+    user     = models.ForeignKey(User, on_delete=models.CASCADE)
+    product  = models.ForeignKey('Listings.ProductService', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user.name} - {self.product} - {self.quantity}'
+
+
+
+class CustomerAddress(models.Model):
+    user     = models.ForeignKey(User, on_delete=models.CASCADE)
+    address  = models.TextField(_("Address"))
+
+    def __str__(self):
+        return f'{self.user} Address'
+
+
+
+class ProductOrders(models.Model):
+    user       = models.ForeignKey(User, on_delete=models.CASCADE)
+    product    = models.ForeignKey('Listings.ProductService', on_delete=models.CASCADE)
+    quantity   = models.PositiveIntegerField(default=0)
+    is_paid    = models.BooleanField(_("Paid"), default=False)
+    address    = models.ForeignKey(CustomerAddress, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f'{self.product} order of {self.user}'
+    
+
+
+
+
