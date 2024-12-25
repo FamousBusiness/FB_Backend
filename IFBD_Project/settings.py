@@ -283,6 +283,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://www.famousbusiness.in",
     "https://mdwebzotica.famousbusiness.in",
     "http://mdwebzotica.famousbusiness.in",
+    "https://store.famousbusiness.in",
+    "https://www.store.famousbusiness.in",
     "http://localhost:3000",
     "http://localhost:3001",
 ]
