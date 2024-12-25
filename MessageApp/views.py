@@ -15,11 +15,8 @@ from django.http import HttpResponse
 from cryptography.hazmat.primitives import hashes
 from django.views.decorators.csrf import csrf_exempt
 from cryptography.hazmat.backends import default_backend
-from Admin.forms import AdminExcelUploadForm
-from Lead.models import Lead, LeadOrder
-from Listings.models import Business, Category
-from users.models import User
-from django.db.models import Q
+from django.utils import timezone
+
 
 
 
@@ -35,6 +32,7 @@ class SendTESTSMSView(APIView):
         url = "http://trans.smsfresh.co/api/sendmsg.php"
 
         message_text = f"Your OTP is. Valid for 10 minutes. Do not share it. WEBZOTICA BUSINESS FAMOUS SOFTWARE PVT.LTD"
+
 
         params = {
             "user": 'WEBZOTICAPROMO',

@@ -21,7 +21,7 @@ class PlanDetainlModelAdmin(admin.ModelAdmin):
 
 @admin.register(PremiumPlanOrder)
 class PremiumPlanOrderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'transaction_id', 'amount', 'status', 'purchased_at', 'isPaid')
+    list_display = ('user', 'transaction_id', 'amount', 'status', 'purchased_at', 'isPaid', 'repayment_date')
     search_fields = ('user__username', 'transaction_id', 'status')
     list_filter = ('status', 'isPaid', 'purchased_at')
     ordering = ('-purchased_at',)

@@ -748,7 +748,6 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
         except Exception as e:
             messages.error(request, 'No premium plans eligible for payment deduction.')
             return render(request, self.template_name)
-        
 
         current_date = timezone.now()
         
