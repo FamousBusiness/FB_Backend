@@ -279,6 +279,7 @@ class SendWhatsAppTestMessage(APIView):
  
         response = requests.get(url, params=params)
 
+        print('response', response)
         # print(response)
         if response.status_code == 200:
             return Response("Message sent Successfully")

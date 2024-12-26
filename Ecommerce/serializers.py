@@ -1,6 +1,6 @@
 from Listings.models import Category, ProductService
 from rest_framework import serializers
-from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages
+from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart
 
 
 ### Categories visible at the top bar on store homepage
@@ -86,3 +86,28 @@ class ProductServiceSerializer(serializers.ModelSerializer):
             'id', 'name', 'picture', 'price', 'description', 'description2', 'category', 'subcategory', 'rating','reviews', 'discount_price', 'percentage_off', 'emi_amount', 'is_available',
             'offers', 'specification', 'multiple_img', 'is_sponsored', 'reviews'
         ]
+
+
+
+#### Cart Serializer
+class CartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Cart
+        fields = ['product', 'quantity']
+
+
+#### Checkout page serializer
+class CartChecKoutSerializer(serializers.ModelSerializer):
+    product_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'product', 'quantity', 'product_details']
+        
+    def get_product_details(self, obj):
+        try:
+            product = ProductService.objects.get(id=obj.product.id)
+            return ProductServiceSerializer(product).data
+        except Exception as e:
+            return None

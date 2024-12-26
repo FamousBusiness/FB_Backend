@@ -1,14 +1,16 @@
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, permissions
 from Listings.models import Category, ProductService, SubCategory
-from .models import StoreBanner, ProductTag
+from .models import StoreBanner, ProductTag, Cart
 from rest_framework import viewsets
 from .serializers import (
-    StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer,
-    ProductServiceSerializer, StoreHomePageProductTagSerializer
+    StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer, CartSerializer, 
+    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer
     )
 from .pagination import StoreHomepageProductPagination, StoreCategoryWiseProductViewSetPagination
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.views import APIView
+
 
 
 
@@ -83,7 +85,164 @@ class ProductServiceViewSet(viewsets.ReadOnlyModelViewSet):
             return ProductService.objects.filter(pk=product_id)
         else:
             return ProductService.objects.none()  
+        
 
+
+
+class CreateProductCartViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset           = Cart.objects.all()
+    serializer_class   = CartSerializer
+
+
+    #### Get all the Carts of user
+    def list(self, request, *args, **kwargs):
+        """
+            Retrieve cart items for the authenticated user
+        """
+        user       = request.user
+        queryset   = Cart.objects.filter(user=user)
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+         
+
+    ### Add Cart Item
+    def create(self, request, *args, **kwargs):
+        user       = request.user
+        serializer = self.get_serializer(data=request.data)
+
+        product_id = request.data.get('product')
+
+        ### Check Valid product 
+        try:
+            product_service = ProductService.objects.get(pk = int(product_id))
+        except Exception as e:
+            return Response({'message': 'Invalid Product', 'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.is_valid(raise_exception = True)
+
+        # product_id = serializer.validated_data['product']
+        quantity   = serializer.validated_data['quantity']
+
+
+        cart_item = Cart.objects.filter(
+            user    = user,
+            product = product_service
+        ).first()
+
+        if cart_item:
+            cart_item.quantity += quantity
+            cart_item.save()
+
+            return Response(
+                CartSerializer(cart_item).data,
+                status=status.HTTP_200_OK
+            )
+        
+        else:
+            cart_item = Cart.objects.create(
+                user = user,
+                product = product_service,
+                quantity = quantity
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
+    ### Update Cart Item
+    def update(self, request, *args, **kwargs):
+        user       = request.user
+        product_id = request.data.get('product')
+        quantity   = request.data.get('quantity')
+
+        ### Check Valid product 
+        try:
+            product_service = ProductService.objects.get(id = int(product_id))
+        except Exception as e:
+            return Response({'message': 'Invalid Product'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            cart_item = Cart.objects.get(user=user, product=product_service)
+            cart_item.quantity = quantity
+            cart_item.save()
+
+            return Response(
+                CartSerializer(cart_item).data,
+                status=status.HTTP_200_OK
+            )
+        except Cart.DoesNotExist:
+            return Response(
+                {'error': 'Cart item does not exist'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+    
+    #### Delete Cart Item
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+
+        return Response(
+            {'message': 'Cart item deleted successfully'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+    
+
+
+
+
+class RemoveProductFromCartView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request):
+        user       = request.user
+        product_id = request.data.get('product')
+        quantity_to_remove = request.data.get('quantity', 0) 
+
+        try:
+            product_service = ProductService.objects.get(id=int(product_id))
+        except ProductService.DoesNotExist:
+            return Response({'message': 'Invalid Product'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get the cart item for the user and product
+        try:
+            cart_item = Cart.objects.get(user=user, product=product_service)
+        except Cart.DoesNotExist:
+            return Response({'message': 'Product not in cart'}, status=status.HTTP_404_NOT_FOUND)
+        
+        if quantity_to_remove >= cart_item.quantity:
+            cart_item.delete()
+            return Response({'message': 'Product removed from cart'}, status=status.HTTP_204_NO_CONTENT)
+        
+        cart_item.quantity -= quantity_to_remove
+        cart_item.save()
+
+
+        return Response({
+            'message': 'Quantity decreased successfully',
+            'product': product_service.name,
+            'new_quantity': cart_item.quantity
+        }, status=status.HTTP_200_OK)
+
+
+
+#### Checkout page 
+class CheckoutPageView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class   = CartChecKoutSerializer
+
+    def get(self, request):
+        user = request.user
+
+        if user.is_authenticated:
+            user_cart           = Cart.objects.filter(user = user)
+            all_user_cart_items = self.serializer_class(user_cart, many=True)
+
+            return Response({
+                'message': 'Cart item added successfully',
+                'data': all_user_cart_items.data
+
+            }, status=status.HTTP_200_OK)
 
 
 

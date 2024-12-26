@@ -69,7 +69,7 @@ class ProductImages(models.Model):
 
 class Cart(models.Model):
     user     = models.ForeignKey(User, on_delete=models.CASCADE)
-    product  = models.ForeignKey('Listings.ProductService', on_delete=models.CASCADE)
+    product  = models.ForeignKey('Listings.ProductService', on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField(default=0)
 
     def __str__(self):
