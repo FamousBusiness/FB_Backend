@@ -31,7 +31,7 @@ class SendTESTSMSView(APIView):
     def post(self, request, *args, **kwargs):
         url = "http://trans.smsfresh.co/api/sendmsg.php"
 
-        message_text = f"Your OTP is. Valid for 10 minutes. Do not share it. WEBZOTICA BUSINESS FAMOUS SOFTWARE PVT.LTD"
+        message_text = 'You%20have%20a%20new%20lead%20on%20FamousBusiness.in!%20Please%20contact%20the%20customer%20to%20follow%20up.%20Regards%2C%20WFBSPL%20%2008062181258'
 
 
         params = {

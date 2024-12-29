@@ -1,6 +1,9 @@
 from django.contrib import admin
-from .models import (StoreBanner, ProductTag, 
-    ProductOffers, ProductSpecification, ProductImages, ProductOrders, Cart, CustomerAddress)
+from .models import (
+    StoreBanner, ProductTag, ProductOffers, ProductSpecification, 
+    ProductImages, ProductOrders, Cart, UserAddress
+    )
+
 
 
 
@@ -11,4 +14,4 @@ admin.site.register(ProductSpecification)
 admin.site.register(ProductImages)
 admin.site.register(ProductOrders)
 admin.site.register(Cart)
-admin.site.register(CustomerAddress)
+admin.site.register(UserAddress)

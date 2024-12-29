@@ -120,12 +120,14 @@ def send_category_wise_business_message_excel_upload(data):
         url           = "http://trans.smsfresh.co/api/sendmsg.php"
         mobile_number = business_data.get('mobile_number') 
 
+        message = 'You%20have%20a%20new%20lead%20on%20FamousBusiness.in!%20Please%20contact%20the%20customer%20to%20follow%20up.%20Regards%2C%20WFBSPL%20%2008062181258'
+
         params = {
                 "user": 'WEBZOTICAPROMO',
                 "pass": '123456',
                 "sender": 'WBFSPL',
                 "phone": mobile_number,
-                "text": "New%20Lead%20has%20been%20assign%20for%20your%20Business.%0A%20Please%20Share%20the%20Quotation.%0A%20Regards%2C%20WFBSPL%20famousbusiness.in%0A%209871475373",
+                "text": message,
                 "priority": 'ndnd',
                 "stype": 'normal'
             }
@@ -365,7 +367,7 @@ def beat_task_to_send_lead_mail_every_10_minute():
 
             send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
 
-            # send_category_wise_business_message_excel_upload.delay(data)
+            send_category_wise_business_message_excel_upload.delay(data)
 
         lead.mail_sent = True
         lead.save()

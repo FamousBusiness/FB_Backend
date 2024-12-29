@@ -184,29 +184,30 @@ class UserRegisterAPIView(APIView):
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
 
-        GST            = request.data.get('GSTIN')
-        CIN_No         = request.data.get('CIN_No')
-        business_info  = request.data.get('business_info')
-        category       = request.data.get('category')
-        website_url    = request.data.get('website_url')
-        city           = request.data.get('city')
-        state          = request.data.get('state')
-        pincode        = request.data.get('pincode')
-        address        = request.data.get('address')
-        employee_count = request.data.get('employee_count')
-        turn_over      = request.data.get('turn_over')
-        nature         = request.data.get('nature')
-        opening_time   = request.data.get('opening_time')
-        closing_time   = request.data.get('closing_time')
-        keywords       = request.data.get('keywords')
-        services       = request.data.get('services')
-        established_on = request.data.get('established_on')
-        director       = request.data.get('director')
-        RoC            = request.data.get('RoC')
-        company_No     = request.data.get('company_No')
-        DIN            = request.data.get('DIN')
-        whatsapp_number= request.data.get('whatsapp_number')
-        
+        GST             = request.data.get('GSTIN')
+        CIN_No          = request.data.get('CIN_No')
+        business_info   = request.data.get('business_info')
+        category        = request.data.get('category')
+        website_url     = request.data.get('website_url')
+        city            = request.data.get('city')
+        state           = request.data.get('state')
+        pincode         = request.data.get('pincode')
+        address         = request.data.get('address')
+        employee_count  = request.data.get('employee_count')
+        turn_over       = request.data.get('turn_over')
+        nature          = request.data.get('nature')
+        opening_time    = request.data.get('opening_time')
+        closing_time    = request.data.get('closing_time')
+        keywords        = request.data.get('keywords')
+        services        = request.data.get('services')
+        established_on  = request.data.get('established_on')
+        director        = request.data.get('director')
+        RoC             = request.data.get('RoC')
+        company_No      = request.data.get('company_No')
+        DIN             = request.data.get('DIN')
+        whatsapp_number = request.data.get('whatsapp_number')
+        locality        = request.data.get('locality')
+
         
         if serializer.is_valid(raise_exception=True):
             mobile_number = serializer.validated_data.get('mobile_number')
@@ -214,7 +215,84 @@ class UserRegisterAPIView(APIView):
             business_name = serializer.validated_data.get('business_name')
             # send_otp_via_message.delay(mobile_number, otp)
             # send_mail_to_business.delay(to_email)
+
+            #### Check Mobile number exists for any Businsess or not
+            try:
+                business_mobile_number_check = Business.objects.get(mobile_number = mobile_number)
+
+                if business_mobile_number_check:
+                    return Response({'message': 'Mobile number already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            except Exception as e:
+                pass
+
+            #### Whatsapp number check
+            if whatsapp_number:
+                try:
+                    business_whatsapp_number_check = Business.objects.get(whatsapp_number = whatsapp_number)
+
+                    if business_whatsapp_number_check:
+                        return Response({'message': 'Whatsapp number already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                except Exception as e:
+                    pass
             
+            #### Business GST Number Check
+            if GST:
+                try:
+                    business_gst_check = Business.objects.get(GSTIN = GST)
+
+                    if business_gst_check:
+                        return Response({'message': 'GST already exxists'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                except Exception as e:
+                    pass
+
+            #### Unique CIN No Check
+            if CIN_No:
+                try:
+                    business_CIN_No_check = Business.objects.get(CIN_No = CIN_No)
+
+                    if business_CIN_No_check:
+                        return Response({'message': 'CIN No already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                except Exception as e:
+                    pass
+
+            
+            #### DIN Number Check
+            if DIN:
+                try:
+                    business_DIN_No_check = Business.objects.get(DIN = DIN)
+
+                    if business_DIN_No_check:
+                        return Response({'message': 'DIN No already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                except Exception as e:
+                    pass
+
+            ##### Company Number Check
+            if company_No:
+                try:
+                    business_company_no_check = Business.objects.get(company_No = company_No)
+
+                    if business_company_no_check:
+                        return Response({'message': 'Company No already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                except Exception as e:
+                    pass
+
+            ##### Email Check
+            if to_email:
+                try:
+                    business_email_check = Business.objects.get(email = to_email)
+
+                    if business_email_check:
+                        return Response({'message': 'Email ID already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    pass
+
+            #### Create User
             user = serializer.save()
 
             try:
@@ -224,39 +302,54 @@ class UserRegisterAPIView(APIView):
 
             try:
                 business = Business.objects.create(
-                    owner=user, 
-                    business_name=business_name, 
-                    mobile_number=mobile_number, 
-                    email=to_email,
-                    state=state, 
-                    city=city, 
-                    pincode=pincode,
-                    address=address,
-                    website_url=website_url, 
-                    director=director, 
-                    business_info=business_info,
-                    established_on=established_on, 
-                    services=services, 
-                    keywords=keywords, 
-                    opening_time=opening_time,
-                    closing_time=closing_time, 
-                    nature=nature, 
-                    turn_over=turn_over, 
-                    employee_count=employee_count,
-                    category = category_id if category_id else None
+                    owner         = user, 
+                    business_name = business_name, 
+                    mobile_number = mobile_number, 
+                    email         = to_email,
+                    state         = state, 
+                    city          = city, 
+                    pincode       = pincode,
+                    address       = address,
+                    website_url   = website_url, 
+                    director      = director, 
+                    business_info = business_info,
+                    established_on = established_on, 
+                    services       = services, 
+                    keywords       = keywords, 
+                    opening_time   = opening_time,
+                    closing_time   = closing_time, 
+                    nature         = nature, 
+                    turn_over      = turn_over, 
+                    employee_count = employee_count,
+                    category       = category_id if category_id else None,
+                    locality       = locality,
+
+                    ### Unique fields
+                    GSTIN  = GST,
+                    CIN_No = CIN_No,
+                    DIN    = DIN,
+                    RoC    = RoC,
+                    whatsapp_number = whatsapp_number,
+                    company_No      = company_No
                     )
-                if GST:
-                    business.GSTIN=GST
-                if CIN_No:
-                    business.CIN_No = CIN_No
-                if DIN:
-                    business.DIN = DIN
-                if RoC:
-                    business.RoC = RoC
-                if whatsapp_number:
-                    business.whatsapp_number = whatsapp_number
-                if company_No:
-                    business.company_No = company_No
+                
+                # if GST:
+                #     business.GSTIN = GST
+                # if CIN_No:
+                #     business.CIN_No = CIN_No
+                # if DIN:
+                #     business.DIN = DIN
+                # if RoC:
+                #     business.RoC = RoC
+
+                # if whatsapp_number:
+                #     business.whatsapp_number = whatsapp_number
+
+                # if company_No:
+                #     business.company_No = company_No
+
+                # if locality:
+                #     business.locality = locality
 
                 uid   = urlsafe_base64_encode(force_bytes(business.business_name))
 

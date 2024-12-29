@@ -1,11 +1,11 @@
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from Listings.models import Category, ProductService, SubCategory
-from .models import StoreBanner, ProductTag, Cart
+from .models import StoreBanner, ProductTag, Cart, UserAddress
 from rest_framework import viewsets
 from .serializers import (
     StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer, CartSerializer, 
-    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer
+    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer
     )
 from .pagination import StoreHomepageProductPagination, StoreCategoryWiseProductViewSetPagination
 from django.core.exceptions import ObjectDoesNotExist
@@ -132,7 +132,7 @@ class CreateProductCartViewSet(viewsets.ModelViewSet):
         ).first()
 
         if cart_item:
-            cart_item.quantity += quantity
+            cart_item.quantity = quantity
             cart_item.save()
 
             return Response(
@@ -245,5 +245,21 @@ class CheckoutPageView(APIView):
             }, status=status.HTTP_200_OK)
 
 
+
+
+
+#### Delivery Address Viewset
+class UserDeliveryAddressView(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset           = UserAddress.objects.all()
+    serializer_class   = UserDeliveryAddressSerializer
+
+
+    def get_queryset(self):
+        return UserAddress.objects.filter(user=self.request.user)
+    
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 

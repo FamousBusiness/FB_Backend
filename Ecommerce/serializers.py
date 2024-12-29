@@ -1,6 +1,6 @@
 from Listings.models import Category, ProductService
 from rest_framework import serializers
-from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart
+from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart, UserAddress
 
 
 ### Categories visible at the top bar on store homepage
@@ -111,3 +111,16 @@ class CartChecKoutSerializer(serializers.ModelSerializer):
             return ProductServiceSerializer(product).data
         except Exception as e:
             return None
+        
+
+
+
+#### User delivery Address Serializer
+class UserDeliveryAddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model  = UserAddress
+        fields = '__all__'
+        read_only_fields = ['user']
+
+    

@@ -6,6 +6,12 @@ from users.models import User
 
 
 
+USER_ADDRESS_TYPE = [
+    ('HOME', 'Home'),
+    ('WORK', 'Work'),
+]
+
+
 
 ### Store home page banner
 class StoreBanner(models.Model):
@@ -26,6 +32,7 @@ class StoreBanner(models.Model):
     
     class Meta:
         ordering = ["-id"]
+
 
 
 
@@ -77,12 +84,24 @@ class Cart(models.Model):
 
 
 
-class CustomerAddress(models.Model):
-    user     = models.ForeignKey(User, on_delete=models.CASCADE)
-    address  = models.TextField(_("Address"))
+#### Delivery Address
+class UserAddress(models.Model):
+    user             = models.ForeignKey(User, on_delete=models.CASCADE)
+    name             = models.CharField(_("Name"), max_length=30)
+    mobile_number    = models.CharField(_("Mobile Number"), max_length=11)
+    pincode          = models.CharField(_('PINCODE'), max_length=10)
+    locality         = models.CharField(_("Locality"), max_length=50)
+    address          = models.TextField(_("Address"))
+    city             = models.CharField(_("City"), max_length=50)
+    state            = models.CharField(_("State"), max_length=10)
+    landmark         = models.CharField(_("Landmark"), max_length=30, blank=True, null=True)
+    alternate_number = models.CharField(_("Alternate Mobile Number"), max_length=11, blank=True, null=True)
+    address_tye      = models.CharField(choices=USER_ADDRESS_TYPE, max_length=5)
+
 
     def __str__(self):
         return f'{self.user} Address'
+    
 
 
 
@@ -91,12 +110,16 @@ class ProductOrders(models.Model):
     product    = models.ForeignKey('Listings.ProductService', on_delete=models.CASCADE)
     quantity   = models.PositiveIntegerField(default=0)
     is_paid    = models.BooleanField(_("Paid"), default=False)
-    address    = models.ForeignKey(CustomerAddress, on_delete=models.SET_NULL, null=True)
+    address    = models.ForeignKey(UserAddress, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
         return f'{self.product} order of {self.user}'
+    
+
+
+
     
 
 
