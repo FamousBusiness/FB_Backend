@@ -5,7 +5,7 @@ from .models import StoreBanner, ProductTag, Cart, UserAddress
 from rest_framework import viewsets
 from .serializers import (
     StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer, CartSerializer, 
-    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer
+    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer, MultipleProductSerializer
     )
 from .pagination import StoreHomepageProductPagination, StoreCategoryWiseProductViewSetPagination
 from django.core.exceptions import ObjectDoesNotExist
@@ -261,5 +261,33 @@ class UserDeliveryAddressView(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+
+
+#### get multiple products in checkout page
+class MultipleProductViewSet(APIView):
+    permission_classes = [permissions.AllowAny]
+
+
+    def post(self, request):
+        request_data = request.data['products']
+
+        all_products = []
+
+        for data in request_data:
+            product_id = int(data)
+
+            try:
+                product_data = ProductService.objects.get(id = product_id)
+
+                all_products.append(product_data)
+            except Exception as e:
+                pass
+
+        serializer   = MultipleProductSerializer(all_products, many=True)
+
+        return Response({'message': 'Success', 'products': serializer.data}, status=status.HTTP_200_OK)
+
 
 

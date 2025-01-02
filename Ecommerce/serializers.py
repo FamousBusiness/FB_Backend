@@ -123,4 +123,15 @@ class UserDeliveryAddressSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['user']
 
+
+
+#### Multiple product serializer
+class MultipleProductSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductService
+        fields = [
+            'id', 'name', 'picture', 'price', 'description', 'description2', 'category', 'subcategory', 'rating','reviews', 'discount_price', 'percentage_off', 'emi_amount', 'is_available', 'is_sponsored', 'reviews'
+        ]
+
     
