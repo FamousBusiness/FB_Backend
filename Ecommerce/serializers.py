@@ -134,4 +134,6 @@ class MultipleProductSerializer(serializers.ModelSerializer):
             'id', 'name', 'picture', 'price', 'description', 'description2', 'category', 'subcategory', 'rating','reviews', 'discount_price', 'percentage_off', 'emi_amount', 'is_available', 'is_sponsored', 'reviews'
         ]
 
+
+
     

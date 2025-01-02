@@ -123,8 +123,7 @@ class CreateProductCartViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception = True)
 
         # product_id = serializer.validated_data['product']
-        quantity   = serializer.validated_data['quantity']
-
+        quantity = serializer.validated_data['quantity']
 
         cart_item = Cart.objects.filter(
             user    = user,
@@ -291,3 +290,55 @@ class MultipleProductViewSet(APIView):
 
 
 
+
+
+##### Update Cart and Quantity
+class UpdateCartQuantityView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user       = request.user
+        products   = request.data.get('product')
+        quantities = request.data.get('quantity')
+
+        if not products and not quantities:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+        # Ensure products and quantities are of the same length
+        if len(products) != len(quantities):
+            return Response(
+                {'message': 'Mismatch between products and quantities'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        response_data = []
+
+        for product_id, quantity in zip(products, quantities):
+            ### Check Valid product 
+            try:
+                product_service = ProductService.objects.get(pk = int(product_id))
+            except Exception as e:
+                return Response({'message': 'Invalid Product', 'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            cart_item = Cart.objects.filter(
+                user    = user,
+                product = product_service
+            ).first()
+
+            if cart_item:
+                cart_item.quantity += quantity
+                cart_item.save()
+
+                response_data.append({'product_id': product_id, 'message': 'Cart updated successfully'})
+            
+            else:
+                cart_item = Cart.objects.create(
+                    user = user,
+                    product = product_service,
+                    quantity = quantity
+                )
+                response_data.append({'product_id': product_id, 'message': 'Cart created successfully'})
+
+        return Response(response_data, status=status.HTTP_200_OK)
+    
