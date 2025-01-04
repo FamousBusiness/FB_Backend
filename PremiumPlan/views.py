@@ -359,11 +359,11 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                         ### Send Invoice to the Business
                         generate_pdf(user_obj, order)
 
-                        data = {
-                            'mobile_number': business_instance.mobile_number,
-                            'document_name': order.invoice
-                        }
-                        send_premium_plan_first_invoice.delay(data)
+                        # data = {
+                        #     'mobile_number': business_instance.mobile_number,
+                        #     'document_name': order.invoice
+                        # }
+                        # send_premium_plan_first_invoice.delay(data)
 
                 except Exception as e:
                     order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'
