@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.views import View
 import pandas as pd
-from rest_framework import status, permissions, generics
+from rest_framework import status, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import requests
@@ -16,6 +16,7 @@ from cryptography.hazmat.primitives import hashes
 from django.views.decorators.csrf import csrf_exempt
 from cryptography.hazmat.backends import default_backend
 from django.utils import timezone
+from PremiumPlan.models import PremiumPlanOrder
 
 
 
@@ -320,6 +321,31 @@ class SendDocumentWhatsAppMessage(APIView):
         
         else:
             return Response("Unable to send Whatsapp Message")
+        
+
+
+
+
+
+class PremiumPlanOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PremiumPlanOrder
+        fields = ['invoice']
+
+
+### Premiumplan Order invoice url check
+class PremiumPlanOrderInvoices(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        all_orders = PremiumPlanOrder.objects.all()
+        serializer = PremiumPlanOrderSerializer(all_orders, many=True)
+
+        return Response(serializer.data)
+        
+
+
+
 
         
 

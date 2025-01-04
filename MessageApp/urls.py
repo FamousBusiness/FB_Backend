@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SendTESTSMSView, index, pay, payment_return, Payment_Successfull, LeadCheck, SendWhatsAppTestMessage, SendDocumentWhatsAppMessage
+from .views import SendTESTSMSView, index, pay, payment_return, Payment_Successfull, LeadCheck, SendWhatsAppTestMessage, SendDocumentWhatsAppMessage, PremiumPlanOrderInvoices
 
 
 urlpatterns = [
@@ -10,7 +10,8 @@ urlpatterns = [
     path('pay/', pay, name='pay'),
     path('return-to-me/', payment_return, name='return_to_me'),
     path('payment-successfull/', Payment_Successfull, name='payment_successfull'),
-    path('lead-check/', LeadCheck.as_view(), name='lead-check')
+    path('lead-check/', LeadCheck.as_view(), name='lead-check'),
+    path('premium/plan/invoice/', PremiumPlanOrderInvoices.as_view(), name='plan_invoice'),
 ]
 
 

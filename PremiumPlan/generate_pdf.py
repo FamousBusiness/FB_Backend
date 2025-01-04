@@ -1,6 +1,5 @@
 import pdfkit
 from django.core.files.base import ContentFile
-from PremiumPlan.models import PremiumPlanOrder
 from Listings.models import Business
 from uuid import uuid4
 
