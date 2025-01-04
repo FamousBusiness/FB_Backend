@@ -355,9 +355,9 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                 try:
                     business_instance = Business.objects.get(owner=user_obj)
 
-                    if business_instance:
+                    # if business_instance:
                         ### Send Invoice to the Business
-                        generate_pdf(user_obj, order)
+                        # generate_pdf(user_obj, order)
 
                         # data = {
                         #     'mobile_number': business_instance.mobile_number,
