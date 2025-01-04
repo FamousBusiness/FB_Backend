@@ -76,7 +76,6 @@ class PremiumPlanPaymentView(APIView):
             current_user    = request.user
             plan_id         = request.data.get('premium_plan_id')
 
-
             try:
                 premium_plan_instance = PremiumPlan.objects.get(id=plan_id)
             except PremiumPlan.DoesNotExist:
@@ -88,6 +87,7 @@ class PremiumPlanPaymentView(APIView):
                 premium_plan_id = premium_plan_instance,
                 user_id         = current_user
             )
+            
 
             #### Create user subscription step
             if premium_plan_instance.autopay_payment_type:
@@ -355,15 +355,15 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                 try:
                     business_instance = Business.objects.get(owner=user_obj)
 
-                    # if business_instance:
-                    #     ### Send Invoice to the Business
-                    #     generate_pdf(user_obj, premium_plan)
+                    if business_instance:
+                        ### Send Invoice to the Business
+                        generate_pdf(user_obj, order)
 
-                    #     # data = {
-                    #     #     'mobile_number': business_instance.mobile_number,
-                    #     #     'document_name': order.invoice
-                    #     # }
-                    #     # send_premium_plan_first_invoice.delay(data)
+                        data = {
+                            'mobile_number': business_instance.mobile_number,
+                            'document_name': order.invoice
+                        }
+                        send_premium_plan_first_invoice.delay(data)
 
                 except Exception as e:
                     order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'
