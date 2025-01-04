@@ -353,8 +353,7 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                     order.save()
 
                 try:
-                    # business_instance = Business.objects.get(owner=user_obj)
-                    business_instance = Business
+                    business_instance = Business.objects.get(owner=user_obj)
 
                     # if business_instance:
                     #     ### Send Invoice to the Business
