@@ -353,17 +353,18 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                     order.save()
 
                 try:
-                    business_instance = Business.objects.get(owner=order.user)
+                    # business_instance = Business.objects.get(owner=user_obj)
+                    business_instance = Business
 
-                    if business_instance:
-                        ### Send Invoice to the Business
-                        generate_pdf(user_obj)
+                    # if business_instance:
+                    #     ### Send Invoice to the Business
+                    #     generate_pdf(user_obj, premium_plan)
 
-                        data = {
-                            'mobile_number': business_instance.mobile_number,
-                            'document_name': order.invoice
-                        }
-                        send_premium_plan_first_invoice.delay(data)
+                    #     # data = {
+                    #     #     'mobile_number': business_instance.mobile_number,
+                    #     #     'document_name': order.invoice
+                    #     # }
+                    #     # send_premium_plan_first_invoice.delay(data)
 
                 except Exception as e:
                     order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'

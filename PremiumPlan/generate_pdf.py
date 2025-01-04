@@ -7,8 +7,11 @@ from uuid import uuid4
 
 
 
-def generate_pdf(request_user):
-    premium_plan_order = PremiumPlanOrder.objects.get(user = request_user)
+def generate_pdf(request_user, premium_plan):
+    premium_plan_order = PremiumPlanOrder.objects.get(
+                            user         = request_user,
+                            premium_plan = premium_plan
+                            )
     business           = Business.objects.get(owner = request_user)
 
     plan_amount = int(premium_plan_order.amount)
