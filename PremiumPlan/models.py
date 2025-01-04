@@ -139,6 +139,7 @@ class PlanCancelRequest(models.Model):
 ### Premium Plan Order
 class PremiumPlanOrder(models.Model):
     user                   = models.ForeignKey(User, on_delete=models.CASCADE)
+    premium_plan           = models.ForeignKey(PremiumPlan, on_delete=models.CASCADE, null=True)
     transaction_id         = models.CharField(_("Transaction ID"), max_length=100, unique=True)
     amount                 = models.PositiveIntegerField(_("Amount"), null=True, blank=False)
     status                 = models.CharField(_("Payment Status"), default="Pending", max_length=254,
@@ -154,6 +155,8 @@ class PremiumPlanOrder(models.Model):
     webhook_response      = models.TextField(_("Webhook Response"), null=True)
     recurring_transaction_id = models.CharField(max_length=40, null=True, blank=True)
     is_active                = models.BooleanField(_("Active"), default=True, null=True, blank=True)
+    invoice                  = models.FileField(_("Invoice"), upload_to='PremiumPlanInvoice/', null=True)
+    invoice_no               = models.CharField(_("Invoice No"), max_length=30, null=True)
 
 
     def __str__(self):
@@ -164,10 +167,13 @@ class PremiumPlanOrder(models.Model):
 
 
 
+
 # Phonepe Autopay System
 class PhonepeAutoPayOrder(models.Model):
-    premium_plan_id          = models.IntegerField(null=True)
-    user_id                  = models.IntegerField(null=True)
+    # premium_plan_id          = models.IntegerField(null=True)
+    # user_id                  = models.IntegerField(null=True)
+    premium_plan_id          = models.ForeignKey(PremiumPlan, on_delete=models.CASCADE, null=True)
+    user_id                  = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     merchantUserId           = models.CharField(_("Merchant User ID"), max_length=50, unique=False)
     MerchantSubscriptionId   = models.CharField(_("Merchant Subscription ID"), max_length=50, unique=True) # Sent to phonepe
     subscriptionId           = models.CharField(_("Subscription ID"), max_length=50, unique=True, null=True)  # Received from phonepe

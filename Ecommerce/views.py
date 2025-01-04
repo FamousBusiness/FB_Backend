@@ -5,7 +5,7 @@ from .models import StoreBanner, ProductTag, Cart, UserAddress
 from rest_framework import viewsets
 from .serializers import (
     StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer, CartSerializer, 
-    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer, MultipleProductSerializer
+    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer, MultipleProductSerializer, TotalCartProductQuantitySerializer
     )
 from .pagination import StoreHomepageProductPagination, StoreCategoryWiseProductViewSetPagination
 from django.core.exceptions import ObjectDoesNotExist
@@ -342,3 +342,26 @@ class UpdateCartQuantityView(APIView):
 
         return Response(response_data, status=status.HTTP_200_OK)
     
+
+
+
+#### Get Cart Quantity
+class CountCartProdctQuantityView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class   = TotalCartProductQuantitySerializer
+
+    def get(self, request):
+        user = request.user
+
+        quantity = 0
+
+        try:
+            user_carts = Cart.objects.filter(user = user)
+        except Exception as e:
+            return Response({'message': 'Unable fetch user Carts'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        for cart in user_carts:
+            quantity += cart.quantity
+
+        return Response({'quantity': quantity}, status=status.HTTP_200_OK)
+

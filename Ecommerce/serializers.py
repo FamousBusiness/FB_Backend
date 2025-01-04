@@ -135,5 +135,10 @@ class MultipleProductSerializer(serializers.ModelSerializer):
         ]
 
 
+#### Total Cart Quantity Serializer
+class TotalCartProductQuantitySerializer(serializers.Serializer):
+    quantity = serializers.IntegerField()
+
+
 
     

@@ -286,5 +286,40 @@ class SendWhatsAppTestMessage(APIView):
         else:
             return Response("Unable to send Whatsapp Message")
         
+
+
+
+##### Send Document In Whatsapp Message
+class SendDocumentWhatsAppMessage(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        api_url = "https://bhashsms.com/api/sendmsg.php"
+
+        params = {
+            "user" : "WEBZOTICA",
+            "pass" : "123456",
+            "sender" : "BUZWAP",
+            "phone" : "8249258412",
+            "text": "plan_invoice", 
+            "priority" : "wa",
+            "stype" : "normal",
+            # "Params": "1",
+            "htype" : "document",
+            "imageUrl" : "https://mdwebzotica.famousbusiness.in/InvoiceDocument/test1.pdf"
+        }
+
+        url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
+
+        response = requests.get(url, params=params)
+
+        print('response', response)
+        # print(response)
+        if response.status_code == 200:
+            return Response("Message sent Successfully")
+        
+        else:
+            return Response("Unable to send Whatsapp Message")
+
         
 

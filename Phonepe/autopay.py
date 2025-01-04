@@ -233,7 +233,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
 
 
-##### Penny Drop Payment
+##### Penny Drop Payment for First month Free
 class PhoenepePennyDropAutopay:
     # Create User Subscription API
     def Create_user_Subscription(subscriptionID, amount):

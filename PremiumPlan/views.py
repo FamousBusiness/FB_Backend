@@ -16,11 +16,11 @@ from django.conf import settings
 from Listings.RazorpayPayment.razorpay.main import RazorpayClient
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from Listings.constants import PaymentStatus
-from .permissions import IsAdminuserOrReadOnly, IsAdminuserOrAllReadOnly
-from .tasks import premium_plan_purchase_mail, send_trial_plan_activation_mail, send_trial_plan_request_mail_to_admin
+from .permissions import IsAdminuserOrReadOnly
+from .tasks import premium_plan_purchase_mail, send_trial_plan_activation_mail, send_trial_plan_request_mail_to_admin, send_premium_plan_first_invoice
 from users.models import User
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from decouple import config
 import requests
 from Phonepe.payment import calculate_sha256_string
@@ -28,7 +28,8 @@ from Phonepe.encoded import base64_decode
 from PremiumPlan.models import PhonepeAutoPayOrder
 from Phonepe.autopay import PremiumPlanPhonepeAutoPayPayment, PhoenepePennyDropAutopay
 from django.utils import timezone
-from datetime import datetime
+from PremiumPlan.generate_pdf import generate_pdf
+
 
 
             
@@ -80,11 +81,11 @@ class PremiumPlanPaymentView(APIView):
             except PremiumPlan.DoesNotExist:
                 return Response({'msg': 'Premium Plan Does Not exists'})
             
-            # Create Phonepe Order
+            ## Create Phonepe Order
             phonePeOrder = PhonepeAutoPayOrder.objects.create(
                 amount          = amount,
-                premium_plan_id = int(plan_id),
-                user_id         = int(current_user.id)
+                premium_plan_id = premium_plan_instance,
+                user_id         = current_user
             )
 
             #### Create user subscription step
@@ -201,8 +202,8 @@ class PaythorughUPIID(APIView):
         # Create Phonepe Order
         phonePeOrder = PhonepeAutoPayOrder.objects.create(
             amount          = amount,
-            premium_plan_id = int(plan_id),
-            user_id         = int(current_user.id)
+            premium_plan_id = premium_plan_instance,
+            user_id         = current_user
         )
 
         #########################################
@@ -262,7 +263,6 @@ class PaythorughUPIID(APIView):
                         )
                     except Exception as e:
                         return Response({'message': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-                    
             else:
                 try:
                     submit_auth_reuqest = PremiumPlanPhonepeAutoPayPayment.SubmitAuthRequestUPICollect(
@@ -275,7 +275,6 @@ class PaythorughUPIID(APIView):
             ############################################
             ##### SubmiAuth Request Ends Here
             #############################################
-            
             if submit_auth_reuqest['success'] == True:
                 return Response({
                     'success': True,
@@ -291,15 +290,13 @@ class PaythorughUPIID(APIView):
 
 
 
-# Receive AutopayWebhook from Phonepe
+# Receive AutopayWebhook from Phonepe after First payment
 @method_decorator(csrf_exempt, name='dispatch')
 class ReceivePhonepeAutoPayWebhook(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         response_data = request.data.get('response')
-
-        # print(response_data)
 
         # Decode the response
         decoded_data = base64_decode(response_data)
@@ -318,20 +315,22 @@ class ReceivePhonepeAutoPayWebhook(APIView):
 
             if auto_pay_order:
                 # Get the premium plan ID related to order
-                premium_plan_id  = auto_pay_order.premium_plan_id
+                premium_plan  = auto_pay_order.premium_plan_id
 
                 # Get the premium plan
-                premium_plan = PremiumPlan.objects.get(
-                    id = premium_plan_id
-                )
+                # premium_plan = PremiumPlan.objects.get(
+                #     id = premium_plan_id
+                # )
 
                 # Get the user
-                user_obj = User.objects.get(
-                    id = auto_pay_order.user_id
-                )
+                # user_obj = User.objects.get(
+                #     id = auto_pay_order.user_id
+                # )
+                user_obj = auto_pay_order.user_id
 
                 order, created = PremiumPlanOrder.objects.get_or_create(
-                    user = user_obj,
+                    user         = user_obj, 
+                    premium_plan = premium_plan
                 )
 
                 if created:
@@ -352,20 +351,23 @@ class ReceivePhonepeAutoPayWebhook(APIView):
 
                     order.save()
 
-
                 try:
                     business_instance = Business.objects.get(owner=user_obj)
+
+                    if business_instance:
+                        ### Send Invoice to the Business
+                        generate_pdf(user_obj)
+
+                        data = {
+                            'mobile_number': business_instance.mobile_number,
+                            'document_name': order.invoice
+                        }
+                        send_premium_plan_first_invoice.delay(data)
+
                 except Exception as e:
                     order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'
                     order.save()
                     return Response({'success': True}, status=status.HTTP_200_OK)
-
-                data = {
-                    'business_mail': business_instance.email,
-                    'transaction_id': auto_pay_order.authRequestId,
-                    'business_name': business_instance.business_name,
-                    'amount': order.amount
-                }
 
                 try:
                     plan_benefits, created = PremiumPlanBenefits.objects.get_or_create(user=order.user, plan=premium_plan, is_paid=True)

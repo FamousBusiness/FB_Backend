@@ -80,6 +80,8 @@ INSTALLED_APPS = [
     'ADS.apps.AdsConfig',
     'Tender.apps.TenderConfig',
     'Ecommerce.apps.EcommerceConfig',
+    'Wallet.apps.WalletConfig',
+
     # 3rdparty apps
     'rest_framework',
     'rest_framework_simplejwt',
@@ -155,17 +157,6 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '5432', 
     },
-
-
-
-    # 'slave': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': config('DB_NAME_SLAVE'),
-    #     'USER': config('DB_USER_SLAVE'),
-    #     'PASSWORD': config('DB_PASSWORD_SLAVE'),
-    #     'HOST': 'localhost',
-    #     'PORT': '5432', 
-    # },
 
 }
 
@@ -287,6 +278,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.store.famousbusiness.in",
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://localhost:5173",
 ]
 
 
@@ -339,26 +331,6 @@ AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
 
 
-
-
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'file': {
-#             'level': 'ERROR',
-#             'class': 'logging.FileHandler',
-#             'filename': '/var/log/gunicorn/error.log',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],   
-#             'level': 'ERROR',
-#             'propagate': True,
-#         },
-#     },
-# }
 
 
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')

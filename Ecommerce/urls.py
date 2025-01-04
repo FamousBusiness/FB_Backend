@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import StoreCategoryViewSet, StoreHomePageBannerViewSet, StoreHomePageProductViewSet, StoreCategoryWiseProductViewSet, ProductServiceViewSet, CreateProductCartViewSet, CheckoutPageView, UserDeliveryAddressView, MultipleProductViewSet, UpdateCartQuantityView
+from .views import StoreCategoryViewSet, StoreHomePageBannerViewSet, StoreHomePageProductViewSet, StoreCategoryWiseProductViewSet, ProductServiceViewSet, CreateProductCartViewSet, CheckoutPageView, UserDeliveryAddressView, MultipleProductViewSet, UpdateCartQuantityView, CountCartProdctQuantityView
+
 
 
 router = DefaultRouter()
@@ -21,4 +22,5 @@ urlpatterns = [
     path('v1/checkout/', CheckoutPageView.as_view(), name='checkout'),
     path('v1/multiple/product', MultipleProductViewSet.as_view(), name='checkout'),
     path('v1/update/cart/', UpdateCartQuantityView.as_view(), name='update_cart'),
+    path('v1/total/cart/quantity', CountCartProdctQuantityView.as_view(), name='update_cart'),
 ]

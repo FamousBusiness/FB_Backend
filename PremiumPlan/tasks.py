@@ -3,6 +3,7 @@ from django.core.mail import EmailMultiAlternatives
 from email.utils import formataddr
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+import requests
 
 
  
@@ -77,6 +78,38 @@ def send_trial_plan_activation_mail(data):
 
     message.attach_alternative(html_message, "text/html")
     message.send()
+
+
+
+
+#### Send Invoice of Premium Plan First Time Purchase
+@shared_task
+def send_premium_plan_first_invoice(data):
+    api_url = "https://bhashsms.com/api/sendmsg.php"
+
+    mobile_number = data['mobile_number']
+    document_name = data['document_name']
+
+    params = {
+        "user" : "WEBZOTICA",
+        "pass" : "123456",
+        "sender" : "BUZWAP",
+        "phone" : mobile_number,
+        "text": "plan_invoice", 
+        "priority" : "wa",
+        "stype" : "normal",
+        # "Params": "1",
+        "htype" : "document",
+        "imageUrl" : f"{document_name}"
+    }
+
+    url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
+
+    response = requests.get(url, params=params)
+
+    return response
+
+
 
 
 

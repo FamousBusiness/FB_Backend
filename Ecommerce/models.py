@@ -119,6 +119,18 @@ class ProductOrders(models.Model):
     
 
 
+#### Razorpay Order
+class EcomRazorPayOrders(models.Model):
+    order_product    = models.CharField(_("Product"), max_length=100)
+    order_amount     = models.CharField(_("Amount"), max_length=25)
+    order_payment_id = models.CharField(_("Payment ID"), max_length=100)
+    isPaid           = models.BooleanField(_("Is Paid"), default=False)
+    order_date       = models.DateTimeField(_("Order Date"), auto_now=True)
+
+    def __str__(self):
+        return self.order_product
+
+
 
     
 
