@@ -41,7 +41,7 @@ class PhonepeAutoPayOrderModelAdmin(admin.ModelAdmin):
     list_display  = ('premium_plan_id', 'user_id', 'MerchantSubscriptionId', 'amount')
     search_fields = ('premium_plan_id', 'user_id', 'MerchantSubscriptionId', 'amount')
     list_filter   = ('premium_plan_id', 'user_id', 'amount')
-    ordering      = ('-user_id',)
+    ordering      = ('-id',)
 
 
 

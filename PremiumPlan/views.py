@@ -76,6 +76,7 @@ class PremiumPlanPaymentView(APIView):
             current_user    = request.user
             plan_id         = request.data.get('premium_plan_id')
 
+
             try:
                 premium_plan_instance = PremiumPlan.objects.get(id=plan_id)
             except PremiumPlan.DoesNotExist:
@@ -352,7 +353,7 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                     order.save()
 
                 try:
-                    business_instance = Business.objects.get(owner=user_obj)
+                    business_instance = Business.objects.get(owner=order.user)
 
                     if business_instance:
                         ### Send Invoice to the Business
