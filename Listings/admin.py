@@ -17,6 +17,7 @@ class BusinessModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'business_name', 'category', 'email', 'mobile_number', 'state', 'city','verified')
     ordering = ['id']
     empty_value_display = "-empty-"
+    search_fields = ('email', 'mobile_number', 'business_name', 'whatsapp_number')
 
 
 
