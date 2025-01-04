@@ -12,7 +12,8 @@ def generate_pdf(request_user, premium_plan_order):
 
     plan_amount = int(premium_plan_order.amount)
     gst         = (plan_amount / 100) * 18
-
+    
+    
     premium_plan = premium_plan_order.premium_plan
     lead_view_quantity = premium_plan.lead_view if premium_plan else 0
 

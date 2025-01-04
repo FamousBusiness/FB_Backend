@@ -87,7 +87,6 @@ class PremiumPlanPaymentView(APIView):
                 premium_plan_id = premium_plan_instance,
                 user_id         = current_user
             )
-            
 
             #### Create user subscription step
             if premium_plan_instance.autopay_payment_type:
@@ -298,7 +297,6 @@ class ReceivePhonepeAutoPayWebhook(APIView):
 
     def post(self, request):
         response_data = request.data.get('response')
-
         # Decode the response
         decoded_data = base64_decode(response_data)
 
@@ -313,6 +311,7 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                 authRequestId = authRequestID,
                 subscriptionId = subscriptionID
             )
+
 
             if auto_pay_order:
                 # Get the premium plan ID related to order
@@ -355,15 +354,22 @@ class ReceivePhonepeAutoPayWebhook(APIView):
                 try:
                     business_instance = Business.objects.get(owner=user_obj)
 
-                    # if business_instance:
-                        ### Send Invoice to the Business
-                        # generate_pdf(user_obj, order)
+                    if business_instance:
+                        ## Send Invoice to the Business
+                        try:
+                            generate_pdf(user_obj, order)
+                        except Exception as e:
+                            pass
 
-                        # data = {
-                        #     'mobile_number': business_instance.mobile_number,
-                        #     'document_name': order.invoice
-                        # }
-                        # send_premium_plan_first_invoice.delay(data)
+                        try:
+                            data = {
+                                'mobile_number': business_instance.mobile_number,
+                                'document_name': str(order.invoice)
+                            }
+                            send_premium_plan_first_invoice.apply_async(args=[data], countdown=5)
+                        
+                        except Exception as e:
+                            pass
 
                 except Exception as e:
                     order.details = f'Amount paid but unable to get the business, user name - {user_obj.name}, user iD - {user_obj.pk}'

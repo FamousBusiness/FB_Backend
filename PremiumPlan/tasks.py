@@ -106,8 +106,12 @@ def send_premium_plan_first_invoice(data):
     url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
 
     response = requests.get(url, params=params)
+    response.raise_for_status() 
 
-    return response
+    return {
+            "status_code": response.status_code,
+            "response_text": response.text
+        }
 
 
 
