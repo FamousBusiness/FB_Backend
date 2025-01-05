@@ -339,6 +339,10 @@ class PremiumPlanOrderInvoices(APIView):
 
     def get(self, request):
         all_orders = PremiumPlanOrder.objects.all()
+
+        for order in all_orders:
+            print(order.invoice)
+            
         serializer = PremiumPlanOrderSerializer(all_orders, many=True)
 
         return Response(serializer.data)

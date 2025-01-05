@@ -100,7 +100,7 @@ def send_premium_plan_first_invoice(data):
         "stype" : "normal",
         # "Params": "1",
         "htype" : "document",
-        "imageUrl" : f"{document_name}"
+        "imageUrl" : f"https://mdwebzotica.famousbusiness.in/{document_name}"
     }
 
     url = f"{api_url}?user={params['user']}&pass={params['pass']}&sender={params['sender']}&phone={params['phone']}&text={params['text']}&priority={params['priority']}&stype={params['stype']}&htype={params['htype']}&url={params['imageUrl']}"
