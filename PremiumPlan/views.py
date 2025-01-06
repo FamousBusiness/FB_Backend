@@ -8,6 +8,7 @@ from Listings.models import Business
 from PremiumPlan.phonepe import PremiumPlanPaymentInitiation
 from .models import (PremiumPlan, PlanCancelRequest, TrialPlanRequest,
                      PremiumPlanOrder, PremiumPlanBenefits)
+from Admin.models import AutoPaySuccessResponse
 from .serializers import (
     PremiumPlanSerializer, PremiumPlanPaymentSerializer,
     PremiumPlanDashboardSerializer
@@ -516,20 +517,53 @@ class RecurringPaymentWebhook(APIView):
             phonepe_order                  = PhonepeAutoPayOrder.objects.get(subscriptionId = subscriptionID)
             phonepe_order.webhook_response = str(decoded_payload)
 
+            ### Register the Succcess Response for the User
+            auto_pay_success_response = AutoPaySuccessResponse(
+                user             = phonepe_order.user_id,
+                transaction_id   = phonepe_order.recurring_transaction_id,
+                premium_plan     = phonepe_order.premium_plan_id,
+                phonepe_response = str(decoded_payload),
+                subscriptionID   = phonepe_order.subscriptionId,
+                is_success       = True,
+                message          = 'Payment deducted successfully',
+            )
+
             phonepe_order.save()
+            auto_pay_success_response.save()
 
         except Exception as e:
             return Response({'message': 'Not able to get the order'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
 
         if decoded_payload['data']['notificationDetails']['state'] == 'NOTIFIED' and decoded_payload['data']['subscriptionDetails']['state'] == 'ACTIVE' and decoded_payload['data']['transactionDetails']['state'] == 'COMPLETED':
             ### Assign Premium Plan benefits to the user
-            
             try:
-                premium_plan_order = PremiumPlanOrder.objects.get(transaction_id = phonepe_order.authRequestId)
+                premium_plan_order = PremiumPlanOrder.objects.get(
+                        transaction_id = phonepe_order.authRequestId,
+                        user           = phonepe_order.user_id
+                    )
             except Exception as e:
                 return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
             
+            #### Generate PDF for the user
+            try:
+                generate_pdf(phonepe_order.user_id, premium_plan_order)
+            except Exception as e:
+                pass
+            
+            #### Send Invpoice In Whatsapp to user
+            try:
+                business_instance = Business.objects.get(owner=phonepe_order.user_id)
+
+                data = {
+                    'mobile_number': business_instance.mobile_number,
+                    'document_name': str(premium_plan_order.invoice)
+                }
+                send_premium_plan_first_invoice.apply_async(args=[data], countdown=5)
+            
+            except Exception as e:
+                pass
+
             premium_plan_order.webhook_response = str(decoded_payload)
             premium_plan_order.month_paid       = (premium_plan_order.month_paid or 0) + 1
             premium_plan_order.repayment_date   = timezone.now()

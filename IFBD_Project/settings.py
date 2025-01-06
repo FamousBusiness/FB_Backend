@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'Tender.apps.TenderConfig',
     'Ecommerce.apps.EcommerceConfig',
     'Wallet.apps.WalletConfig',
+    'Admin.apps.AdminConfig',
 
     # 3rdparty apps
     'rest_framework',

@@ -4,10 +4,10 @@ from django.views import View
 
 from Lead.models import BusinessPageLeadBucket, Lead, LeadBucket
 from PremiumPlan.models import PremiumPlan, PremiumPlanBenefits, PremiumPlanOrder, PhonepeAutoPayOrder
+from .models import AutoPayRequestSent, AutoPaySuccessResponse
 from .forms import AdminExcelUploadForm
 from django.http import HttpResponse
 import pandas as pd
-from django.db import transaction
 from users.models import User
 from Listings.models import (
     Business, Category, SubCategory, BusinessEmailID, 
@@ -779,10 +779,11 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
 
                     except Exception as e:
                         messages.error(request, "Not able to get the Phonepe order")
-
-
+                        
+                    
                     if subscriptionID:
                         try:
+                            # create a Autopay Request Sent Instance for user
                             recurring_payment = PremiumPlanPhonepeAutoPayPayment.RecurringInit(
                                 subscriptionID,
                                 amount,
@@ -790,14 +791,41 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                             )
 
                             if recurring_payment and recurring_payment['success'] == True:
+
+                                auto_pay_request = AutoPayRequestSent.objects.create(
+                                   user             =  order.user,
+                                   transaction_id   = transactionID,
+                                   premium_plan     = phonepe_order.premium_plan_id,
+                                   amount           = phonepe_order.amount,
+                                   subscriptionID   = subscriptionID,
+                                   phonepe_response = str(recurring_payment),
+                                   is_sent          = True,
+                                   message          = "Request Sent SuccessFully"
+                                )
+
                                 order.payment_response         = str(recurring_payment)
                                 phonepe_order.payment_response = str(recurring_payment)
+
                                 phonepe_order.save()
                                 order.save()
+                                auto_pay_request.save()
 
                                 messages.success(request, f"Successfully processed payment for order")
 
                         except Exception as e:
+                            auto_pay_request = AutoPayRequestSent.objects.create(
+                                   user             = order.user,
+                                   transaction_id   = transactionID,
+                                   premium_plan     = phonepe_order.premium_plan_id,
+                                   amount           = phonepe_order.amount,
+                                   subscriptionID   = subscriptionID,
+                                   phonepe_response = str(e),
+                                   is_sent          = False,
+                                   message          = "Unable to Send Request"
+                                )
+                            
+                            auto_pay_request.save()
+
                             messages.error(request, f"Problem occured while deducting payment - {str(e)}")
                     
                     else:
@@ -832,16 +860,45 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                             )
 
                             if recurring_payment and recurring_payment['success'] == True:
+
+                                # Register the Success Request
+                                auto_pay_request = AutoPayRequestSent.objects.create(
+                                   user             =  order.user,
+                                   transaction_id   = transactionID,
+                                   premium_plan     = phonepe_order.premium_plan_id,
+                                   amount           = phonepe_order.amount,
+                                   subscriptionID   = subscriptionID,
+                                   phonepe_response = str(recurring_payment),
+                                   is_sent          = True,
+                                   message          = "Request Sent SuccessFully"
+                                )
+
                                 order.payment_response         = str(recurring_payment)
                                 phonepe_order.payment_response = str(recurring_payment)
+                                
                                 phonepe_order.save()
                                 order.save()
+                                auto_pay_request.save()
 
                                 messages.success(request, f"Successfully processed payment for order")
 
                         except Exception as e:
+
+                            ### Register the Error Response
+                            auto_pay_request = AutoPayRequestSent.objects.create(
+                                   user             = order.user,
+                                   transaction_id   = transactionID,
+                                   premium_plan     = phonepe_order.premium_plan_id,
+                                   amount           = phonepe_order.amount,
+                                   subscriptionID   = subscriptionID,
+                                   phonepe_response = str(e),
+                                   is_sent          = False,
+                                   message          = "Unable to Send Request"
+                                )
+                            
+                            auto_pay_request.save()
+
                             messages.error(request, f"Problem occured while deducting payment - {str(e)}")
-                    
                     else:
                         messages.error(request, 'Not able to get Subscripton ID')
 

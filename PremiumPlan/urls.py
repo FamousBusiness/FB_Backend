@@ -16,7 +16,7 @@ urlpatterns = [
     path('autopay/payment/webhook/', ReceivePhonepeAutoPayWebhook.as_view(), name='Autopay Webhook'), # Autopay Webhook
     path('autopay/payment/status/', AutoPayPaymentStatusCheck.as_view(), name='Autopay Payment Status'), # Autopay Payment Status
     path('recurring/payment/', RecurringInitPaymentView.as_view(), name='Recurring Payment API'), # Autopay Payment Status
-    path('recurring/payment/webhook/', RecurringPaymentWebhook.as_view(), name='Recurring Payment Webhook'), # Autopay Payment Status
+    path('recurring/payment/webhook/', RecurringPaymentWebhook.as_view(), name='Recurring Payment Webhook'), # Monthly payment deduction Webhook
 
     path('premium-plan-payment-complete/', PremiumPlanPaymentCompleteView.as_view(), name='Premium Plan Payment Complete'), # Webhook
     path('cancel-plan/<int:plan>/', CancelPlanView.as_view(), name='Cancel_Premium_Plan'),
