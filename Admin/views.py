@@ -734,6 +734,7 @@ def GoogleLoginView(request):
     return render(request, 'User/google_login.html')
 
 
+
 #### Deduct Monthly Payment
 class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
     model = PremiumPlanOrder

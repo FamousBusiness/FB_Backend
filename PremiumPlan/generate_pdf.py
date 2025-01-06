@@ -2,6 +2,7 @@ import pdfkit
 from django.core.files.base import ContentFile
 from Listings.models import Business
 from uuid import uuid4
+from datetime import date
 
 
 
@@ -89,7 +90,7 @@ def generate_pdf(request_user, premium_plan_order):
                         </div>
                     </div>
 
-                    <div>Date: 28/12/2024<br>INVOICE No: {random_invoice_no}</div>
+                    <div>Date: {date.today()}<br>INVOICE No: {random_invoice_no}</div>
 
                     <table>
                         <tr>

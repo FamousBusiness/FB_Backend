@@ -333,15 +333,13 @@ class PremiumPlanOrderSerializer(serializers.ModelSerializer):
         fields = ['invoice']
 
 
+from datetime import date
 ### Premiumplan Order invoice url check
 class PremiumPlanOrderInvoices(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         all_orders = PremiumPlanOrder.objects.all()
-
-        for order in all_orders:
-            print(order.invoice)
             
         serializer = PremiumPlanOrderSerializer(all_orders, many=True)
 
