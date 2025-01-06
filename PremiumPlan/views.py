@@ -517,6 +517,36 @@ class RecurringPaymentWebhook(APIView):
             phonepe_order                  = PhonepeAutoPayOrder.objects.get(subscriptionId = subscriptionID)
             phonepe_order.webhook_response = str(decoded_payload)
 
+            success = False
+            message = ''
+
+            if decoded_payload['message'] and decoded_payload['message'] == 'Payment Failed':
+                success = False
+                message = 'Not able to deduct the payment'
+
+            elif decoded_payload['message'] and decoded_payload['message'] == 'Your payment is successful':
+                success = True
+                message = 'Payment Deducted Successfully'
+
+            else:
+                success = False
+                message = 'Not able to deduct the payment'
+            
+            try:
+                premium_plan_order = PremiumPlanOrder.objects.get(
+                        transaction_id = phonepe_order.authRequestId,
+                        user           = phonepe_order.user_id
+                    )
+                
+                ### IF the plan has been Paused then deactivate the order
+                if premium_plan_order and decoded_payload['data']['subscriptionDetails']['state'] == 'PAUSED':
+                    premium_plan_order.is_active = False
+                    premium_plan_order.save()
+                    
+            except Exception as e:
+                return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
+            
+
             ### Register the Succcess Response for the User
             auto_pay_success_response = AutoPaySuccessResponse(
                 user             = phonepe_order.user_id,
@@ -524,8 +554,9 @@ class RecurringPaymentWebhook(APIView):
                 premium_plan     = phonepe_order.premium_plan_id,
                 phonepe_response = str(decoded_payload),
                 subscriptionID   = phonepe_order.subscriptionId,
-                is_success       = True,
-                message          = 'Payment deducted successfully',
+                is_success       = success,
+                message          = message,
+                status           = decoded_payload['data']['subscriptionDetails']['state']
             )
 
             phonepe_order.save()

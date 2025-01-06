@@ -17,5 +17,5 @@ class AutoRequestSentModelAdmin(admin.ModelAdmin):
 @admin.register(AutoPaySuccessResponse)
 class AutoPaySuccessResponse(admin.ModelAdmin):
     ordering = ('-id',)
-    list_display = ('user', 'premium_plan', 'is_success', 'created_date',)
-    search_fields = ('is_success', 'created_date', 'user',)
+    list_display = ('user', 'premium_plan', 'is_success', 'created_date', 'status', )
+    search_fields = ('is_success', 'created_date', 'user', 'status', )
