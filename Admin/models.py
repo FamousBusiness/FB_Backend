@@ -19,6 +19,7 @@ class AutoPayRequestSent(models.Model):
     subscriptionID   = models.CharField(_("Phonepe SubScription ID"), max_length=40)
     is_sent          = models.BooleanField(_("Success"), default=False)
     message          = models.CharField(_("Message"), max_length=30)
+    sent_date        = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return f'{self.user} Autopay Request'
@@ -34,6 +35,7 @@ class AutoPaySuccessResponse(models.Model):
     subscriptionID   = models.CharField(_("Phonepe SubScription ID"), max_length=40, null=True)
     is_success       = models.BooleanField(_("Success"), default=False)
     message          = models.CharField(_('Message'), max_length=40, null=True)
+    created_date    = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return f'{self.user} Webhook Response'
