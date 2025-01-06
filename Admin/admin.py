@@ -10,7 +10,7 @@ from .models import AutoPayRequestSent, AutoPaySuccessResponse
 class AutoRequestSentModelAdmin(admin.ModelAdmin):
     ordering = ('-id',)
     list_display = ('user','transaction_id', 'premium_plan', 'is_sent', 'sent_date')
-    search_fields = ('user', 'transaction_id', 'is_sent')
+    search_fields = ('user__name', 'transaction_id', 'is_sent')
 
 
 
@@ -18,4 +18,4 @@ class AutoRequestSentModelAdmin(admin.ModelAdmin):
 class AutoPaySuccessResponse(admin.ModelAdmin):
     ordering = ('-id',)
     list_display = ('user', 'premium_plan', 'is_success', 'created_date', 'status', )
-    search_fields = ('is_success', 'created_date', 'user', 'status', )
+    search_fields = ('is_success', 'created_date', 'user__name', 'status', )
