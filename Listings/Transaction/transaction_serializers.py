@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from Listings.models import Order, ClientOrder, Wallet
+from Listings.models import Order, ClientOrder
 
 
 #For All Business Owner+
@@ -18,8 +18,3 @@ class ClientTransactionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class WalletSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Wallet
-        fields = '__all__'

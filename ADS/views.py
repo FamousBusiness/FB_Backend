@@ -30,10 +30,11 @@ class AllADPlansAPIView(generics.ListAPIView):
 
 
 #Payment initiation To Purchase a Lead
-@method_decorator(csrf_protect, name='dispatch')
+
 class ADPaymentInitiateAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated,]
 
+    @method_decorator(csrf_protect, name='dispatch')
     def post(self, request):
         serializer = ADPaymentSerializer(data=request.data)
 

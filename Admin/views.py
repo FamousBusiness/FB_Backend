@@ -762,7 +762,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                 amount = 0
 
                 ### Monthly Payment
-                if recurring_date and recurring_date <= (current_date - timedelta(days=29)) and active_status == True:
+                if recurring_date and (current_date - timedelta(days=31)) >= recurring_date <= (current_date - timedelta(days=29)) and active_status == True:
 
                     try:
                         transactionID = str(uuid.uuid4())[:20]

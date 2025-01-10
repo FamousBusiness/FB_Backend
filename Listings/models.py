@@ -265,6 +265,7 @@ class TextMessage(models.Model):
         ordering = ["-id"]
 
 
+
 class Email(models.Model):
     sender    = models.EmailField()
     receiver  =  models.EmailField()
@@ -280,33 +281,8 @@ class Email(models.Model):
     class Meta:
         ordering = ["-id"]
 
-
-
-class Wallet(models.Model):
-    user                = models.ForeignKey(User, on_delete=models.CASCADE)
-    transaction_id      = models.CharField(max_length=32, unique=True, editable=False)
-    plan                = models.ForeignKey(PremiumPlan, on_delete=models.CASCADE)
-    price               = models.BigIntegerField(default=0)
-    status              = models.CharField(_("Payment Status"),default=PaymentStatus.PENDING, max_length=25)
-    date                = models.DateField(auto_now_add=True)
-    time                = models.TimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-        if not self.transaction_id:
-            self.transaction_id = secrets.token_hex(8)
-        if not self.price:
-            self.price = self.plan.price
-
-        super(Wallet, self).save(*args, **kwargs)
-        
-
-    def __str__(self) -> str:
-        return f'{self.user.name}s Wallet'
     
-    class Meta:
-        ordering = ["-id"]
 
-    
 
 class FrontCarousel(models.Model):
     image    = models.ImageField(upload_to='carousel_images', null=True, blank=True)
@@ -327,6 +303,7 @@ class FrontCarousel(models.Model):
     class Meta:
         ordering = ["-id"]
     
+
 
 
 class ProductService(models.Model):

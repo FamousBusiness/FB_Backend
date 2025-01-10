@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework import status, permissions
 from rest_framework.response import Response
-from Listings.models import Business, ClientOrder, Order, Wallet
-from .transaction_serializers import BusinessTransactionSerializer, ClientTransactionSerializer, WalletSerializer
+from Listings.models import Business, ClientOrder, Order
+from .transaction_serializers import BusinessTransactionSerializer, ClientTransactionSerializer
 
 
 
@@ -27,13 +27,3 @@ class GetAllTransactionView(APIView):
 
 
 
-class UserWalletAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated,]
-
-    def get(self, request):
-        user = request.user
-        user_wallet = Wallet.objects.filter(user=user)
-        if user_wallet:
-            serializer = WalletSerializer(user_wallet, many=True)
-            return Response({'msg': 'Your Wallet balance fetched Successfully', 'data': serializer.data})
-        return Response({'msg': 'You have not yet purchased any plan yet'})

@@ -1,6 +1,6 @@
 from Listings.models import Category, ProductService
 from rest_framework import serializers
-from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart, UserAddress
+from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart, UserAddress, ProductOrders
 
 
 ### Categories visible at the top bar on store homepage
@@ -97,6 +97,8 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ['product', 'quantity']
 
 
+
+
 #### Checkout page serializer
 class CartChecKoutSerializer(serializers.ModelSerializer):
     product_details = serializers.SerializerMethodField()
@@ -138,6 +140,27 @@ class MultipleProductSerializer(serializers.ModelSerializer):
 #### Total Cart Quantity Serializer
 class TotalCartProductQuantitySerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
+
+
+
+### Product Service Serializer for User and Business orders(To avoid sending all data)
+class ProductServiceOrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductService
+        fields = ['business', 'name', 'picture', 'price', 'description', 'product_tag', 'rating', 'reviews', 'discount_price', 'percentage_off', 'emi_amount', 'offers']
+
+
+
+### All Orders
+class ProductOrderSerializer(serializers.ModelSerializer):
+    product = ProductServiceOrderSerializer()
+
+    class Meta:
+        model = ProductOrders
+        fields = ['user', 'business', 'product', 'quantity', 'is_paid', 'address', 'order_placed', 'order_placed_at', 'shipped_at', 'is_shipped', 'out_of_delivery', 'out_of_delivery_at', 'is_delivered', 'delivered_at']
+
+
 
 
 

@@ -106,12 +106,20 @@ class UserAddress(models.Model):
 
 
 class ProductOrders(models.Model):
-    user       = models.ForeignKey(User, on_delete=models.CASCADE)
-    product    = models.ForeignKey('Listings.ProductService', on_delete=models.CASCADE)
-    quantity   = models.PositiveIntegerField(default=0)
-    is_paid    = models.BooleanField(_("Paid"), default=False)
-    address    = models.ForeignKey(UserAddress, on_delete=models.SET_NULL, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    user               = models.ForeignKey(User, on_delete=models.CASCADE)
+    business           = models.ForeignKey('Listings.Business', on_delete=models.CASCADE, null=True)
+    product            = models.ForeignKey('Listings.ProductService', on_delete=models.CASCADE)
+    quantity           = models.PositiveIntegerField(default=0)
+    is_paid            = models.BooleanField(_("Paid"), default=False)
+    address            = models.ForeignKey(UserAddress, on_delete=models.SET_NULL, null=True)
+    order_placed       = models.BooleanField(_("Order Placed"), null=True)
+    order_placed_at    = models.DateTimeField(_("Order Placed Date"), null=True)
+    shipped_at         = models.DateTimeField(_("Shipped Date"), null=True)
+    is_shipped         = models.BooleanField(_("Order Shipped"), default=False)
+    out_of_delivery    = models.BooleanField(_("Out of Delivery"), default=False)
+    out_of_delivery_at = models.DateTimeField(_("Out Of Delivery Date"), null=True)
+    is_delivered       = models.BooleanField(_("Delivered"), default=False)
+    delivered_at       = models.DateTimeField(_("Delivered Date"), null=True)
 
 
     def __str__(self):

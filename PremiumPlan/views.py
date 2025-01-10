@@ -544,7 +544,8 @@ class RecurringPaymentWebhook(APIView):
                     premium_plan_order.save()
                     
             except Exception as e:
-                return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
+                pass
+                # return Response({"message": 'Invalid Premium Plan'}, status=status.HTTP_400_BAD_REQUEST)
             
 
             ### Register the Succcess Response for the User
@@ -611,14 +612,16 @@ class RecurringPaymentWebhook(APIView):
             
             try:
                 premium_plan_benefit = PremiumPlanBenefits.objects.get(user = premium_plan_order.user, plan=premium_plan)
-            except Exception as e:
-                return Response({'message': 'Invalid Plan Benefit'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            ### Get the premium plan related to the benefit
-            premium_plan_lead_quantity         = premium_plan_benefit.plan.lead_view
-            premium_plan_benefit.lead_assigned = premium_plan_lead_quantity
 
-            premium_plan_benefit.save()
+                ### Get the premium plan related to the benefit
+                premium_plan_lead_quantity         = premium_plan_benefit.plan.lead_view
+                premium_plan_benefit.lead_assigned = premium_plan_lead_quantity
+
+                premium_plan_benefit.save()
+
+            except Exception as e:
+                pass
+                # return Response({'message': 'Invalid Plan Benefit'}, status=status.HTTP_400_BAD_REQUEST)
             
             return Response({'success': True}, status=status.HTTP_200_OK)
 

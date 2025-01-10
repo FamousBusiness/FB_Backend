@@ -46,8 +46,8 @@ urlpatterns = [
 
     path('api/ecom/', include('Ecommerce.urls')),
 
+    path('api/v5/wallet/', include('Wallet.urls')),
     # path('admin-auth/', include('Admin.urls')),
-
     path('', include('Admin.urls')),
 
     path('api-token-auth/', views.obtain_auth_token),

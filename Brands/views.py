@@ -29,6 +29,7 @@ class BrandWiseBusinessAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     pagination_class   = PageNumberPagination
 
+
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, brand=None):
         brand_page = get_object_or_404(BrandBusinessPage, brand_name__icontains=brand)

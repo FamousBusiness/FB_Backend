@@ -4,7 +4,7 @@ from Listings.models import (
     Category, SubCategory, BusinessEmailID, 
     Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage,
     ClientOrder, TextMessage,  ProductService, Image,
-    Wallet, FrontCarousel, BusinessPageLike, BusinessPageReviewRating
+   FrontCarousel, BusinessPageLike, BusinessPageReviewRating
     )
 # from django.core.exceptions import ValidationError
 # from django.http import HttpResponseRedirect
@@ -25,11 +25,6 @@ class BusinessModelAdmin(admin.ModelAdmin):
 class CategoryModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'type', 'trending',)
     ordering = ('id',)
-    empty_value_display = "-empty-"
-
-
-class WalletModelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'transaction_id', 'plan', 'price', 'status', 'date' )
     empty_value_display = "-empty-"
 
 
@@ -73,7 +68,6 @@ class BusinessReviewModelAdmin(admin.ModelAdmin):
 
 admin.site.register(Image)
 admin.site.register(SubCategory, SubCategoryModelAdmin)
-admin.site.register(Wallet, WalletModelAdmin)
 admin.site.register(Business, BusinessModelAdmin)
 admin.site.register(Category, CategoryModelAdmin)
 admin.site.register(FrontCarousel, FrontCarouselModelAdmin)
