@@ -3,7 +3,18 @@ from users.models import User
 from django.utils.translation import gettext_lazy as _
 
 
+WITHDRAWAL_STATUS = (
+    ('Success', 'Success'),
+    ('Pending', 'Pending'),
+    ('Cancelled', 'Cancelled'),
+    ('Rejected', 'Rejected'),
+)
 
+TRANSACTION_MODE = (
+    ('Add', 'Add'),
+    ('Transfer', 'Transfer'),
+    ('Order', 'Order'),
+)
 
 
 class Wallet(models.Model):
@@ -39,19 +50,65 @@ class ImmatureWallet(models.Model):
     
 
 
-
 class Transaction(models.Model):
     user            = models.ForeignKey(User, on_delete=models.CASCADE)
-    transaction_id  = models.UUIDField(_('Transaction ID'))
+    transaction_id  = models.CharField(_('Transaction ID'), max_length=35)
     date_created    = models.DateTimeField(_("Date Created"), auto_now_add=True)
     amount          = models.PositiveIntegerField(_('Transaction Amount'), default=0)
     currency        = models.CharField(_("Currency"), default='INR')
-    fee             = models.PositiveIntegerField(_("Transaction Fee"), default=0)
-    payout_balance  = models.PositiveIntegerField(_("Payout Balance"), default=0)
+    status          = models.CharField(_("Status"), max_length=20, null=True)
+    is_completed    = models.BooleanField(_("Completed"), default=False)
+    mode            = models.CharField(_("Payment Mode"), choices=TRANSACTION_MODE, max_length=15, null=True)
+    receiver        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
+
+
 
 
     def __str__(self):
         return f'{self.user} Transaction'
+    
+
+
+### User Bank Account
+class UserBankAccount(models.Model):
+    user               = models.ForeignKey(User, on_delete=models.CASCADE)
+    acc_holder_name    = models.CharField(_('Account Holder Name'), max_length=30)
+    acc_holder_address = models.CharField(_("Account Holder Address"), max_length=100)
+    acc_number         = models.CharField(_("Account Number"), max_length=20)
+    ifsc_code          = models.CharField(_('IFSC Code'), max_length=15)
+    bank_name          = models.CharField(_("Bank Name"), max_length=30)
+    bank_address       = models.CharField(_("Bank Address"), max_length=100)
+    additional_info    = models.CharField(_("Additional Info"), max_length=100, null=True)
+    doc                = models.FileField(upload_to='UserBankDoc/', null=True)
+
+
+    def __str__(self):
+        return f"{self.user} Bank Account"
+    
+    class Meta:
+        ordering = ['-id']
+
+
+
+
+
+class Withdrawals(models.Model):
+    user         = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount       = models.PositiveIntegerField(default=0)
+    date_created = models.DateTimeField(auto_now_add=True)
+    reference_id = models.CharField(_("Reference ID"), max_length=35)
+    bank         = models.ForeignKey(UserBankAccount, on_delete=models.CASCADE)
+    status       = models.CharField(max_length=15, default='Pending', choices=WITHDRAWAL_STATUS)
+    is_completed = models.BooleanField(_("Completed"), default=False)
+
+
+    def __str__(self):
+        return f'{self.user} Withdrawal Request'
+    
+
+
+    
+    
     
 
 

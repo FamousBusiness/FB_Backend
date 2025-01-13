@@ -277,6 +277,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://mdwebzotica.famousbusiness.in",
     "https://store.famousbusiness.in",
     "https://www.store.famousbusiness.in",
+    "https://www.wallet.famousbusiness.in",
+    "https://wallet.famousbusiness.in",
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",

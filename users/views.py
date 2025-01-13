@@ -24,8 +24,6 @@ from PremiumPlan.models import PremiumPlanBenefits
 from Admin.tasks import send_email
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-# from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
-# from django.middleware.csrf import get_token
 from django.http import HttpResponse
 from users.tasks import send_login_otp_message
 
@@ -692,14 +690,29 @@ class CheckAuthenticatedView(APIView):
             return Response({ 'error': 'Something went wrong when checking authentication status' })
         
 
-# from django.http import JsonResponse
-# from django.middleware.csrf import get_token
 
-# def GetCSRFTokenView(request):
-#     response = JsonResponse({"Info": "Success CSRF Cookie set"})
-#     response['X-CSRFToken'] = get_token(request)
+#### Get users according to the mobile number
+class GetUsersAccordingtoMobileNumber(APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
-#     return response
+    def get(self, request):
+        mobile_number = request.query_params.get('number')
+
+        try:
+            all_users = User.objects.filter(mobile_number__icontains = mobile_number) if mobile_number else []
+        except Exception as e:
+            pass
+
+        return Response({
+            'success': True,
+            'data': [
+                {
+                'id': user.pk,
+                'username': user.name,
+                'mobile_number': user.mobile_number
+                } for user in all_users
+            ]
+        }, status=status.HTTP_200_OK)
 
 
 

@@ -24,6 +24,7 @@ urlpatterns = [
     #CSRF Token
     # path('csrf-token/', views.GetCSRFTokenView.as_view(), name='get_csrf_token'),
     path('isauthenticated/', views.CheckAuthenticatedView.as_view(), name='is_authenticated'),
+    path('fetch/users/', views.GetUsersAccordingtoMobileNumber.as_view(), name='fetch_users'),
     # path('loggedin-user/', views.render_logged_in_user_list, name='user-business-page'),
     # path('otp/<str:uid>/', views.ValidateOTP.as_view(), name='otp'),
     # path('otp/<str:uid>/', views.otpVerify, name='otp'),

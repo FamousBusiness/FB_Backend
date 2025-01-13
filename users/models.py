@@ -108,10 +108,12 @@ class UsersAgreement(models.Model):
         return f'{self.user.name}\'s Agreement'
     
 
+
 ## User OTP Model
 class UserOTP(models.Model):
     user_id   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     otp       = models.CharField(max_length=10, null=True)
 
     def __str__(self) -> str:
-        return f'{self.user_id.name}\'s OTP'
+        return f'{self.pk} OTP'
+    
