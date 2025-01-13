@@ -90,9 +90,13 @@ class UpdateWalletBalanceView(APIView):
         if razorpay_order_serializer.is_valid():
             amount = razorpay_order_serializer.validated_data.get('amount')
             
-            order_response = rz_client.create_order(
-                amount = amount
-            )
+            try:
+                order_response = rz_client.create_order(
+                    amount = amount
+                )
+            except Exception as e:
+                return Response({'message': 'Unable to create order', 'error': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
 
             response = {
                 'status': status.HTTP_201_CREATED,
