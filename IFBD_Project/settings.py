@@ -279,6 +279,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.store.famousbusiness.in",
     "https://www.wallet.famousbusiness.in",
     "https://wallet.famousbusiness.in",
+    "http://wallet.famousbusiness.in",
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",
