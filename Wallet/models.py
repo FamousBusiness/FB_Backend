@@ -61,11 +61,11 @@ class Transaction(models.Model):
     mode            = models.CharField(_("Payment Mode"), choices=TRANSACTION_MODE, max_length=15, null=True)
     receiver        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
 
-
-
-
     def __str__(self):
         return f'{self.user} Transaction'
+    
+    class Meta:
+        ordering = ['-id']
     
 
 
@@ -104,6 +104,9 @@ class Withdrawals(models.Model):
 
     def __str__(self):
         return f'{self.user} Withdrawal Request'
+    
+    class Meta:
+        ordering = ['-id']
     
 
 

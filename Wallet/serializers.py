@@ -29,11 +29,13 @@ class UserImmatureSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class UserNameSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
         fields = ['name']
+
 
 
 #### All user transactions

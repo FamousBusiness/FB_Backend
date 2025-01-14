@@ -10,6 +10,8 @@ from .pagination import AllUserTransactionsPagination, CustomPagination
 from django.core.cache import cache
 from Razorpay.views import rz_client
 from uuid import uuid4
+from django.utils.timezone import now
+from datetime import timedelta, datetime
 
 
 
@@ -52,6 +54,7 @@ class UserWalletBalanceView(APIView):
 #### Get users mature and Immature balance
 class UserMatureImmatureWallet(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
     
     def get(self, request):
         user = request.user
@@ -65,6 +68,17 @@ class UserMatureImmatureWallet(APIView):
             user_immature_wallet, created = ImmatureWallet.objects.get_or_create(user = user)
         except Exception as e:
             return Response({'message': 'Not able to get the user Immature Wallet'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        ### Get all the withdrawal requests of the user
+        try:
+            user_withdrawal_requests = Withdrawals.objects.filter(
+                                                        user         = user, 
+                                                        is_completed = True
+                                                    )
+        except Exception as e:
+            return Response({'message': 'Unable to get withdrawals of user'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        all_withdrawal_amount = sum(withdrawal_requests.amount for withdrawal_requests in user_withdrawal_requests)
 
         user_mature_serializer   = UserMatureSerializer(user_mature_wallet)
         user_immature_serializer = UserImmatureSerializer(user_immature_wallet)
@@ -72,7 +86,8 @@ class UserMatureImmatureWallet(APIView):
         return Response({
             'message': 'Wallet data fetched Successfully',
             'user_mature_wallet': user_mature_serializer.data,
-            'user_immature_serializer': user_immature_serializer.data
+            'user_immature_serializer': user_immature_serializer.data,
+            'withdrawal_amount': all_withdrawal_amount
 
         }, status=status.HTTP_200_OK)
 
@@ -526,6 +541,294 @@ class TransferMoneyView(APIView):
         return Response({
             'message': 'Amount successfullt transferred'
         }, status=status.HTTP_200_OK)
+    
+
+
+
+
+##### Recent Transaction View
+class RecentTransactions(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    
+    def get(self, request):
+        user = request.user
+
+        ### Get 10 transactions of the user
+        try:
+            all_user_transactions = Transaction.objects.filter(user = user)[:8]
+        except Exception as e:
+            return Response({'message': 'All user transactions'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serilizer = AllUserTransactionSerializer(all_user_transactions, many=True)
+
+        return Response({
+            'message': 'Recent Transacion fetched successfully',
+            'recent_transaction': serilizer.data
+
+        }, status=status.HTTP_200_OK)
+    
+
+
+#### Export all users Transactions
+class ExportTransactionsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    def get(self, request):
+        user = request.user
+
+        ### Get all the Transactions of the user
+        try:
+            user_transactions = Transaction.objects.filter(user = user)
+        except Exception as e:
+            return Response({'message': 'Unable to get user transactions'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        response_data = [{
+            'Transaction ID': transaction.transaction_id,
+            'Date': transaction.date_created,
+            'amount': transaction.amount,
+            'Mode': transaction.mode,
+            'Status': transaction.status,
+            'Receiver': transaction.receiver.name if transaction.receiver else None
+
+        } for transaction in user_transactions] 
+
+
+        return Response({
+            'message': 'All transaction data exported successfully',
+            'export_transactions': response_data
+
+        }, status=status.HTTP_200_OK)
+    
+
+
+
+#### Filter user transactions
+class FilterUserTransactionsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class   = AllUserTransactionsPagination
+
+
+    def post(self, request):
+        user = request.user
+
+        date               = request.data.get('date')
+        transaction_id     = request.data.get('transaction_id')
+        transaction_mode   = request.data.get('mode')
+        transaction_status = request.data.get('status')
+        start_date         = request.data.get('start_date')
+        end_date           = request.data.get('end_date')
+
+        transactions = Transaction.objects.all()
+
+        if date:
+            today = now().date()
+
+            if date == 'Today':
+                transactions = transactions.filter(date_created__date=today, user = user)
+
+            elif date == 'Yesterday':
+                yesterday = today - timedelta(days=1)
+                transactions = transactions.filter(date_created__date=yesterday, user = user)
+
+            elif date == 'ThisWeek':
+                start_of_week = today - timedelta(days=today.weekday())
+                transactions  = transactions.filter(date_created__date__gte=start_of_week, user = user)
+
+            elif date == 'ThisMonth':
+                transactions = transactions.filter(
+                        date_created__month=today.month, 
+                        date_created__year=today.year,
+                        user = user
+                    )
+
+            elif date == "PreviousMonth":
+                first_day_of_current_month = today.replace(day=1)
+                last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
+
+                transactions = transactions.filter(
+                        date_created__month = last_day_of_previous_month.month,
+                        date_created__year  = last_day_of_previous_month.year,
+                        user = user
+                    )
+            
+            elif date == 'CustomRange':
+                if start_date and end_date:
+                    try:
+                        start_date   = datetime.strptime(start_date, "%Y-%m-%d").date()
+                        end_date     = datetime.strptime(end_date, "%Y-%m-%d").date()
+                        transactions = transactions.filter(
+                                date_created__date__range = (start_date, end_date),
+                                user = user
+                            )
+                    except ValueError:
+                        pass
+
+        
+        if transaction_id:
+            transactions = transactions.filter(transaction_id__icontains=transaction_id)
+
+        if transaction_mode:
+            transactions = transactions.filter(mode=transaction_mode)
+
+        if transaction_status:
+            transactions = transactions.filter(status=transaction_status)
+
+        paginator = self.pagination_class()
+        paginated_transaction = paginator.paginate_queryset(transactions, request)
+
+        serializer = AllUserTransactionSerializer(paginated_transaction, many=True)
+
+        response_data = paginator.get_paginated_response({
+            'success': True,
+            'filtered_data': serializer.data
+        }).data
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+
+#### Filter Withdrawal Requests
+class FilterWithDrawalView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class   = WithDrawalSerializer
+    pagination_class   = CustomPagination
+
+
+    def post(self, request):
+        user = request.user
+
+        date               = request.data.get('date')
+        bank_name          = request.data.get('bank_name')
+        amount             = request.data.get('amount')
+        transaction_status = request.data.get('status')
+        start_date         = request.data.get('start_date')
+        end_date           = request.data.get('end_date')
+
+        all_withdrawals = Withdrawals.objects.all()
+    
+        #### Date wise filter
+        if date:
+            today = now().date()
+
+            if date == 'Today':
+                all_withdrawals = all_withdrawals.filter(date_created__date=today, user = user)
+
+            elif date == 'Yesterday':
+                yesterday = today - timedelta(days=1)
+                all_withdrawals = all_withdrawals.filter(date_created__date=yesterday, user = user)
+
+            elif date == 'ThisWeek':
+                start_of_week = today - timedelta(days=today.weekday())
+                all_withdrawals  = all_withdrawals.filter(date_created__date__gte=start_of_week, user = user)
+
+            elif date == 'ThisMonth':
+                all_withdrawals = all_withdrawals.filter(
+                        date_created__month=today.month, 
+                        date_created__year=today.year,
+                        user = user
+                    )
+
+            elif date == "PreviousMonth":
+                first_day_of_current_month = today.replace(day=1)
+                last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
+
+                all_withdrawals = all_withdrawals.filter(
+                        date_created__month = last_day_of_previous_month.month,
+                        date_created__year  = last_day_of_previous_month.year,
+                        user = user
+                    )
+            
+            elif date == 'CustomRange':
+                if start_date and end_date:
+                    try:
+                        start_date   = datetime.strptime(start_date, "%Y-%m-%d").date()
+                        end_date     = datetime.strptime(end_date, "%Y-%m-%d").date()
+                        all_withdrawals = all_withdrawals.filter(
+                                date_created__date__range = (start_date, end_date),
+                                user = user
+                            )
+                    except ValueError:
+                        pass
+        
+        #### Bank name wise filter
+        if bank_name:
+            try:
+                
+                all_withdrawals = all_withdrawals.filter(
+                    user = user,
+                    bank__bank_name = bank_name
+                )
+            except Exception as e:
+                return Response({'error': f'{str(e)}'})
+
+        
+        ##### Status wise filter
+        if transaction_status:
+            try:
+                all_withdrawals = all_withdrawals.filter(status = transaction_status)
+            except Exception as e:
+                pass
+        
+        
+        #### Amount wise filter
+        if amount:
+            try:
+                all_withdrawals = all_withdrawals.filter(amount = amount)
+            except Exception as e:
+                pass
+
+        paginator             = self.pagination_class()
+        paginated_withdrawals = paginator.paginate_queryset(all_withdrawals, request)
+
+        serializer            = self.serializer_class(paginated_withdrawals, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
+    
+
+
+
+#### Export all Withdrawal Requests
+class ExportWithdrawalView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    def get(self, request):
+        user = request.user
+
+        try:
+            user_withdrawals = Withdrawals.objects.filter(
+                user = user
+            )
+        except Exception as e:
+            return Response({'message': 'Withdrawal requests not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+        response_data = [{
+            'Bank Name': withdrawal.bank.bank_name,
+            'Account Number': withdrawal.bank.acc_number,
+            'IFSC Code': withdrawal.bank.ifsc_code,
+            'Withdrawal Amount': withdrawal.amount,
+            'Date': withdrawal.date_created,
+            'Status': withdrawal.status
+
+        } for withdrawal in user_withdrawals]
+
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+
+        
+
+
+    
+
+
+
+
+    
+
+
 
 
 
