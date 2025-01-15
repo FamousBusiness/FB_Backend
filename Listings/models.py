@@ -8,6 +8,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from PremiumPlan.models import PremiumPlan
 from Brands.models import BrandBusinessPage
 from Ecommerce.models import ProductTag, ProductOffers, ProductSpecification, ProductImages
+from Ecommerce.models import EMIOffers
+from Ecommerce.models import PinCode
 
 
 
@@ -26,6 +28,7 @@ class Category(models.Model):
     image    = models.FileField(default='category_pics/B2B.svg', upload_to='category_pics') 
     trending = models.BooleanField(default=False)
     is_store = models.BooleanField(_("Store Category"), default=False, null=True, blank=True)
+    store_trending = models.BooleanField(_("Store Trending"), default=False)
 
 
     def __str__(self):
@@ -327,6 +330,8 @@ class ProductService(models.Model):
     specification  = models.ManyToManyField(ProductSpecification, blank=True, related_name='product_specifications')
     is_sponsored   = models.BooleanField(default=False, null=True, blank=True)
     is_available   = models.BooleanField(default=True, null=True, blank=True)
+    emi_offers     = models.ManyToManyField(EMIOffers)
+    pincode        = models.ManyToManyField(PinCode)
 
 
     def __str__(self):

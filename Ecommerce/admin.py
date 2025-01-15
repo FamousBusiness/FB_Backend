@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     StoreBanner, ProductTag, ProductOffers, ProductSpecification, 
-    ProductImages, ProductOrders, Cart, UserAddress, EcomRazorPayOrders
+    ProductImages, ProductOrders, Cart, UserAddress, EcomRazorPayOrders, EMIOffers, PinCode
 )
 
 
@@ -16,3 +16,5 @@ admin.site.register(ProductOrders)
 admin.site.register(Cart)
 admin.site.register(UserAddress)
 admin.site.register(EcomRazorPayOrders)
+admin.site.register(EMIOffers)
+admin.site.register(PinCode)

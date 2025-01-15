@@ -33,7 +33,10 @@ class StoreCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = StoreHomePageCategorySerializer
 
     def get_queryset(self):
-        return Category.objects.filter(is_store = True)[:9]
+        return Category.objects.filter(
+            is_store       = True,
+            store_trending = True
+            )[:9]
     
 
 
@@ -66,7 +69,7 @@ class StoreCategoryWiseProductViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         category_id = self.request.query_params.get("category_id")
-        subcategory_name = self.request.query_params.get("subcategory")
+        # subcategory_name = self.request.query_params.get("subcategory")
 
         if not category_id:
             return Response({"error": "category_id is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -75,12 +78,12 @@ class StoreCategoryWiseProductViewSet(viewsets.ReadOnlyModelViewSet):
 
         queryset = queryset.filter(category_id=category_id)
 
-        if subcategory_name:
-            try:
-                subcategory = SubCategory.objects.get(name=subcategory_name)
-                queryset = queryset.filter(subcategory=subcategory)
-            except ObjectDoesNotExist:
-                return Response({"error": f"SubCategory with name '{subcategory_name}' does not exist."},status=status.HTTP_404_NOT_FOUND)
+        # if subcategory_name:
+        #     try:
+        #         subcategory = SubCategory.objects.get(name=subcategory_name)
+        #         queryset = queryset.filter(subcategory=subcategory)
+        #     except ObjectDoesNotExist:
+        #         return Response({"error": f"SubCategory with name '{subcategory_name}' does not exist."},status=status.HTTP_404_NOT_FOUND)
 
         return queryset
     
@@ -546,3 +549,50 @@ class AllBusinessOrdersView(APIView):
             
 
 
+
+#### All Store Categories
+class AllStoreCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = StoreHomePageCategorySerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        return Category.objects.filter(is_store = True)
+    
+
+
+
+
+#### Check Product Pincode 
+class CheckProductAvailabilityView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    
+    def get(self, request): 
+        product_id = request.query_params.get('product_id')
+        pincode    = request.query_params.get('pincode')
+
+        #### Get the product 
+        try:
+            product = ProductService.objects.get(id = int(product_id))
+        except Exception as e:
+            return Response({
+                'message': 'Product not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        pincodes = product.pincode.all()
+
+        for pin in pincodes:
+            
+            if pincode == pin.name:
+                return Response({
+                    'success': True
+                }, status=status.HTTP_200_OK)
+
+        return Response({
+            'success': False
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+        

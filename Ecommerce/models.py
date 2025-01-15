@@ -78,9 +78,15 @@ class Cart(models.Model):
     user     = models.ForeignKey(User, on_delete=models.CASCADE)
     product  = models.ForeignKey('Listings.ProductService', on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField(default=0)
+    
 
     def __str__(self):
         return f'{self.user.name} - {self.product} - {self.quantity}'
+    
+    
+    class Meta:
+        ordering = ['-id']
+
 
 
 
@@ -99,9 +105,11 @@ class UserAddress(models.Model):
     address_tye      = models.CharField(choices=USER_ADDRESS_TYPE, max_length=5)
 
 
+
     def __str__(self):
         return f'{self.user} Address'
     
+
 
 
 
@@ -127,6 +135,7 @@ class ProductOrders(models.Model):
     
 
 
+
 #### Razorpay Order
 class EcomRazorPayOrders(models.Model):
     order_product    = models.CharField(_("Product"), max_length=100)
@@ -135,8 +144,26 @@ class EcomRazorPayOrders(models.Model):
     isPaid           = models.BooleanField(_("Is Paid"), default=False)
     order_date       = models.DateTimeField(_("Order Date"), auto_now=True)
 
+
     def __str__(self):
         return self.order_product
+    
+
+
+
+class EMIOffers(models.Model):
+    name = models.CharField(_('EMI Offer Name'), max_length=100)
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+
+class PinCode(models.Model):
+    name = models.CharField(_("Pincode"), max_length=10)
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 

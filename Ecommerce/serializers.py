@@ -1,6 +1,7 @@
 from Listings.models import Category, ProductService
 from rest_framework import serializers
-from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart, UserAddress, ProductOrders
+from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart, UserAddress, ProductOrders, EMIOffers
+from Listings.models import BrandBusinessPage
 
 
 ### Categories visible at the top bar on store homepage
@@ -74,17 +75,34 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class EMIOfferSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = EMIOffers
+        fields = '__all__'
+
+
+class BrandNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BrandBusinessPage
+        fields = ['brand_name']
+
+
+
 ### Product page
 class ProductServiceSerializer(serializers.ModelSerializer):
     offers        = ProductOfferSerializer(many=True, read_only=True)
     specification = ProductSpecificationsSerializer(many=True, read_only=True)
     multiple_img  = ProductImageSerializer(many=True, read_only=True)
+    emi_offers    = EMIOfferSerializer(many=True, read_only=True)
+    brand         = BrandNameSerializer()
 
     class Meta:
         model = ProductService
         fields = [
             'id', 'name', 'picture', 'price', 'description', 'description2', 'category', 'subcategory', 'rating','reviews', 'discount_price', 'percentage_off', 'emi_amount', 'is_available',
-            'offers', 'specification', 'multiple_img', 'is_sponsored', 'reviews'
+            'offers', 'specification', 'multiple_img', 'is_sponsored', 'reviews', 'emi_offers', 'brand'
         ]
 
 
