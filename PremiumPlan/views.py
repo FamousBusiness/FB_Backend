@@ -542,6 +542,11 @@ class RecurringPaymentWebhook(APIView):
                 if premium_plan_order and decoded_payload['data']['subscriptionDetails']['state'] == 'PAUSED':
                     premium_plan_order.is_active = False
                     premium_plan_order.save()
+
+                elif premium_plan_order and decoded_payload['data']['subscriptionDetails']['state'] == 'REVOKED':
+                    premium_plan_order.is_active = False
+                    premium_plan_order.save()
+
                     
             except Exception as e:
                 pass
@@ -600,18 +605,19 @@ class RecurringPaymentWebhook(APIView):
             premium_plan_order.month_paid       = (premium_plan_order.month_paid or 0) + 1
             premium_plan_order.repayment_date   = timezone.now()
             premium_plan_order.status           = 'Paid'
+            premium_plan_order.request_sent     = False
             premium_plan_order.save()
 
             # Get the premium plan ID related to order
             premium_plan_id  = phonepe_order.premium_plan_id
 
             try:
-                premium_plan = PremiumPlan.objects.get(id = premium_plan_id)
+                premium_plan = PremiumPlan.objects.get(pk = premium_plan_id)
             except Exception as e:
                 return Response({'message': 'Invalid Plan'}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                premium_plan_benefit = PremiumPlanBenefits.objects.get(user = premium_plan_order.user, plan=premium_plan)
+                premium_plan_benefit = PremiumPlanBenefits.objects.get(user = premium_plan_order.user, plan=premium_plan_id)
 
                 ### Get the premium plan related to the benefit
                 premium_plan_lead_quantity         = premium_plan_benefit.plan.lead_view
@@ -622,7 +628,7 @@ class RecurringPaymentWebhook(APIView):
             except Exception as e:
                 pass
                 # return Response({'message': 'Invalid Plan Benefit'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             return Response({'success': True}, status=status.HTTP_200_OK)
 
         return Response({'success': True}, status=status.HTTP_200_OK)

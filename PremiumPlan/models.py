@@ -146,24 +146,27 @@ class PremiumPlanOrder(models.Model):
         blank=False,
         null=False,
        ) # Pending, Paid, Failed
-    details               = models.CharField(max_length=255, null=True, blank=True)
-    purchased_at          = models.DateTimeField(_("Purchased Date"), auto_now_add=True)
-    repayment_date        = models.DateTimeField(_("Repayment Date"), null=True, blank=True)
-    month_paid            = models.PositiveIntegerField(default=0, null=True, blank=True)
-    isPaid                = models.BooleanField(default=False)
-    payment_response      = models.TextField(_("Payment Response"), null=True)
-    webhook_response      = models.TextField(_("Webhook Response"), null=True)
+    details                  = models.CharField(max_length=255, null=True, blank=True)
+    purchased_at             = models.DateTimeField(_("Purchased Date"), auto_now_add=True)
+    repayment_date           = models.DateTimeField(_("Repayment Date"), null=True, blank=True)
+    month_paid               = models.PositiveIntegerField(default=0, null=True, blank=True)
+    isPaid                   = models.BooleanField(default=False)
+    payment_response         = models.TextField(_("Payment Response"), null=True)
+    webhook_response         = models.TextField(_("Webhook Response"), null=True)
     recurring_transaction_id = models.CharField(max_length=40, null=True, blank=True)
     is_active                = models.BooleanField(_("Active"), default=True, null=True, blank=True)
     invoice                  = models.FileField(_("Invoice"), upload_to='PremiumPlanInvoice/', null=True)
     invoice_no               = models.CharField(_("Invoice No"), max_length=30, null=True)
-
-
+    request_sent             = models.BooleanField(_("Request Sent"), default=False)
+    
+    
     def __str__(self):
         return f"{self.pk}-{self.status}"
     
+    
     class Meta:
         ordering = ["-id"]
+
 
 
 

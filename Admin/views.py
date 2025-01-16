@@ -757,12 +757,13 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                 purchased_date = order.purchased_at
                 recurring_date = order.repayment_date
                 active_status  = order.is_active
+                request_sent   = order.request_sent
 
                 subscriptionID = None
                 amount = 0
 
                 ### Monthly Payment
-                if recurring_date and (current_date - timedelta(days=31)) >= recurring_date <= (current_date - timedelta(days=29)) and active_status == True:
+                if recurring_date and (current_date - timedelta(days=31)) >= recurring_date <= (current_date - timedelta(days=29)) and active_status == True and request_sent == False:
 
                     try:
                         transactionID = str(uuid.uuid4())[:20]
@@ -804,6 +805,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                                 )
 
                                 order.payment_response         = str(recurring_payment)
+                                order.request_sent             = True
                                 phonepe_order.payment_response = str(recurring_payment)
 
                                 phonepe_order.save()
@@ -832,14 +834,14 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                         messages.error(request, 'Not able to get Subscripton ID')
 
                 #### If request has not sent yet
-                elif not recurring_date and purchased_date <= (current_date - timedelta(days=29)) and active_status == True:
+                elif not recurring_date and purchased_date <= (current_date - timedelta(days=29)) and active_status == True and request_sent == False:
 
                     try:
                         transactionID = str(uuid.uuid4())[:20]
                         phonepe_order = PhonepeAutoPayOrder.objects.get(authRequestId=order.transaction_id)
 
                         phonepe_order.recurring_transaction_id = transactionID
-                        order.recurring_transaction_id = transactionID
+                        order.recurring_transaction_id         = transactionID
 
                         phonepe_order.save()
                         order.save()
@@ -874,6 +876,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                                 )
 
                                 order.payment_response         = str(recurring_payment)
+                                order.request_sent             = True
                                 phonepe_order.payment_response = str(recurring_payment)
                                 
                                 phonepe_order.save()
@@ -897,7 +900,7 @@ class DuductPeriodicPaymentView(LoginRequiredMixin, ListView):
                                 )
                             
                             auto_pay_request.save()
-
+                            
                             messages.error(request, f"Problem occured while deducting payment - {str(e)}")
                     else:
                         messages.error(request, 'Not able to get Subscripton ID')
