@@ -1,22 +1,28 @@
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from Listings.models import Category, ProductService, SubCategory
-from .models import StoreBanner, ProductTag, Cart, UserAddress, ProductOrders, UserAddress
+from .models import StoreBanner, ProductTag, Cart, UserAddress, ProductOrders, UserAddress, EcommercePhonepeOrder
 from Wallet.models import Wallet, Transaction, ImmatureWallet
 from Listings.models import Business
 from rest_framework import viewsets
 from .serializers import (
     StoreHomePageCategorySerializer, StoreHomePageBannerSerializer, CategoryWiseProductSerializer, CartSerializer, 
-    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer, MultipleProductSerializer, TotalCartProductQuantitySerializer, ProductOrderSerializer
+    ProductServiceSerializer, StoreHomePageProductTagSerializer, CartChecKoutSerializer, UserDeliveryAddressSerializer, MultipleProductSerializer, TotalCartProductQuantitySerializer, ProductOrderSerializer, OrderDetailSerializer
     )
 from .pagination import StoreHomepageProductPagination, StoreCategoryWiseProductViewSetPagination
-from django.core.exceptions import ObjectDoesNotExist
+from .generateID import generate_orderID
 from rest_framework.views import APIView
 from Razorpay.serializer import RazorpayorderSerializer, RazorPayOrderCompletionSerializer
 from Razorpay.views import rz_client
 from django.utils import timezone
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from Phonepe.payment import PhonepayPayment
+from django.views.decorators.csrf import csrf_exempt
+from Phonepe.encoded import base64_decode
+import uuid
+import json
+
 
 
 
@@ -391,34 +397,57 @@ class EcomRazorPayPaymentProcess(APIView):
 
 
     def post(self, request):
-        razorpay_order_serializer = RazorpayorderSerializer(data = request.data)
+        user     = request.user
+        data     = request.data
+        amount   = request.data.get('amount')
+        products = request.data.get('products')
+        address  = request.data.get('address_id')
 
-        if razorpay_order_serializer.is_valid():
-            amount = razorpay_order_serializer.validated_data.get('amount')
-            
-            order_response = rz_client.create_order(
-                amount = amount
-            )
+        phonepe_amount = int(amount) * 100
 
-            response = {
-                'status': status.HTTP_201_CREATED,
-                'message': 'Order Created',
-                'data': order_response
-            }
-
-            return Response(response, status=status.HTTP_201_CREATED)
-
-        else:
-            response = {
-                "status_code": status.HTTP_400_BAD_REQUEST,
-                "message": "bad request",
-                "error": razorpay_order_serializer.errors
-            }
-
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        required_fields = ['amount', 'products', 'address_id']
+        for field in required_fields:
+            if not data.get(field):
+                return Response(
+                    {'message': f'{field} field is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         
+        transaction_id = str(uuid.uuid4())[:35]
+
+        ### Get the address
+        try:
+            user_address = UserAddress.objects.get(id = int(address))
+        except Exception as e:
+            return Response({'message': 'Unable to get the address'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create Phonepe Order
+        try:
+            phonepe_order = EcommercePhonepeOrder.objects.create(
+                user           = user,
+                transaction_id = transaction_id,
+                address        = user_address,
+                products       = str(products),
+                amount         = int(amount),
+            )
+            phonepe_order.save()
+
+        except Exception as e:
+            return Response({'message': 'Unable to create Phonepe Order'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        try:
+            payment  = PhonepayPayment(phonepe_amount, transaction_id)
+        except Exception as e:
+            return Response({'message': 'Unable to raise payment request', 'error': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'message': 'Payment request raised successfully',
+            'url': payment
+        }, status=status.HTTP_200_OK)
     
-    ### Handle Payment Success
+    
+    
+    ### Handle Payment Success from Razorpay
     def put(self, request):
         currenct_user    = request.user
         order_serializer = RazorPayOrderCompletionSerializer(data = request.data)
@@ -453,8 +482,7 @@ class EcomRazorPayPaymentProcess(APIView):
             "status_code": status.HTTP_201_CREATED,
             "message": "transaction created"
         }
-
-
+ 
         ### Get the address
         try:
             user_address = UserAddress.objects.get(id = int(address))
@@ -467,6 +495,9 @@ class EcomRazorPayPaymentProcess(APIView):
             product_id = product_data.get('product_id')
             quantity   = product_data.get('quantity')
 
+            #### Generate Unique Order ID
+            generate_order_id = generate_orderID()
+
             ### Get the product
             try:
                 product = ProductService.objects.get(id = int(product_id))
@@ -476,21 +507,35 @@ class EcomRazorPayPaymentProcess(APIView):
             
             ### Create an Ecommerce Order
             ecom_order = ProductOrders.objects.create(
-                user     = currenct_user,
-                business = product.business,
-                product  = product,
-                quantity = quantity,
-                is_paid  = True,
-                address  = user_address,
+                user            = currenct_user,
+                business        = product.business,
+                product         = product,
+                quantity        = quantity,
+                is_paid         = True,
+                address         = user_address,
                 order_placed_at = timezone.now(),
-                order_placed = True
+                order_placed    = True,
+                order_id        = generate_order_id,
+                status          = 'Order Placed'
             )
+
+            ecom_order.save()
+
+            #### Delete all the cart items of the user
+            try:
+                all_user_cart = Cart.objects.filter(user = currenct_user)
+
+                all_user_cart.delete()
+            except Exception as e:
+                return Response({"message": "No available items in user cart"}, status=status.HTTP_400_BAD_REQUEST)
+            
 
             ### Get the Business user
             try:
                 business_user = Business.objects.get(owner = product.business.owner)
             except Exception as e:
                 return Response({'message': 'Unable to get the Business'}, status=status.HTTP_400_BAD_REQUEST)
+            
             
             ### Create or get the Business user Wallet
             try:
@@ -504,49 +549,160 @@ class EcomRazorPayPaymentProcess(APIView):
 
             except Exception as e:
                 return Response({'message': 'Not able to get the Wallet'}, status=status.HTTP_400_BAD_REQUEST)
-
-            ecom_order.save()
+            
 
         return Response(response, status=status.HTTP_201_CREATED)
 
 
 
-    
 
-
-#### Get all the available orders of the Business
-class AllBusinessOrdersView(APIView):
+##### Phonepe Payment Response
+class EcomPhonepePaymentResponseView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
+     
+    @csrf_exempt
+    def post(self, request):
+        response_data = request.data.get('response')
+        decoded_data = base64_decode(response_data)
+
+
+        if decoded_data['success'] == True and decoded_data['code'] == 'PAYMENT_SUCCESS' and decoded_data['message'] == 'Your request has been successfully completed.':
+
+            #### Get the transaction ID from response
+            transaction_id = decoded_data['data']['merchantTransactionId']
+
+            #### Get the Phonepe order for the transaction id
+            try:
+                ecom_phonepe_order = EcommercePhonepeOrder.objects.get(transaction_id = transaction_id)
+                ecom_phonepe_order.response = str(decoded_data)
+
+                ecom_phonepe_order.save()
+            except Exception as e:
+                return Response({'success': True}, status=status.HTTP_200_OK)
+            
+            ### Get the address and products form phonepe order
+            address  = ecom_phonepe_order.address
+
+
+            try:
+                products = json.loads(ecom_phonepe_order.products)
+            except Exception as e:
+                return Response({'message': 'Unable to decode Json'}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+            for product_data in products:
+                product_id = product_data.get('product_id')
+                quantity   = product_data.get('quantity')
+
+
+                #### Generate Unique Order ID
+                generate_order_id = generate_orderID()
+
+                
+                ### Get the product
+                try:
+                    product = ProductService.objects.get(id = int(product_id))
+                except Exception as e:
+                    return Response({'message': 'Unable to get the product'}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+                try:
+                    ### Create an Ecommerce Order
+                    ecom_order = ProductOrders.objects.create(
+                        user            = ecom_phonepe_order.user,
+                        business        = product.business,
+                        product         = product,
+                        quantity        = quantity,
+                        is_paid         = True,
+                        address         = address,
+                        order_placed_at = timezone.now(),
+                        order_placed    = True,
+                        order_id        = generate_order_id,
+                        status          = 'Order Placed'
+                    )
+
+                    ecom_order.save()
+
+                except Exception as e:
+                    return Response({'message': 'Unable to create Order'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+
+                #### Delete all the cart items of the user
+                try:
+                    all_user_cart = Cart.objects.filter(user = ecom_phonepe_order.user)
+
+                    all_user_cart.delete()
+                except Exception as e:
+                    return Response({"message": "No available items in user cart"}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+                ### Get the Business user
+                try:
+                    business_user = Business.objects.get(owner = product.business.owner)
+                except Exception as e:
+                    return Response({'message': 'Unable to get the Business'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                
+                ### Create or get the Business user Wallet
+                try:
+                    wallet, created = ImmatureWallet.objects.get_or_create(
+                        user = business_user.owner
+                    )
+
+                    if wallet:
+                        wallet.balance += float(product.price)
+                        wallet.save()
+
+                except Exception as e:
+                    return Response({'message': 'Not able to get the Wallet'}, status=status.HTTP_400_BAD_REQUEST)
+                
+
+            return Response({'success': True}, status=status.HTTP_201_CREATED)
+    
+
+
+
+#### Get all the available orders of the user's
+class AllUserOrdersView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     
     def get(self, request):
         user = request.user
         
         try:
-            business = Business.objects.get(owner = user)
-
-            if business:
-                try:
-                    business_orders = ProductOrders.objects.filter(business = business)
-                except Exception as e:
-                    return Response({'message': 'Unable to get the orders', 'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-                
-                serializer = ProductOrderSerializer(business_orders, many=True)
-
-                return Response({
-                    'all_users_orders': serializer.data
-                }, status=status.HTTP_200_OK)
-
+            user_orders = ProductOrders.objects.filter(user = user)
         except Exception as e:
-            try:
-                user_orders = ProductOrders.objects.filter(user = user)
-            except Exception as e:
-                return Response({'message': 'Unable to get the orders', 'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-            
-            serializer = ProductOrderSerializer(user_orders, many=True)
+            return Response({'message': 'Unable to get the orders', 'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = ProductOrderSerializer(user_orders, many=True)
 
-            return Response({'all_user_orders': serializer.data}, status=status.HTTP_200_OK)
-            
+        return Response({'all_user_orders': serializer.data}, status=status.HTTP_200_OK)
+
+
+
+#### Get all the available orders of the user's
+class AllBusinessOrdersView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    
+    def get(self, request):
+        user = request.user
+        
+        try:
+            business_page = Business.objects.get(owner = user)
+        except Exception as e:
+            return Response({'all_user_orders': []}, status=status.HTTP_200_OK)
+        
+        try:
+            business_orders = ProductOrders.objects.filter(business = business_page)
+        except Exception as e:
+            return Response({'message': 'Unable to get the orders', 'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = ProductOrderSerializer(business_orders, many=True)
+    
+        return Response({'all_business_orders': serializer.data}, status=status.HTTP_200_OK)
+
 
 
 
@@ -591,6 +747,103 @@ class CheckProductAvailabilityView(APIView):
         return Response({
             'success': False
         }, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+#### Get details of a specific order
+class OrderDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class   = OrderDetailSerializer
+
+
+    def get(self, request):
+        user = request.user
+        order_id = request.query_params.get('order_id')
+
+        if not order_id:
+            return Response({'message': 'Please provide order id'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        ##### Get the order of the user
+        try:
+            user_order = ProductOrders.objects.get(id = int(order_id), user = user)
+        except Exception as e:
+            return Response({'message': 'Unable to get user order'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serilaizer = self.serializer_class(user_order)
+
+        return Response({
+            'message': 'order details fetched successfully',
+            'order_detail': serilaizer.data
+
+        }, status=status.HTTP_200_OK)
+
+
+
+
+class UpdateOrderStatusView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+
+        request_status = request.data.get('status')
+        order_id       = request.data.get('order_id')
+
+        if not request_status:
+            return Response({'message': 'staus field required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not order_id:
+            return Response({'message': 'order_id field required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            order = ProductOrders.objects.get(id = int(order_id))
+        except Exception as e:
+            return Response({'message': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        if request_status == 'Order Confirmed':
+            order.order_confirmed = True
+            order.order_confirmed_at = timezone.now()
+
+        elif request_status == 'Shipped':
+            order.is_shipped = True
+            order.shipped_at = timezone.now()
+
+        elif request_status == 'Out of Delivery':
+            order.out_of_delivery = True
+            order.out_of_delivery_at = timezone.now()
+
+        elif request_status == 'Delivered':
+            order.is_delivered = True
+            order.delivered_at = timezone.now()
+
+        elif request_status == 'Refund Initiated':
+            order.refund_initiate_at = timezone.now()
+            order.is_refundInitiated = True
+
+        elif request_status == 'Refunded':
+            order.is_refunded = True
+            order.refunded_at = timezone.now()
+
+        elif request_status == 'Return Shipped':
+            pass
+
+        elif request_status == 'Returned':
+            pass
+
+        elif request_status == 'Cancelled':
+            pass
+
+
+        return Response({'message': ''})
+
+
+
+    
+
+
 
 
 

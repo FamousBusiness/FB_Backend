@@ -7,7 +7,6 @@ import uuid
 import requests
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
 
 
 
@@ -28,20 +27,50 @@ def base64_encode(input_dict):
     return base64.b64encode(data_bytes).decode('utf-8')
 
 
+Merchant_Id = ''
+Merchant_User_Id = ''
+Salt_key    = ''
+api_url     = ''
+webhook_url = ''
+redirect_url = ''
 
 
-def pay(request):
-    transaction_id = str(uuid.uuid4())
+Is_development = config("IS_DEVELOPMENT")
+
+
+
+if Is_development == 'True':
+    Merchant_Id      = config('PHONEPE_TEST_MERCHANT_ID')
+    Salt_key         = config('PHONEPE_TEST_SALT_KEY')
+    Merchant_User_Id = config('MERCHANT_USER_ID')
+    api_url          = config('PHONEPE_SANDBOX_URL')
+    webhook_url      = 'http://127.0.0.1:8000'
+    redirect_url     = 'http://localhost:3000'
+
+else:
+    # Merchant_Id      = config("MERCHANT_ID")
+    Merchant_Id      = config('PHONEPE_TEST_MERCHANT_ID')
+    # Salt_key         = config('SALT_KEY')
+    Salt_key         = config('PHONEPE_TEST_SALT_KEY')
+    Merchant_User_Id = config('MERCHANT_USER_ID')
+    # api_url          = config('PHONEPE_PRODUCTION_URL')
+    api_url          = config('PHONEPE_SANDBOX_URL')
+    webhook_url      = 'https://api.famousbusiness.in'
+    redirect_url     = 'https://store.famousbusiness.in'
+
+
+
+def PhonepayPayment(amount, transaction_id):
     
     MAINPAYLOAD = {
-        "merchantId": config("MERCHANT_ID"),
+        "merchantId": Merchant_Id,
         "merchantTransactionId": transaction_id,
-        "merchantUserId": config("MERCHANT_USER_ID"),
-        "amount": 100,
-        "redirectUrl": "http://127.0.0.1:8000/message-api/return-to-me/?lead_id=5",
-        "redirectMode": "POST",
-        "callbackUrl": "http://127.0.0.1:8000/message-api/return-to-me/",
-        "mobileNumber": "8249258412",
+        "merchantUserId": Merchant_User_Id,
+        "amount": int(amount),
+        "redirectUrl": f"{redirect_url}/payment/success",
+        "redirectMode": "REDIRECT",
+        "callbackUrl": f"{webhook_url}/api/ecom/v1/phonepe/payment/response/",
+        "mobileNumber": "8598039147",
         "paymentInstrument": {
             "type": "PAY_PAGE"
         }
@@ -49,7 +78,7 @@ def pay(request):
 
     INDEX = "1"
     ENDPOINT = "/pg/v1/pay"
-    SALTKEY = "083f0f7b-217c-4930-a6ba-49f6140376da"
+    SALTKEY = f"{Salt_key}"
     base64String = base64_encode(MAINPAYLOAD)
     mainString = base64String + ENDPOINT + SALTKEY
     sha256Val = calculate_sha256_string(mainString)
@@ -65,11 +94,12 @@ def pay(request):
         'request': base64String,
     }
 
-    response = requests.post('https://api.phonepe.com/apis/hermes/pg/v1/pay', headers=headers, json=json_data)
+    response = requests.post(f'{api_url}', headers=headers, json=json_data)
 
     response.raise_for_status()
     responseData = response.json()
-    return redirect(responseData['data']['instrumentResponse']['redirectInfo']['url'])
+
+    return responseData['data']['instrumentResponse']['redirectInfo']['url']
 
 
 
@@ -78,7 +108,7 @@ def pay(request):
 @csrf_exempt
 def payment_return(request):
     INDEX = "1"
-    SALTKEY = "083f0f7b-217c-4930-a6ba-49f6140376da"
+    SALTKEY = Salt_key
     form_data = request.POST
     form_data_dict = dict(form_data)
 

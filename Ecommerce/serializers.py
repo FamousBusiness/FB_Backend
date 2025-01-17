@@ -1,7 +1,9 @@
 from Listings.models import Category, ProductService
 from rest_framework import serializers
 from .models import StoreBanner, ProductOffers, ProductSpecification, ProductTag, ProductImages, Cart, UserAddress, ProductOrders, EMIOffers
-from Listings.models import BrandBusinessPage
+from Listings.models import BrandBusinessPage, Business
+from users.models import User
+
 
 
 ### Categories visible at the top bar on store homepage
@@ -161,22 +163,68 @@ class TotalCartProductQuantitySerializer(serializers.Serializer):
 
 
 
+#### Used in Order detail Serializer
+class BusinessNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Business
+        fields = ['business_name']
+
+
+
+class UserNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['name']
+
+
+
 ### Product Service Serializer for User and Business orders(To avoid sending all data)
 class ProductServiceOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductService
-        fields = ['business', 'name', 'picture', 'price', 'description', 'product_tag', 'rating', 'reviews', 'discount_price', 'percentage_off', 'emi_amount', 'offers']
+        fields = [
+            'business', 'name', 'picture', 'price', 'description', 'product_tag', 'rating', 'reviews', 'discount_price', 'percentage_off', 'emi_amount', 'offers'
+            ]
 
+
+
+#### User in Order details serializer
+class OrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserAddress
+        fields = '__all__'
 
 
 ### All Orders
 class ProductOrderSerializer(serializers.ModelSerializer):
-    product = ProductServiceOrderSerializer()
+    product  = ProductServiceOrderSerializer()
 
     class Meta:
         model = ProductOrders
-        fields = ['user', 'business', 'product', 'quantity', 'is_paid', 'address', 'order_placed', 'order_placed_at', 'shipped_at', 'is_shipped', 'out_of_delivery', 'out_of_delivery_at', 'is_delivered', 'delivered_at']
+        fields = [
+            'id', 'user', 'business', 'product', 'quantity', 'is_paid', 'address', 'order_placed', 'order_placed_at', 'shipped_at', 'is_shipped', 'out_of_delivery', 'out_of_delivery_at', 'is_delivered', 'delivered_at', 'order_id'
+        ]
+        
+
+
+
+#### Specific order serializer
+class OrderDetailSerializer(serializers.ModelSerializer):
+    product  = ProductServiceOrderSerializer()
+    address  = OrderSerializer()
+    business = BusinessNameSerializer()
+    user     = UserNameSerializer()
+
+
+    class Meta:
+        model = ProductOrders
+        fields = [
+            'id', 'user', 'business', 'product', 'quantity', 'is_paid', 'address', 'order_placed', 'order_placed_at', 'shipped_at', 'is_shipped', 'out_of_delivery', 'out_of_delivery_at', 'is_delivered', 'delivered_at', 'order_id', 'status'
+        ]
 
 
 

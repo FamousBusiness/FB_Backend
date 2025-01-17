@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import StoreCategoryViewSet, StoreHomePageBannerViewSet, StoreHomePageProductViewSet, StoreCategoryWiseProductViewSet, ProductServiceViewSet, CreateProductCartViewSet, CheckoutPageView, UserDeliveryAddressView, MultipleProductViewSet, UpdateCartQuantityView, CountCartProdctQuantityView, EcomRazorPayPaymentProcess, AllBusinessOrdersView, AllStoreCategoryViewSet, CheckProductAvailabilityView
+from .views import StoreCategoryViewSet, StoreHomePageBannerViewSet, StoreHomePageProductViewSet, StoreCategoryWiseProductViewSet, ProductServiceViewSet, CreateProductCartViewSet, CheckoutPageView, UserDeliveryAddressView, MultipleProductViewSet, UpdateCartQuantityView, CountCartProdctQuantityView, EcomRazorPayPaymentProcess, AllUserOrdersView, AllStoreCategoryViewSet, CheckProductAvailabilityView, OrderDetailView, AllBusinessOrdersView, EcomPhonepePaymentResponseView
 
 
 
@@ -26,6 +26,9 @@ urlpatterns = [
     path('v1/update/cart/', UpdateCartQuantityView.as_view(), name='update_cart'),
     path('v1/total/cart/quantity', CountCartProdctQuantityView.as_view(), name='update_cart'),
     path('v1/razorpay/payment', EcomRazorPayPaymentProcess.as_view(), name='razorpay_payment'),
+    path('v1/phonepe/payment/response/', EcomPhonepePaymentResponseView.as_view(), name='phonepe_payment_response'),
+    path('v1/all/user/orders', AllUserOrdersView.as_view(), name='all_users_orders'),
     path('v1/all/business/orders', AllBusinessOrdersView.as_view(), name='all_business_orders'),
-    path('v1/product/availability/check/', CheckProductAvailabilityView.as_view(), name='product_availability_check')
+    path('v1/product/availability/check/', CheckProductAvailabilityView.as_view(), name='product_availability_check'),
+    path('v1/order/detail/', OrderDetailView.as_view(), name='order_detail'),
 ]

@@ -12,6 +12,29 @@ USER_ADDRESS_TYPE = [
 ]
 
 
+ORDER_PAYMENT_MODE = [
+    ('COD', 'COD'),
+    ('Prepaid', 'Prepaid'),
+    ('Token Amount', 'Token Amount'),
+    ('EMI', 'EMI'),
+]
+
+
+ORDER_STATUS = [
+    ('Order Placed', 'Order Placed'),
+    ('Order Confirmed', 'Order Confirmed'),
+    ('Shipped', 'Shipped'),
+    ('Out of Delivery', 'Out of Delivery'),
+    ('Delivered', 'Delivered'),
+    ('Refund Initiated', 'Refund Initiated'),
+    ('Refunded', 'Refunded'),
+    ('Return Initiated', 'Return Initiated'),
+    ('Return Shipped', 'Return Shipped'),
+    ('Returned', 'Returned'),
+    ('Cancelled', 'Cancelled'),
+]
+
+
 
 ### Store home page banner
 class StoreBanner(models.Model):
@@ -59,10 +82,11 @@ class ProductSpecification(models.Model):
     name = models.CharField(_("Specification Name"), max_length=100)
     value = models.CharField(_("Specification Value"), max_length=100)
     
-
+    
     def __str__(self) -> str:
         return f"Specification - {self.name}"
     
+
 
 #### Multiple images of Product
 class ProductImages(models.Model):
@@ -122,12 +146,27 @@ class ProductOrders(models.Model):
     address            = models.ForeignKey(UserAddress, on_delete=models.SET_NULL, null=True)
     order_placed       = models.BooleanField(_("Order Placed"), null=True)
     order_placed_at    = models.DateTimeField(_("Order Placed Date"), null=True)
+    order_confirmed    = models.BooleanField(_("Order Confirmed"), default=False)
+    order_confirmed_at = models.DateTimeField(_("Order Confirmed Date"), null=True)
     shipped_at         = models.DateTimeField(_("Shipped Date"), null=True)
     is_shipped         = models.BooleanField(_("Order Shipped"), default=False)
     out_of_delivery    = models.BooleanField(_("Out of Delivery"), default=False)
     out_of_delivery_at = models.DateTimeField(_("Out Of Delivery Date"), null=True)
     is_delivered       = models.BooleanField(_("Delivered"), default=False)
     delivered_at       = models.DateTimeField(_("Delivered Date"), null=True)
+    is_refundInitiated = models.BooleanField(_("Refunded"), default=False)
+    refund_initiate_at = models.DateTimeField(_("Refund Initiate Date"), null=True)
+    is_refunded        = models.BooleanField(_("Refunded"), default=False)
+    refunded_at        = models.BooleanField(_("Refund Date"), null=True)
+    is_return_initiated= models.BooleanField(_("Return Initiate"), default=False)
+    return_initiate_at = models.DateTimeField(_("Return Initiate Date"), null=True)
+    is_returned        = models.BooleanField(_("Returned"), default=False)
+    returned_at        = models.DateTimeField(_('Returned Date'), null=True)
+    is_cancelled       = models.BooleanField(_("Cancelled"), default=False)
+    cancelled_at       = models.DateTimeField(_("Cancelled Date"), null=True)
+    order_id           = models.CharField(_("Order ID"), max_length=40, null=True)
+    payment_mode       = models.CharField(_("Payment Mode"), max_length=15, null=True, choices=ORDER_PAYMENT_MODE)
+    status             = models.CharField(_("Status"), max_length=25, null=True, choices=ORDER_STATUS)
 
 
     def __str__(self):
@@ -164,6 +203,22 @@ class PinCode(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+    
+
+
+class EcommercePhonepeOrder(models.Model):
+    user           = models.ForeignKey(User, on_delete=models.CASCADE)
+    transaction_id = models.CharField(_("Transaction ID"), max_length=40)
+    address        = models.ForeignKey(UserAddress, on_delete=models.CASCADE)
+    products       = models.TextField(_("Products"))
+    amount         = models.PositiveIntegerField(default=0)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    response       = models.TextField(_("Phonepe Response"), null=True)
+
+
+    def __str__(self):
+        return f'{self.user} Ecommerce Order'
+
 
 
 
