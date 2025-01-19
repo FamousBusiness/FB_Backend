@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from users.models import User
+# from Listings.models import Business
 # from Listings.models import ProductService
 
 
@@ -32,6 +33,14 @@ ORDER_STATUS = [
     ('Return Shipped', 'Return Shipped'),
     ('Returned', 'Returned'),
     ('Cancelled', 'Cancelled'),
+]
+
+
+REFUND_STATUS = [
+    ('Initiated', 'Initiated'),
+    ('Pending', 'Pending'),
+    ('Hold', 'Hold'),
+    ('Completed', 'Completed'),
 ]
 
 
@@ -129,9 +138,11 @@ class UserAddress(models.Model):
     address_tye      = models.CharField(choices=USER_ADDRESS_TYPE, max_length=5)
 
 
-
     def __str__(self):
         return f'{self.user} Address'
+    
+    class Meta:
+        ordering = ['-id']
     
 
 
@@ -182,8 +193,8 @@ class EcomRazorPayOrders(models.Model):
     order_payment_id = models.CharField(_("Payment ID"), max_length=100)
     isPaid           = models.BooleanField(_("Is Paid"), default=False)
     order_date       = models.DateTimeField(_("Order Date"), auto_now=True)
-
-
+    
+    
     def __str__(self):
         return self.order_product
     
@@ -203,7 +214,8 @@ class PinCode(models.Model):
 
     def __str__(self):
         return f"{self.name}"
-    
+
+
 
 
 class EcommercePhonepeOrder(models.Model):
@@ -218,6 +230,25 @@ class EcommercePhonepeOrder(models.Model):
 
     def __str__(self):
         return f'{self.user} Ecommerce Order'
+    
+
+
+
+#### Refund Transaction
+class RefundTransaction(models.Model):
+    user         = models.ForeignKey(User, on_delete=models.CASCADE)
+    business     = models.ForeignKey('Listings.Business', on_delete=models.CASCADE)
+    order        = models.ForeignKey(ProductOrders, on_delete=models.CASCADE)
+    reference_id = models.CharField(_("Reference ID"), max_length=40)
+    initiated_at = models.DateTimeField(_("Created Date"), auto_now_add=True)
+    is_refunded  = models.BooleanField(_('Refunded'), default=False)
+    refund_at    = models.DateTimeField(_("Refund Date"), null=True)
+    status       = models.CharField(_("Status"), max_length=20, default='Initiated', choices=REFUND_STATUS)
+
+
+    def __str__(self):
+        return f"{self.user} Refund"
+
 
 
 

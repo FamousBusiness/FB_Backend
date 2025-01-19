@@ -17,6 +17,12 @@ TRANSACTION_MODE = (
 )
 
 
+ADDMONEY_FEE = [
+    ('PG Fee', 'PG Fee'),
+    ('Platform Fee', 'Platform Fee'),
+]
+
+
 class Wallet(models.Model):
     user     = models.OneToOneField(User, on_delete=models.CASCADE)
     balance  = models.PositiveIntegerField(_("Wallet Balance"), default=0)
@@ -45,7 +51,25 @@ class ImmatureWallet(models.Model):
 
     def __str__(self):
         return f'{self.user} Wallet'
+
+
+class AddMoneyFee(models.Model):
+    name       = models.CharField(_("Fee Name"), choices=ADDMONEY_FEE, max_length=15)
+    percentage = models.PositiveIntegerField(_("Percentage"), default=1)
+
+
+    def __str__(self):
+        return f'Addmoney {self.name}'
     
+
+
+class TransferMoneyFee(models.Model):
+    name       = models.CharField(_("Fee Name"), choices=ADDMONEY_FEE, max_length=15)
+    percentage = models.PositiveIntegerField(_("Percentage"), default=1)
+
+
+    def __str__(self):
+        return f'Transfer Money {self.name}'
 
     
 
@@ -58,8 +82,12 @@ class Transaction(models.Model):
     currency        = models.CharField(_("Currency"), default='INR')
     status          = models.CharField(_("Status"), max_length=20, null=True)
     is_completed    = models.BooleanField(_("Completed"), default=False)
+    is_settled      = models.BooleanField(_("Settlement"), default=False)
     mode            = models.CharField(_("Payment Mode"), choices=TRANSACTION_MODE, max_length=15, null=True)
     receiver        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
+    ad_money_fee    = models.ManyToManyField(AddMoneyFee)
+    transfer_fee    = models.ManyToManyField(TransferMoneyFee)
+
 
     def __str__(self):
         return f'{self.user} Transaction'
@@ -107,6 +135,23 @@ class Withdrawals(models.Model):
     
     class Meta:
         ordering = ['-id']
+
+
+    
+
+
+
+class PhonpeWalletOrder(models.Model):
+    user            = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount          = models.PositiveIntegerField(_("Amount"), default=0)
+    transaction_id  = models.CharField(_("Transaction ID"), max_length=40)
+    purpose         = models.CharField(_("Purpose"), max_length=15)
+    phoepe_response = models.TextField(_("Phonepe Response"), null=True)
+    created_at      = models.DateTimeField(_("Created Date"), auto_now_add=True)
+
+
+    def __str__(self):
+        return f"Phonepe order {self.pk}"
     
 
 

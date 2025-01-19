@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import StoreCategoryViewSet, StoreHomePageBannerViewSet, StoreHomePageProductViewSet, StoreCategoryWiseProductViewSet, ProductServiceViewSet, CreateProductCartViewSet, CheckoutPageView, UserDeliveryAddressView, MultipleProductViewSet, UpdateCartQuantityView, CountCartProdctQuantityView, EcomRazorPayPaymentProcess, AllUserOrdersView, AllStoreCategoryViewSet, CheckProductAvailabilityView, OrderDetailView, AllBusinessOrdersView, EcomPhonepePaymentResponseView
+from .views import StoreCategoryViewSet, StoreHomePageBannerViewSet, StoreHomePageProductViewSet, StoreCategoryWiseProductViewSet, ProductServiceViewSet, CreateProductCartViewSet, CheckoutPageView, UserDeliveryAddressView, MultipleProductViewSet, UpdateCartQuantityView, CountCartProdctQuantityView, EcomRazorPayPaymentProcess, AllUserOrdersView, AllStoreCategoryViewSet, CheckProductAvailabilityView, OrderDetailView, AllBusinessOrdersView, EcomPhonepePaymentResponseView, UpdateOrderStatusView
 
 
 
 router = DefaultRouter()
+
 
 
 router.register(r'v1/store/category', StoreCategoryViewSet, basename='store_category')
@@ -31,4 +32,6 @@ urlpatterns = [
     path('v1/all/business/orders', AllBusinessOrdersView.as_view(), name='all_business_orders'),
     path('v1/product/availability/check/', CheckProductAvailabilityView.as_view(), name='product_availability_check'),
     path('v1/order/detail/', OrderDetailView.as_view(), name='order_detail'),
+    path('v1/updare/order/status/', UpdateOrderStatusView.as_view(), name='update_order_status'),
 ]
+

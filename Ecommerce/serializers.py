@@ -223,7 +223,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductOrders
         fields = [
-            'id', 'user', 'business', 'product', 'quantity', 'is_paid', 'address', 'order_placed', 'order_placed_at', 'shipped_at', 'is_shipped', 'out_of_delivery', 'out_of_delivery_at', 'is_delivered', 'delivered_at', 'order_id', 'status'
+            'id', 'user', 'business', 'product', 'quantity', 'is_paid', 'address', 'order_placed', 'order_placed_at', 'shipped_at', 'is_shipped', 'out_of_delivery', 'out_of_delivery_at', 'is_delivered', 'delivered_at', 'order_id', 'status', 'order_confirmed', 'order_confirmed_at'
         ]
 
 

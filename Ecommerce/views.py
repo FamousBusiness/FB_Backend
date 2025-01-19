@@ -1,8 +1,8 @@
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from Listings.models import Category, ProductService, SubCategory
-from .models import StoreBanner, ProductTag, Cart, UserAddress, ProductOrders, UserAddress, EcommercePhonepeOrder
-from Wallet.models import Wallet, Transaction, ImmatureWallet
+from .models import StoreBanner, ProductTag, Cart, UserAddress, ProductOrders, UserAddress, EcommercePhonepeOrder, RefundTransaction
+from Wallet.models import ImmatureWallet
 from Listings.models import Business
 from rest_framework import viewsets
 from .serializers import (
@@ -406,6 +406,7 @@ class EcomRazorPayPaymentProcess(APIView):
         phonepe_amount = int(amount) * 100
 
         required_fields = ['amount', 'products', 'address_id']
+
         for field in required_fields:
             if not data.get(field):
                 return Response(
@@ -436,7 +437,7 @@ class EcomRazorPayPaymentProcess(APIView):
             return Response({'message': 'Unable to create Phonepe Order'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         try:
-            payment  = PhonepayPayment(phonepe_amount, transaction_id)
+            payment  = PhonepayPayment(int(amount), transaction_id)
         except Exception as e:
             return Response({'message': 'Unable to raise payment request', 'error': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -558,7 +559,7 @@ class EcomRazorPayPaymentProcess(APIView):
 
 ##### Phonepe Payment Response
 class EcomPhonepePaymentResponseView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     
      
     @csrf_exempt
@@ -567,7 +568,11 @@ class EcomPhonepePaymentResponseView(APIView):
         decoded_data = base64_decode(response_data)
 
 
-        if decoded_data['success'] == True and decoded_data['code'] == 'PAYMENT_SUCCESS' and decoded_data['message'] == 'Your request has been successfully completed.':
+        if (
+            decoded_data['success'] == True and 
+            decoded_data['code'] == 'PAYMENT_SUCCESS' and 
+            decoded_data['message'] == 'Your request has been successfully completed.'
+            ):
 
             #### Get the transaction ID from response
             transaction_id = decoded_data['data']['merchantTransactionId']
@@ -586,7 +591,8 @@ class EcomPhonepePaymentResponseView(APIView):
 
 
             try:
-                products = json.loads(ecom_phonepe_order.products)
+                fixed_products = ecom_phonepe_order.products.replace("'", '"')
+                products = json.loads(fixed_products)
             except Exception as e:
                 return Response({'message': 'Unable to decode Json'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -594,7 +600,6 @@ class EcomPhonepePaymentResponseView(APIView):
             for product_data in products:
                 product_id = product_data.get('product_id')
                 quantity   = product_data.get('quantity')
-
 
                 #### Generate Unique Order ID
                 generate_order_id = generate_orderID()
@@ -767,7 +772,7 @@ class OrderDetailView(APIView):
 
         ##### Get the order of the user
         try:
-            user_order = ProductOrders.objects.get(id = int(order_id), user = user)
+            user_order = ProductOrders.objects.get(id = int(order_id))
         except Exception as e:
             return Response({'message': 'Unable to get user order'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -782,8 +787,10 @@ class OrderDetailView(APIView):
 
 
 
+##### Update order status
 class UpdateOrderStatusView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+
 
     def put(self, request):
         user = request.user
@@ -801,43 +808,161 @@ class UpdateOrderStatusView(APIView):
             order = ProductOrders.objects.get(id = int(order_id))
         except Exception as e:
             return Response({'message': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
-        
+
         
         if request_status == 'Order Confirmed':
-            order.order_confirmed = True
-            order.order_confirmed_at = timezone.now()
+            if (
+                order.order_placed
+                and not order.order_confirmed
+                and not order.is_shipped
+                and not order.out_of_delivery
+                and not order.is_delivered 
+                and not order.is_refundInitiated 
+                and not order.is_refunded 
+                and not order.is_return_initiated
+                and not order.is_returned
+                ):
+                order.order_confirmed    = True
+                order.order_confirmed_at = timezone.now()
+                order.status             = 'Order Confirmed'
 
+            else:
+                return Response({'message': 'Unable to change the status'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
         elif request_status == 'Shipped':
-            order.is_shipped = True
-            order.shipped_at = timezone.now()
+            if (
+                order.order_placed 
+                and order.order_confirmed
+                and not order.is_shipped
+                and not order.out_of_delivery
+                and not order.is_delivered 
+                and not order.is_refundInitiated 
+                and not order.is_refunded 
+                and not order.is_return_initiated
+                and not order.is_returned
+                ):
 
+                order.is_shipped = True
+                order.shipped_at = timezone.now()
+                order.status     = 'Shipped'
+
+            else:
+                return Response({'message': 'Unable to change the status'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
         elif request_status == 'Out of Delivery':
-            order.out_of_delivery = True
-            order.out_of_delivery_at = timezone.now()
+            if (
+                order.order_placed 
+                and order.order_confirmed 
+                and order.is_shipped
+                and not order.out_of_delivery
+                and not order.is_delivered 
+                and not order.is_refundInitiated 
+                and not order.is_refunded 
+                and not order.is_return_initiated
+                and not order.is_returned
+                ):
+                order.out_of_delivery = True
+                order.out_of_delivery_at = timezone.now()
+                order.status = 'Out of Delivery'
+
+            else:
+                return Response({'message': 'Unable to change the status'}, status=status.HTTP_400_BAD_REQUEST)
+        
 
         elif request_status == 'Delivered':
-            order.is_delivered = True
-            order.delivered_at = timezone.now()
+            if (
+                order.order_placed 
+                and order.order_confirmed 
+                and order.is_shipped 
+                and order.out_of_delivery
+                and not order.is_delivered 
+                and not order.is_refundInitiated 
+                and not order.is_refunded 
+                and not order.is_return_initiated
+                and not order.is_returned
+                ):
 
-        elif request_status == 'Refund Initiated':
-            order.refund_initiate_at = timezone.now()
-            order.is_refundInitiated = True
+                order.is_delivered = True
+                order.delivered_at = timezone.now()
+                order.status = 'Delivered'
 
-        elif request_status == 'Refunded':
-            order.is_refunded = True
-            order.refunded_at = timezone.now()
-
+            else:
+                return Response({'message': 'Unable to change the status'}, status=status.HTTP_400_BAD_REQUEST)
+        
         elif request_status == 'Return Shipped':
-            pass
+            if (
+                order.order_placed 
+                and order.order_confirmed
+                and order.is_shipped
+                and order.out_of_delivery
+                and order.is_delivered
+                and order.is_return_initiated
+                and not order.is_returned
+                and not order.is_refundInitiated
+                and not order.is_refunded
+            ):
+                order.is_return_initiated = True
+                order.return_initiate_at  = timezone.now()
+                order.status = 'Return Shipped'
 
+            else:
+                return Response({'message': 'Unable to change the status'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        
         elif request_status == 'Returned':
-            pass
+            if (
+                order.order_placed
+                and order.order_confirmed
+                and order.is_shipped
+                and order.out_of_delivery
+                and order.is_delivered
+                and order.is_return_initiated
+                and not order.is_returned
+                and not order.is_refundInitiated
+                and not order.is_refunded
+                ):
 
+                order.is_returned        = True
+                order.is_refundInitiated = True
+                order.returned_at        = timezone.now()
+                order.refund_initiate_at = timezone.now()
+                order.status             = 'Refund Initiated'
+
+                unique_id = str(uuid.uuid4())[:36]
+                
+                #### Create a Refund Transaction
+                try:
+                    refund_transaction = RefundTransaction.objects.create(
+                        user         = order.user,
+                        business     = order.business,
+                        order        = order,
+                        reference_id = unique_id,
+                        is_refunded  = False,
+                        status       = 'Initiated'
+                    )
+
+                    refund_transaction.save()
+                    
+                except Exception as e:
+                    return Response({'message': 'Unable to create Refund Transaction'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            else:
+                return Response({'message': 'Unable to change the status'}, status=status.HTTP_400_BAD_REQUEST)
+
+            
         elif request_status == 'Cancelled':
-            pass
+            if order.order_placed and order.order_confirmed:
+                order.is_cancelled = True
+                order.cancelled_at = timezone.now()
 
+        else:
+            return Response({'message': 'invalid status to update'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'message': ''})
+        order.save()
+        
+        return Response({'success': True}, status=status.HTTP_200_OK)
 
 
 

@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import MatureWallet, ImmatureWallet, Transaction, UserBankAccount, Withdrawals
+from .models import MatureWallet, ImmatureWallet, Transaction, UserBankAccount, Withdrawals, PhonpeWalletOrder, AddMoneyFee, TransferMoneyFee
 from users.models import User
 from .serializers import UserAccountBalance, UserImmatureSerializer, UserMatureSerializer, AllUserTransactionSerializer, UserBankAccountSerializer, WithDrawalSerializer
 from Razorpay.serializer import RazorpayorderSerializer, RazorPayOrderCompletionSerializer
@@ -12,6 +12,9 @@ from Razorpay.views import rz_client
 from uuid import uuid4
 from django.utils.timezone import now
 from datetime import timedelta, datetime
+from Phonepe.payment import AddMoneyPhonepayPayment
+from django.views.decorators.csrf import csrf_exempt
+from Phonepe.encoded import base64_decode
 
 
 
@@ -100,38 +103,42 @@ class UpdateWalletBalanceView(APIView):
     
     
     def post(self, request):
-        razorpay_order_serializer = RazorpayorderSerializer(data = request.data)
+        user = request.user
+        amount = request.data.get('amount')
 
-        if razorpay_order_serializer.is_valid():
-            amount = razorpay_order_serializer.validated_data.get('amount')
-            
-            try:
-                order_response = rz_client.create_order(
-                    amount = amount
-                )
-            except Exception as e:
-                return Response({'message': 'Unable to create order', 'error': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-            response = {
-                'status': status.HTTP_201_CREATED,
-                'message': 'Order Created',
-                'data': order_response
-            }
-
-            return Response(response, status=status.HTTP_201_CREATED)
-
-        else:
-            response = {
-                "status_code": status.HTTP_400_BAD_REQUEST,
-                "message": "bad request",
-                "error": razorpay_order_serializer.errors
-            }
-
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        if not amount:
+            return Response({'message': 'Amount field is required'}, status=status.HTTP_400_BAD_REQUEST)
         
-    
+        unique_id = str(uuid4())[:35]
 
+        #### Create phonepe order to save all the data
+        try:
+            phonepe_order = PhonpeWalletOrder.objects.create(
+                user           = user,
+                amount         = int(amount),
+                transaction_id = unique_id,
+                purpose        = 'Add Money'
+            )
+
+            phonepe_order.save()
+
+        except Exception as e:
+            return Response({'message':'Unable to create phonepe order'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            payment  = AddMoneyPhonepayPayment(amount, unique_id)
+        except Exception as e:
+            return Response({'message': 'Unable to raise payment request', 'error': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        return Response({
+            'message': 'Payment request raised successfully',
+            'url': payment
+        }, status=status.HTTP_200_OK)
+        
+
+    
+    ### Currenctly not in use right Now(Only for Razorpay payment)
     def put(self, request):
         user   = request.user
         amount = request.data.get('amount')
@@ -200,6 +207,81 @@ class UpdateWalletBalanceView(APIView):
 
         return Response(response, status=status.HTTP_200_OK)
         
+
+
+#### Phonepe payment Response
+class AddMoneyPhonepePaymentResponseView(APIView):
+    permission_classes = [permissions.AllowAny]
+    
+    
+    @csrf_exempt
+    def post(self, request):
+        response_data = request.data.get('response')
+        decoded_data  = base64_decode(response_data)
+        
+        
+        if (
+            decoded_data['success'] == True and 
+            decoded_data['code'] == 'PAYMENT_SUCCESS' and 
+            decoded_data['message'] == 'Your request has been successfully completed.'
+            ):
+
+            #### Get the transaction ID from response
+            transaction_id = decoded_data['data']['merchantTransactionId']
+
+            #### Get the phonepe order
+            try:
+                phonepe_order                 = PhonpeWalletOrder.objects.get(transaction_id = transaction_id)
+                phonepe_order.phoepe_response = str(decoded_data)
+
+                phonepe_order.save()
+
+            except Exception as e:
+                return Response({'message': 'Unable to get transaction Id'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            ### Get The wallet of the 
+            try:
+                user_wallet = MatureWallet.objects.get(user = phonepe_order.user)
+
+                if user_wallet:
+                    user_wallet.balance += int(phonepe_order.amount)
+                    user_wallet.save()
+
+            except Exception as e:
+                return Response({'message': 'Unable to get the User Wallet'}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+            # Unique Transaction ID
+            transaction_ID = f'TR_{str(uuid4())[:28]}'
+
+            ## Create a Transactio for the user
+            try:
+                create_transaction = Transaction.objects.create(
+                    user           = phonepe_order.user,
+                    transaction_id = transaction_ID,
+                    amount         = phonepe_order.amount,
+                    status         = 'Success',
+                    mode           = 'Add'
+                )
+
+                #### Get all the Add money Fees
+                try:
+                    add_money_fees = AddMoneyFee.objects.all()
+
+                    if add_money_fees:
+                        create_transaction.ad_money_fee.set(add_money_fees)
+
+                except Exception as e:
+                    pass
+
+                create_transaction.save()
+
+            except Exception as e:
+                return Response({'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+            return Response({'success': True}, status=status.HTTP_200_OK)
+
 
 
 
@@ -507,7 +589,7 @@ class TransferMoneyView(APIView):
         if user_mature_balance.balance < int(amount):
             return Response({'message': 'Insufficient funds in Account'}, status=status.HTTP_400_BAD_REQUEST)
         
-        #### Deduct amount from 
+        #### Deduct amount
         if user_mature_balance.balance >= int(amount):
             user_mature_balance.balance -= int(amount)
             receiver_wallet.balance += int(amount)
@@ -530,6 +612,16 @@ class TransferMoneyView(APIView):
                 mode           = 'Transfer',
                 receiver       = receiver_user
             )
+
+            try:
+                transfer_money = TransferMoneyFee.objects.all()
+
+                if transfer_money:
+                    transaction.transfer_fee.set(transfer_money)
+
+            except Exception as e:
+                pass
+
             transaction.save()
 
         except Exception as e:

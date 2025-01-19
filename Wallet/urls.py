@@ -3,7 +3,7 @@ from .views import (
     UserWalletBalanceView, UserMatureImmatureWallet, 
     UpdateWalletBalanceView, AllUserTransactionsView, 
     UserBankAccountView, UserWithdrawalAPIView, TransferMoneyView, ExportWithdrawalView,
-    RecentTransactions, ExportTransactionsView, FilterUserTransactionsView, FilterWithDrawalView
+    RecentTransactions, ExportTransactionsView, FilterUserTransactionsView, FilterWithDrawalView, AddMoneyPhonepePaymentResponseView
 )
 
 
@@ -13,7 +13,7 @@ from .views import (
 urlpatterns = [
     path('account/balance', UserWalletBalanceView.as_view(), name='user_wallet_data'),
     path('stats/balance', UserMatureImmatureWallet.as_view(), name='user_mature_immature_wallet_data'),
-    path('update/wallet/balance', UpdateWalletBalanceView.as_view(), name='update_wallet_balance'),
+    path('add/wallet/balance', UpdateWalletBalanceView.as_view(), name='update_wallet_balance'),  #### Add wallet balance
     path('all/wallet/transactions/', AllUserTransactionsView.as_view(), name='all_user_transactions'),
     path('user/bank/', UserBankAccountView.as_view(), name='user_bank_accounts'),
     path('user/withdrawal/requests/', UserWithdrawalAPIView.as_view(), name='user_withdrawl_request'),
@@ -22,7 +22,8 @@ urlpatterns = [
     path('transfer/money/', TransferMoneyView.as_view(), name='transfer_money'),
     path('recent/transactions/', RecentTransactions.as_view(), name='recent_transaction'),
     path('export/transactions/', ExportTransactionsView.as_view(), name='export_transaction'),
-    path('filter/transactions/', FilterUserTransactionsView.as_view(), name='filter_transaction')
+    path('filter/transactions/', FilterUserTransactionsView.as_view(), name='filter_transaction'),
+    path('add/money/phonepe/response/', AddMoneyPhonepePaymentResponseView.as_view(), name='addmoney_phonepe_response'),
 ]
 
 

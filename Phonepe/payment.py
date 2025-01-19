@@ -44,8 +44,9 @@ if Is_development == 'True':
     Salt_key         = config('PHONEPE_TEST_SALT_KEY')
     Merchant_User_Id = config('MERCHANT_USER_ID')
     api_url          = config('PHONEPE_SANDBOX_URL')
-    webhook_url      = 'http://127.0.0.1:8000'
+    webhook_url      = 'https://9044-2405-204-130d-3f0-74be-863e-e1db-559.ngrok-free.app'
     redirect_url     = 'http://localhost:3000'
+    add_money_redirect_url = 'http://localhost:5173/'
 
 else:
     # Merchant_Id      = config("MERCHANT_ID")
@@ -57,16 +58,18 @@ else:
     api_url          = config('PHONEPE_SANDBOX_URL')
     webhook_url      = 'https://api.famousbusiness.in'
     redirect_url     = 'https://store.famousbusiness.in'
+    add_money_redirect_url = 'https://wallet.famousbusiness.in/'
 
 
 
 def PhonepayPayment(amount, transaction_id):
-    
+    sent_amount = int(amount) * 100
+
     MAINPAYLOAD = {
         "merchantId": Merchant_Id,
         "merchantTransactionId": transaction_id,
         "merchantUserId": Merchant_User_Id,
-        "amount": int(amount),
+        "amount": sent_amount,
         "redirectUrl": f"{redirect_url}/payment/success",
         "redirectMode": "REDIRECT",
         "callbackUrl": f"{webhook_url}/api/ecom/v1/phonepe/payment/response/",
@@ -130,5 +133,49 @@ def payment_return(request):
 
     return render(request, 'index.html', {'output': response.text, 'main_request': form_data_dict})
 
+
+
+
+def AddMoneyPhonepayPayment(amount, transaction_id):
+    sent_amount = int(amount) * 100
+
+    MAINPAYLOAD = {
+        "merchantId": Merchant_Id,
+        "merchantTransactionId": transaction_id,
+        "merchantUserId": Merchant_User_Id,
+        "amount": sent_amount,
+        "redirectUrl": f"{add_money_redirect_url}",
+        "redirectMode": "REDIRECT",
+        "callbackUrl": f"{webhook_url}/api/v5/wallet/add/money/phonepe/response/",
+        "mobileNumber": "8598039147",
+        "paymentInstrument": {
+            "type": "PAY_PAGE"
+        }
+    }
+
+    INDEX = "1"
+    ENDPOINT = "/pg/v1/pay"
+    SALTKEY = f"{Salt_key}"
+    base64String = base64_encode(MAINPAYLOAD)
+    mainString = base64String + ENDPOINT + SALTKEY
+    sha256Val = calculate_sha256_string(mainString)
+    checkSum = sha256Val + '###' + INDEX
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-VERIFY': checkSum,
+        'accept': 'application/json',
+    }
+
+    json_data = {
+        'request': base64String,
+    }
+
+    response = requests.post(f'{api_url}', headers=headers, json=json_data)
+
+    response.raise_for_status()
+    responseData = response.json()
+
+    return responseData['data']['instrumentResponse']['redirectInfo']['url']
 
 
