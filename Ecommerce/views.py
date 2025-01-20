@@ -259,10 +259,7 @@ class CheckoutPageView(APIView):
             user_cart           = Cart.objects.filter(user = user)
             all_user_cart_items = self.serializer_class(user_cart, many=True)
 
-            total_amount = sum(
-                float(item.get('product_details', {}).get('price', 0)) * item.get('quantity', 0)
-                for item in all_user_cart_items.data
-            )
+            total_amount = sum(float(cart_item.product.price) * float(cart_item.quantity) for cart_item in user_cart)
             
             return Response({
                 'message': 'Cart item added successfully',
