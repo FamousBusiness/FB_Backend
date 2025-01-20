@@ -259,7 +259,10 @@ class CheckoutPageView(APIView):
             user_cart           = Cart.objects.filter(user = user)
             all_user_cart_items = self.serializer_class(user_cart, many=True)
 
-            total_amount = sum(float(cart_item.product.price) * float(cart_item.quantity) for cart_item in user_cart)
+            try:
+                total_amount = sum(float(cart_item.product.price) * int(cart_item.quantity) for cart_item in user_cart)
+            except Exception as e:
+                return Response({'error': f'{str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             return Response({
                 'message': 'Cart item added successfully',
