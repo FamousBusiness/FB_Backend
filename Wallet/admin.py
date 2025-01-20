@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Transaction, ImmatureWallet, MatureWallet, Withdrawals, UserBankAccount, AddMoneyFee, TransferMoneyFee
+from .models import Transaction, ImmatureWallet, MatureWallet, Withdrawals, UserBankAccount, AddMoneyFee, TransferMoneyFee, PhonpeWalletOrder
 
 
 
@@ -10,4 +10,5 @@ admin.site.register(Transaction)
 admin.site.register(UserBankAccount)
 admin.site.register(AddMoneyFee)
 admin.site.register(TransferMoneyFee)
+admin.site.register(PhonpeWalletOrder)
 

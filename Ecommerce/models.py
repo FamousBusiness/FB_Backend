@@ -76,6 +76,9 @@ class ProductTag(models.Model):
     def __str__(self) -> str:
         return f"Product Tag - {self.name}"
     
+    class Meta:
+        ordering = ['-id']
+    
 
 
 ### Product offer name
