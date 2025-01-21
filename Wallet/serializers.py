@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MatureWallet, ImmatureWallet, Transaction, UserBankAccount, Withdrawals
+from .models import MatureWallet, ImmatureWallet, Transaction, UserBankAccount, Withdrawals, AddMoneyFee, TransferMoneyFee, CODFee, PrepaidFee
 from users.models import User
 
 
@@ -38,14 +38,48 @@ class UserNameSerializer(serializers.ModelSerializer):
 
 
 
+class AddMoneyFeeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AddMoneyFee
+        fields = '__all__'
+    
+
+class TransferMoneyFeeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TransferMoneyFee
+        fields = '__all__'
+
+    
+class CODFeeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CODFee
+        fields = '__all__'
+
+
+
+class PrepaidFeeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PrepaidFee
+        fields = '__all__'
+
+
+
 #### All user transactions
 class AllUserTransactionSerializer(serializers.ModelSerializer):
     receiver = UserNameSerializer()
     user     = UserNameSerializer()
+    ad_money_fee = AddMoneyFeeSerializer(many=True)
+    transfer_fee = TransferMoneyFeeSerializer(many=True)
+    cod_fee      = CODFeeSerializer(many=True)
+    prepaid_fee  = PrepaidFeeSerializer(many=True)
 
     class Meta:
         model = Transaction
-        fields = ['id', 'user', 'transaction_id', 'date_created', 'amount', 'currency', 'status', 'is_completed', 'mode', 'receiver']
+        fields = ['id', 'user', 'transaction_id', 'date_created', 'amount', 'currency', 'status', 'is_completed', 'mode', 'receiver', 'ad_money_fee', 'transfer_fee', 'cod_fee', 'prepaid_fee']
 
 
 

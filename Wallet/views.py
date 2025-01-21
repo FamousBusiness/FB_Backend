@@ -304,9 +304,10 @@ class AllUserTransactionsView(APIView):
 
         ### Get all the transactions of the user
         try:
-            user_transactions = Transaction.objects.filter(
-                user = user
-            ).order_by('-date_created')
+            user_transactions = Transaction.objects.filter(user=user).prefetch_related(
+                'ad_money_fee', 'transfer_fee', 'cod_fee', 'prepaid_fee'
+            ).select_related('user', 'receiver').order_by('-date_created')
+
         except Exception as e:
             return Response({
                 'message': 'Unable to get user transactions',

@@ -70,8 +70,28 @@ class TransferMoneyFee(models.Model):
 
     def __str__(self):
         return f'Transfer Money {self.name}'
-
     
+
+
+class CODFee(models.Model):
+    name       = models.CharField(_("Fee Name"), choices=ADDMONEY_FEE, max_length=15)
+    percentage = models.PositiveIntegerField(_("Percentage"), default=1)
+
+
+    def __str__(self):
+        return f'COD Fee {self.name}'
+    
+
+
+class PrepaidFee(models.Model):
+    name       = models.CharField(_("Fee Name"), choices=ADDMONEY_FEE, max_length=15)
+    percentage = models.PositiveIntegerField(_("Percentage"), default=1)
+    
+    
+    def __str__(self):
+        return f'Prepaid Fee {self.name}'
+    
+
 
 
 class Transaction(models.Model):
@@ -87,10 +107,12 @@ class Transaction(models.Model):
     receiver        = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='receiver')
     ad_money_fee    = models.ManyToManyField(AddMoneyFee)
     transfer_fee    = models.ManyToManyField(TransferMoneyFee)
+    cod_fee         = models.ManyToManyField(CODFee)
+    prepaid_fee     = models.ManyToManyField(PrepaidFee)
 
 
     def __str__(self):
-        return f'{self.user} Transaction'
+        return f'{self.user} Transaction - {self.pk}'
     
     class Meta:
         ordering = ['-id']
