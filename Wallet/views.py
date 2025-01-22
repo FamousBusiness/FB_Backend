@@ -196,7 +196,7 @@ class UpdateWalletBalanceView(APIView):
                 user           = user,
                 transaction_id = transaction_ID,
                 amount         = amount,
-                status         = 'Success',
+                status         = 'Pending',
                 mode           = 'Add'
             )
 

@@ -2,7 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from Listings.models import Category, ProductService, SubCategory
 from .models import StoreBanner, ProductTag, Cart, UserAddress, ProductOrders, UserAddress, EcommercePhonepeOrder, RefundTransaction
-from Wallet.models import ImmatureWallet
+from Wallet.models import ImmatureWallet, Transaction, CODFee, PrepaidFee
 from Listings.models import Business
 from rest_framework import viewsets
 from .serializers import (
@@ -609,6 +609,7 @@ class EcomPhonepePaymentResponseView(APIView):
 
                 #### Generate Unique Order ID
                 generate_order_id = generate_orderID()
+                unique_id         = str(uuid.uuid4())
 
                 
                 ### Get the product
@@ -668,9 +669,160 @@ class EcomPhonepePaymentResponseView(APIView):
                 except Exception as e:
                     return Response({'message': 'Not able to get the Wallet'}, status=status.HTTP_400_BAD_REQUEST)
                 
+                ## Create a Transaction for the user
+            try:
+                create_transaction = Transaction.objects.create(
+                    user           = business_user.owner,
+                    transaction_id = unique_id,
+                    amount         = ecom_phonepe_order.amount,
+                    status         = 'Success',
+                    mode           = 'Order'
+                )
 
+                #### Get all the Add money Fees
+                try:
+                    prepaid_fee = PrepaidFee.objects.all()
+
+                    if prepaid_fee:
+                        create_transaction.prepaid_fee.set(prepaid_fee)
+
+                except Exception as e:
+                    pass
+                
+                create_transaction.save()
+                
+            except Exception as e:
+                return Response({'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+                
+            
             return Response({'success': True}, status=status.HTTP_201_CREATED)
     
+
+
+#### COD Order
+class EcomCODOrderAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+        amount   = request.data.get('amount')
+        products = request.data.get('products')
+        address  = request.data.get('address_id')
+        
+        
+        required_fields = ['amount', 'products', 'address_id']
+        
+        for field in required_fields:
+            if not data.get(field):
+                return Response(
+                    {'message': f'{field} field is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        transaction_id = str(uuid.uuid4())[:34]
+
+        ### Get the address
+        try:
+            user_address = UserAddress.objects.get(id = int(address))
+        except Exception as e:
+            return Response({'message': 'Unable to get the address'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+        for product_data in products:
+            product_id = product_data.get('product_id')
+            quantity   = product_data.get('quantity')
+        
+            #### Generate Unique Order ID
+            generate_order_id = generate_orderID()
+        
+            
+            ### Get the product
+            try:
+                product = ProductService.objects.get(id = int(product_id))
+            except Exception as e:
+                return Response({'message': 'Unable to get the product'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        
+            try:
+                ### Create an Ecommerce Order
+                ecom_order = ProductOrders.objects.create(
+                    user            = user,
+                    business        = product.business,
+                    product         = product,
+                    quantity        = quantity,
+                    is_paid         = True,
+                    address         = user_address,
+                    order_placed_at = timezone.now(),
+                    order_placed    = True,
+                    order_id        = generate_order_id,
+                    status          = 'Order Placed'
+                )
+        
+                ecom_order.save()
+        
+            except Exception as e:
+                return Response({'message': 'Unable to create Order', 'error': f'{str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+        
+            #### Delete all the cart items of the user
+            try:
+                all_user_cart = Cart.objects.filter(user = user)
+        
+                all_user_cart.delete()
+            except Exception as e:
+                return Response({"message": "No available items in user cart"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        
+            ### Get the Business user
+            try:
+                business_user = Business.objects.get(owner = product.business.owner)
+            except Exception as e:
+                return Response({'message': 'Unable to get the Business'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+            ### Create or get the Business user Wallet
+            try:
+                wallet, created = ImmatureWallet.objects.get_or_create(
+                    user = business_user.owner
+                )
+        
+                if wallet:
+                    wallet.balance += float(product.price)
+                    wallet.save()
+        
+            except Exception as e:
+                return Response({'message': 'Not able to get the Wallet'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+            ## Create a Transaction for the user
+            try:
+                create_transaction = Transaction.objects.create(
+                    user           = user,
+                    transaction_id = transaction_id,
+                    amount         = int(amount),
+                    status         = 'Success',
+                    mode           = 'Order'
+                )
+
+                #### Get all the Add money Fees
+                try:
+                    cod_fee = CODFee.objects.all()
+
+                    if cod_fee:
+                        create_transaction.cod_fee.set(cod_fee)
+
+                except Exception as e:
+                    pass
+
+                create_transaction.save()
+
+            except Exception as e:
+                return Response({'error': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            
+
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
 
 
 
