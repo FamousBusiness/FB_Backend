@@ -789,7 +789,8 @@ class EcomCODOrderAPIView(APIView):
                 )
         
                 if wallet:
-                    wallet.balance += float(product.price)
+                    cleaned_price = float(product.price.replace(',', ''))
+                    wallet.balance += cleaned_price
                     wallet.save()
         
             except Exception as e:
