@@ -793,7 +793,7 @@ class EcomCODOrderAPIView(APIView):
                     wallet.save()
         
             except Exception as e:
-                return Response({'message': 'Not able to get the Wallet'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Not able to get the Wallet', 'error': f'{str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
             
             
             ## Create a Transaction for the user
