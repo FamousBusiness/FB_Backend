@@ -19,7 +19,11 @@ app.conf.beat_schedule = {
         'task': 'Lead.task.beat_task_to_send_lead_mail_every_10_minute',
         'schedule': crontab(minute='*/4'),
         # 'args': ()
-    }
+    },
+    'transfer_fund_from_immature_to_mature': {
+        'task': 'Ecommerce.tasks.transfer_funds_from_immature_to_mature',
+        'schedule': crontab(hour=0, minute=0), 
+    },
  }
 
 
