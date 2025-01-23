@@ -102,14 +102,14 @@ class ProductSpecification(models.Model):
 
 #### Multiple images of Product
 class ProductImages(models.Model):
-    name = models.CharField(_("Image Nae"), max_length=50)
+    name  = models.CharField(_("Image Nae"), max_length=50)
     image = models.ImageField(upload_to='Productimages/', default='product_service/default.png')
-
+    
     def __str__(self) -> str:
         return f'Image - {self.name}'
     
-
-
+    
+    
 class Cart(models.Model):
     user     = models.ForeignKey(User, on_delete=models.CASCADE)
     product  = models.ForeignKey('Listings.ProductService', on_delete=models.SET_NULL, null=True)
@@ -181,6 +181,7 @@ class ProductOrders(models.Model):
     order_id           = models.CharField(_("Order ID"), max_length=40, null=True)
     payment_mode       = models.CharField(_("Payment Mode"), max_length=15, null=True, choices=ORDER_PAYMENT_MODE)
     status             = models.CharField(_("Status"), max_length=25, null=True, choices=ORDER_STATUS)
+    return_date        = models.DateTimeField(_("Return Date"), null=True)
 
 
     def __str__(self):

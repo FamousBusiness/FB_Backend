@@ -19,6 +19,38 @@ CATEGORY_TYPE = [
     ('B2C', 'B2C')
 ]  
 
+PRODUCT_RETURN_PERIOD = [
+    ('1 Day', '1 Day'), 
+    ('2 Days', '2 Days'),
+    ('3 Days', '3 Days'),
+    ('4 Days', '4 Days'),
+    ('5 Days', '5 Days'),
+    ('6 Days', '6 Days'),
+    ('7 Days', '7 Days'),
+    ('8 Days', '8 Days'),
+    ('9 Days', '9 Days'),
+    ('10 Days', '10 Days'),
+    ('11 Days', '11 Days'),
+    ('12 Days', '12 Days'),
+    ('13 Days', '13 Days'),
+    ('14 Days', '14 Days'),
+    ('15 Days', '15 Days'),
+    ('16 Days', '16 Days'),
+    ('17 Days', '17 Days'),
+    ('18 Days', '18 Days'),
+    ('19 Days', '19 Days'),
+    ('20 Days', '20 Days'),
+    ('21 Days', '22 Days'),
+    ('23 Days', '23 Days'),
+    ('24 Days', '24 Days'),
+    ('25 Days', '25 Days'),
+    ('26 Days', '26 Days'),
+    ('27 Days', '28 Days'),
+    ('29 Days', '29 Days'),
+    ('30 Days', '30 Days'),
+    ('31 Days', '31 Days'),
+]
+
 
 
 ### Category table
@@ -332,6 +364,8 @@ class ProductService(models.Model):
     is_available   = models.BooleanField(default=True, null=True, blank=True)
     emi_offers     = models.ManyToManyField(EMIOffers)
     pincode        = models.ManyToManyField(PinCode)
+    return_period  = models.CharField(_('Return Period'), max_length=20, choices=PRODUCT_RETURN_PERIOD, default='1 Day')
+    return_policy  = models.TextField(_("Return Policy"), null=True)
 
 
     def __str__(self):

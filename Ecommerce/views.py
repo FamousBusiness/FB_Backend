@@ -20,6 +20,8 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from Phonepe.payment import PhonepayPayment
 from django.views.decorators.csrf import csrf_exempt
 from Phonepe.encoded import base64_decode
+from django.utils.timezone import now
+from datetime import timedelta
 import uuid
 import json
 
@@ -598,11 +600,11 @@ class EcomPhonepePaymentResponseView(APIView):
 
             try:
                 fixed_products = ecom_phonepe_order.products.replace("'", '"')
-                products = json.loads(fixed_products)
+                products       = json.loads(fixed_products)
             except Exception as e:
                 return Response({'message': 'Unable to decode Json'}, status=status.HTTP_400_BAD_REQUEST)
             
-
+            
             for product_data in products:
                 product_id = product_data.get('product_id')
                 quantity   = product_data.get('quantity')
@@ -618,6 +620,14 @@ class EcomPhonepePaymentResponseView(APIView):
                 except Exception as e:
                     return Response({'message': 'Unable to get the product'}, status=status.HTTP_400_BAD_REQUEST)
                 
+                product_return_period = product.return_period
+
+                ### Convert the return period into datetime format
+                try:
+                    days        = int(product_return_period.split()[0])
+                    return_date_ = now() + timedelta(days=days)
+                except Exception as e:
+                    return Response({'message': 'Date conversion error', 'error': f'{str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
                 try:
                     ### Create an Ecommerce Order
@@ -631,7 +641,9 @@ class EcomPhonepePaymentResponseView(APIView):
                         order_placed_at = timezone.now(),
                         order_placed    = True,
                         order_id        = generate_order_id,
-                        status          = 'Order Placed'
+                        status          = 'Order Placed',
+                        return_date     = return_date_,
+                        payment_mode    = 'Prepaid'
                     )
 
                     ecom_order.save()
@@ -744,6 +756,16 @@ class EcomCODOrderAPIView(APIView):
             except Exception as e:
                 return Response({'message': 'Unable to get the product'}, status=status.HTTP_400_BAD_REQUEST)
             
+            product_return_period = product.return_period
+
+            ### Convert the return period into datetime format
+            try:
+                days        = int(product_return_period.split()[0])
+                return_date_ = now() + timedelta(days=days)
+            except Exception as e:
+                return Response({'message': 'Date conversion error', 'error': f'{str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            
         
             try:
                 ### Create an Ecommerce Order
@@ -757,7 +779,9 @@ class EcomCODOrderAPIView(APIView):
                     order_placed_at = timezone.now(),
                     order_placed    = True,
                     order_id        = generate_order_id,
-                    status          = 'Order Placed'
+                    status          = 'Order Placed',
+                    return_date     = return_date_,
+                    payment_mode    = 'COD'
                 )
         
                 ecom_order.save()
