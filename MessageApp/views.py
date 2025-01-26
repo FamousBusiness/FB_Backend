@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from cryptography.hazmat.backends import default_backend
 from django.utils import timezone
 from PremiumPlan.models import PremiumPlanOrder
+from decouple import config
 
 
 
@@ -98,7 +99,7 @@ def pay(request):
 
     INDEX = "1"
     ENDPOINT = "/pg/v1/pay"
-    SALTKEY = "083f0f7b-217c-4930-a6ba-49f6140376da"
+    SALTKEY = config('SALT_KEY')
     base64String = base64_encode(MAINPAYLOAD)
     mainString = base64String + ENDPOINT + SALTKEY
     sha256Val = calculate_sha256_string(mainString)
@@ -135,7 +136,7 @@ def Payment_Successfull(request):
 # @csrf_exempt
 # def payment_return(request):
 #     INDEX = "1"
-#     SALTKEY = "083f0f7b-217c-4930-a6ba-49f6140376da"
+#     SALTKEY = ""
 #     form_data = request.POST
 #     print(form_data)
 #     print(form_data.get('code'))
@@ -174,7 +175,7 @@ def Payment_Successfull(request):
 @csrf_exempt
 def payment_return(request):
     INDEX = "1"
-    SALTKEY = "083f0f7b-217c-4930-a6ba-49f6140376da"
+    SALTKEY = config('SALT_KEY')
    
     form_data = request.POST
     lead_id = request.GET.get("lead_id")

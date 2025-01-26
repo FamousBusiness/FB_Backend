@@ -49,13 +49,13 @@ if Is_development == 'True':
     add_money_redirect_url = 'http://localhost:5173/'
 
 else:
-    # Merchant_Id      = config("MERCHANT_ID")
-    Merchant_Id      = config('PHONEPE_TEST_MERCHANT_ID')
-    # Salt_key         = config('SALT_KEY')
-    Salt_key         = config('PHONEPE_TEST_SALT_KEY')
+    Merchant_Id      = config("MERCHANT_ID")
+    # Merchant_Id      = config('PHONEPE_TEST_MERCHANT_ID')
+    Salt_key         = config('SALT_KEY')
+    # Salt_key         = config('PHONEPE_TEST_SALT_KEY')
     Merchant_User_Id = config('MERCHANT_USER_ID')
-    # api_url          = config('PHONEPE_PRODUCTION_URL')
-    api_url          = config('PHONEPE_SANDBOX_URL')
+    api_url          = config('PHONEPE_PRODUCTION_URL')
+    # api_url          = config('PHONEPE_SANDBOX_URL')
     webhook_url      = 'https://api.famousbusiness.in'
     redirect_url     = 'https://store.famousbusiness.in'
     add_money_redirect_url = 'https://wallet.famousbusiness.in/'
