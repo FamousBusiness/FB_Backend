@@ -14,7 +14,7 @@ from Listings.models import (
 from Lead.models import (
     BusinessPageLeadView, Lead, BusinessPageLeadBucket, BusinessPageLead, AssignedLeadPerPremiumPlan, 
     LeadBucket, LeadPrice, ComboLead, ComboLeadBucket, LeadOrder, LeadFrorm, LeadFormTag,
-    BusinessPageEnquiredLeadViews, ComboLeadOrder, LeadBanner
+    BusinessPageEnquiredLeadViews, ComboLeadOrder, LeadBanner, BannedLeadGroup
     )
 from .serializer import (BusinessPageleadViewSerializer, LeadSerializer, LeadPaymentSerializer,PriceLeadWithoutAllDataSerializer,
             IndividualLeadsSerializer, EnquiryFormSerializer, BusinessPageLeadSerializer,
@@ -1325,20 +1325,74 @@ class ViewLeadData(APIView):
                 ## Total available lead which is the sum of trial plan and Premium plan
                 total_available_lead = (available_plan_lead or 0) + (available_trial_plan_lead or 0)
 
-                ## If the lead has been expired
+                ### Check the user is belongs to any banned group
+                try:
+                    lead_banned_group_user = BannedLeadGroup.objects.filter(business=business_page).exists()
+
+                    if lead_banned_group_user:
+                        all_group_users = BannedLeadGroup.objects.filter(business=business_page).prefetch_related("business")
+
+                        for group in all_group_users:
+                            for business in group.business.all():
+
+                                group_user_viewed = BusinessPageLeadView.objects.filter(
+                                    business_page = business,
+                                    lead_id       = lead_id,
+                                    viewed        = True
+                                ).exists()
+
+                                if group_user_viewed:
+                                    group_business_viewed = BusinessPageLeadView.objects.filter(
+                                        business_page = business,
+                                        lead_id       = lead_id,
+                                        viewed        = True
+                                    )
+
+                                    for bus in group_business_viewed:
+
+                                        if bus.business_page == business_page:
+                                            
+                                            if available_plan_lead > 0:
+                                                lead_serializer = LeadSerializer(lead)
+                                            else:
+                                                lead_serializer = LeadWithoutAllDataSerializer(lead)
+
+                                        else:
+                                            lead_serializer = LeadWithoutAllDataSerializer(lead)
+
+                                    return Response({
+                                        'msg': 'Lead Data Fetched Successfully', 
+                                        'data': lead_serializer.data if lead_serializer else None
+
+                                        }, status=status.HTTP_200_OK)
+                                
+                except Exception as e:
+                    lead_banned_group_user = None
+
+
+                ## If the lead has been viewed
                 if viewed_lead:
                     lead_serializer = LeadSerializer(lead)
-                  
                     # lead_serializer = LeadWithoutAllDataSerializer(lead)
+                    return Response({
+                                'msg': 'Lead Data Fetched Successfully', 
+                                'data': lead_serializer.data if lead_serializer else None
 
+                                }, status=status.HTTP_200_OK)
 
-                ## If the Business owner has viewed the lead
+                ## If the Lead has been expired
                 elif expired_lead:
                     # lead_serializer = LeadSerializer(lead)
                     if viewed_lead:
                         lead_serializer = LeadSerializer(lead)
                     else:
                         lead_serializer = LeadWithoutAllDataSerializer(lead)
+
+                    return Response({
+                                'msg': 'Lead Data Fetched Successfully', 
+                                'data': lead_serializer.data if lead_serializer else None
+
+                                }, status=status.HTTP_200_OK)
 
 
                 # if the business owner has available lead quantity in Premium plan
@@ -1368,10 +1422,14 @@ class ViewLeadData(APIView):
                                     break 
                                 
                     else:
-                        return Response({'msg': 'You can not view this category lead has to purchase the lead'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({
+                            'msg': 'You can not view this category lead has to purchase the lead'
+                            }, status=status.HTTP_400_BAD_REQUEST)
                 
                 else:
-                    return Response({'msg': 'No Available Premium Plan balance to view the lead Please Purchase'}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({
+                        'msg': 'No Available Premium Plan balance to view the lead Please Purchase'
+                        }, status=status.HTTP_400_BAD_REQUEST)
                 
             except Exception as e:
                 return Response({
