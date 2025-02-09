@@ -344,6 +344,17 @@ class LeadBanner(models.Model):
 
     def __str__(self):
         return f"{self.category.type} Lead Banner"
+
+
+
+
+class BannedLeadGroup(models.Model):
+    name  = models.CharField(_("Group Name"), max_length=50)
+    users = models.ManyToManyField(User, verbose_name='Group Members')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.name} Lead Group'
     
     
 

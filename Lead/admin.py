@@ -2,7 +2,7 @@ from django.contrib import admin
 from Lead.models import (
     LeadPrice, LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, BusinessPageLeadView,
     ComboLead, ComboLeadBucket, AssignedLeadPerPremiumPlan, LeadOrder, ComboLeadOrder, LeadViewQuantity, LeadFormQuestion,
-    LeadFrorm, LeadBanner, LeadFormTag
+    LeadFrorm, LeadBanner, LeadFormTag, BannedLeadGroup
     )
 
 
@@ -32,9 +32,13 @@ class LeadFormModelAdmin(admin.ModelAdmin):
     list_display = ('id', 'category', 'headline', 'form_tag')
 
 
+class LeadBannedGroupModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'created_at',)
+    search_fields = ('name',)
 
 
 
+admin.site.register(BannedLeadGroup, LeadBannedGroupModelAdmin)
 admin.site.register(Lead, LeadModelAdmin)
 admin.site.register(LeadOrder)
 admin.site.register(ComboLeadOrder)  

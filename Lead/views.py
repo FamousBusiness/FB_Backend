@@ -1412,7 +1412,10 @@ class ViewLeadData(APIView):
                     'message': 'Invalid Business Page'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'msg': 'Lead Data Fetched Successfully', 'data': lead_serializer.data if lead_serializer else None}, status=status.HTTP_200_OK)
+        return Response({
+            'msg': 'Lead Data Fetched Successfully', 
+            'data': lead_serializer.data if lead_serializer else None
+            }, status=status.HTTP_200_OK)
 
 
 
