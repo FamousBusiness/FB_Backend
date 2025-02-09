@@ -350,7 +350,7 @@ class LeadBanner(models.Model):
 
 class BannedLeadGroup(models.Model):
     name       = models.CharField(_("Group Name"), max_length=50)
-    business   = models.ManyToManyField(Business, verbose_name='Group Members')
+    business   = models.ManyToManyField(Business, verbose_name='Group Members', db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     
