@@ -16,7 +16,7 @@ if IS_DEVELOPMENT == 'True':
     TestURl        = 'https://api-preprod.phonepe.com/apis/pg-sandbox'
     prodURL        = 'https://mercury-t2.phonepe.com'
 else:
-    webhook_url    = 'https://api.famousbusiness.in/premium-plan-api/autopay/payment/webhook/'
+    webhook_url    = 'https://api.famousbusiness.in/premium-plan-api/autopay/pa`yment/webhook/'
     TestMerchantId = config('PHONEPE_TEST_MERCHANT_ID')
     merchantID     = config('MERCHANT_ID')
     TestsaltKey    = config('PHONEPE_TEST_SALT_KEY') # test key
@@ -27,6 +27,8 @@ else:
 
 
 
+
+# FVSGHHSB3456AFFS89876GH
 # Phonepe Autopay
 class PremiumPlanPhonepeAutoPayPayment:
 
@@ -37,7 +39,7 @@ class PremiumPlanPhonepeAutoPayPayment:
         payload = {
             "merchantId": merchantID,
             "merchantSubscriptionId": subscriptionID,
-            "merchantUserId": "FVSGHHSB3456AFFS89876GH",
+            "merchantUserId": "FVSGHHSB3456AFF876GH",
             "authWorkflowType": "TRANSACTION",
             "amountType": "VARIABLE",
             # "amountType": "FIXED",
@@ -47,7 +49,7 @@ class PremiumPlanPhonepeAutoPayPayment:
             "mobileNumber": "9883835373",
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/subscription/create"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
@@ -63,6 +65,8 @@ class PremiumPlanPhonepeAutoPayPayment:
         json_data = {
             'request': base64String,
         }
+        # print('create user headers', headers)
+        # print('create user payload', json_data)
 
         response = requests.post(
             f'{prodURL}/v3/recurring/subscription/create', headers=headers, json=json_data)
@@ -90,7 +94,7 @@ class PremiumPlanPhonepeAutoPayPayment:
             }
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/auth/init"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
@@ -134,7 +138,7 @@ class PremiumPlanPhonepeAutoPayPayment:
             }
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/auth/init"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
@@ -151,6 +155,9 @@ class PremiumPlanPhonepeAutoPayPayment:
         json_data = {
             'request': base64String,
         }
+
+        # print('header', headers)
+        # print('payload', json_data)
 
         response = requests.post(
             f'{prodURL}/v3/recurring/auth/init', headers=headers, json=json_data)
@@ -175,7 +182,7 @@ class PremiumPlanPhonepeAutoPayPayment:
             "amount": sent_amount
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/debit/init"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
@@ -206,7 +213,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
     # Check submit auth status
     def CheckPaymentStatus(authRequestId):
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = f"/v3/recurring/auth/status/{merchantID}/{authRequestId}"
         SALTKEY = SaltKey
         mainString = ENDPOINT + SALTKEY
@@ -251,7 +258,7 @@ class PhoenepePennyDropAutopay:
             "mobileNumber": "9883835373",
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/subscription/create"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
@@ -292,7 +299,7 @@ class PhoenepePennyDropAutopay:
             }
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/auth/init"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
@@ -333,7 +340,7 @@ class PhoenepePennyDropAutopay:
             }
         }
 
-        INDEX = "1"
+        INDEX = "2"
         ENDPOINT = "/v3/recurring/auth/init"
         SALTKEY = SaltKey
         base64String = base64_encode(payload)
