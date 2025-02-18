@@ -16,7 +16,7 @@ if IS_DEVELOPMENT == 'True':
     TestURl        = 'https://api-preprod.phonepe.com/apis/pg-sandbox'
     prodURL        = 'https://mercury-t2.phonepe.com'
 else:
-    webhook_url    = 'https://api.famousbusiness.in/premium-plan-api/autopay/pa`yment/webhook/'
+    webhook_url    = 'https://api.famousbusiness.in/premium-plan-api/autopay/payment/webhook/'
     TestMerchantId = config('PHONEPE_TEST_MERCHANT_ID')
     merchantID     = config('MERCHANT_ID')
     TestsaltKey    = config('PHONEPE_TEST_SALT_KEY') # test key
@@ -28,7 +28,7 @@ else:
 
 
 
-# FVSGHHSB3456AFFS89876GH
+
 # Phonepe Autopay
 class PremiumPlanPhonepeAutoPayPayment:
 
@@ -84,7 +84,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "merchantUserId": 'FVSGHHSB3456AFF876GH',
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
             "amount": sent_amount,
@@ -129,7 +129,7 @@ class PremiumPlanPhonepeAutoPayPayment:
 
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "merchantUserId": 'FVSGHHSB3456AFF876GH',
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
             "amount": sent_amount,
@@ -175,7 +175,7 @@ class PremiumPlanPhonepeAutoPayPayment:
     
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "merchantUserId": 'FVSGHHSB3456AFF876GH',
             "subscriptionId": susubscriptionID,
             "transactionId": authRequestId,
             "autoDebit": True,
@@ -249,7 +249,7 @@ class PhoenepePennyDropAutopay:
         payload = {
             "merchantId": merchantID,
             "merchantSubscriptionId": subscriptionID,
-            "merchantUserId": "FVSGHHSB3456AFFS89876GH",
+            "merchantUserId": "FVSGHHSB3456AFF876GH",
             "authWorkflowType": "PENNY_DROP",
             "amountType": "VARIABLE",
             "amount": sent_amount ,
@@ -290,7 +290,7 @@ class PhoenepePennyDropAutopay:
 
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "merchantUserId": 'FVSGHHSB3456AFF876GH',
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
             "paymentInstrument": {
@@ -332,7 +332,7 @@ class PhoenepePennyDropAutopay:
 
         payload = {
             "merchantId": merchantID,
-            "merchantUserId": 'FVSGHHSB3456AFFS89876GH',
+            "merchantUserId": 'FVSGHHSB3456AFF876GH',
             "subscriptionId": susubscriptionID,
             "authRequestId": authRequestId,
             "paymentInstrument": {
