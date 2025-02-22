@@ -258,15 +258,6 @@ class BusinessPageLeadView(models.Model):
     class Meta:
         ordering = ['-id']
 
-
-
-### Manual Lead Expired Quantity
-class LeadViewQuantity(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=5)
-
-    def __str__(self) -> str:
-        return f"{self.category.type} Lead View Quantity"
     
 
 
@@ -359,6 +350,12 @@ class BannedLeadGroup(models.Model):
     
     
 
+# Category Wise Lead View Quantity
+class CategoryLeadViewQuantity(models.Model):
+    category = models.OneToOneField(Category, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(_("View Quantity"), default=5)
 
+    def __str__(self):
+        return f'{self.category}-{self.quantity}'
 
     

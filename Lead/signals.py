@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist
 from Lead.models import (
-    Lead, 
+    Lead, CategoryLeadViewQuantity,
     LeadOrder, ComboLeadOrder
     )
 import uuid
@@ -10,16 +10,24 @@ import uuid
 
 
 
-
+##### Update Lead to Expired if Crosses Limit
 @receiver(post_save, sender=Lead)
 def update_lead_status(sender, instance, created, **kwargs):
     if not created:
-        lead_id = instance.id
-        lead_view = instance.views
+        lead_id       = instance.id
+        lead_category = instance.category
+        lead_view     = instance.views
 
-        if lead_view >= 4:
+        try:
+            assigned_lead_view_quantity = CategoryLeadViewQuantity.objects.get(category = lead_category)
+        except Exception as e:
+            assigned_lead_view_quantity = 5
+        
+
+        if lead_view >= assigned_lead_view_quantity.quantity:
             try:
                 lead = Lead.objects.get(id=lead_id)
+
                 if not lead.expired:
                     lead.expired = True
                     lead.status = "Completed"
@@ -29,12 +37,19 @@ def update_lead_status(sender, instance, created, **kwargs):
                 pass
 
     else:
-        lead_id = instance.id
-        lead_view = instance.views
+        lead_id       = instance.id
+        lead_view     = instance.views
+        lead_category = instance.category
 
-        if lead_view >= 4:
+        try:
+            assigned_lead_view_quantity = CategoryLeadViewQuantity.objects.get(category = lead_category)
+        except Exception as e:
+            assigned_lead_view_quantity = 5
+
+        if lead_view >= assigned_lead_view_quantity.quantity:
             try:
                 lead = Lead.objects.get(id=lead_id)
+
                 if not lead.expired:
                     lead.expired = True
                     lead.status = "Completed"

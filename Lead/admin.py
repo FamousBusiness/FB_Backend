@@ -1,8 +1,8 @@
 from django.contrib import admin
 from Lead.models import (
     LeadPrice, LeadBucket, BusinessPageLead, BusinessPageLeadBucket, Lead, BusinessPageLeadView,
-    ComboLead, ComboLeadBucket, AssignedLeadPerPremiumPlan, LeadOrder, ComboLeadOrder, LeadViewQuantity, LeadFormQuestion,
-    LeadFrorm, LeadBanner, LeadFormTag, BannedLeadGroup
+    ComboLead, ComboLeadBucket, AssignedLeadPerPremiumPlan, LeadOrder, ComboLeadOrder, LeadFormQuestion,
+    LeadFrorm, LeadBanner, LeadFormTag, BannedLeadGroup, CategoryLeadViewQuantity
     )
 
 
@@ -37,7 +37,14 @@ class LeadBannedGroupModelAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class CategoryLeadViewQuantityModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'category', 'quantity')
+    search_fields = ('category',)
+    ordering = ('-id',)
 
+
+
+admin.site.register(CategoryLeadViewQuantity, CategoryLeadViewQuantityModelAdmin)
 admin.site.register(BannedLeadGroup, LeadBannedGroupModelAdmin)
 admin.site.register(Lead, LeadModelAdmin)
 admin.site.register(LeadOrder)
@@ -50,7 +57,6 @@ admin.site.register(ComboLead)
 admin.site.register(ComboLeadBucket)
 admin.site.register(AssignedLeadPerPremiumPlan)
 admin.site.register(BusinessPageLeadView)
-admin.site.register(LeadViewQuantity)
 admin.site.register(LeadFormQuestion)
 admin.site.register(LeadFrorm, LeadFormModelAdmin)
 admin.site.register(LeadBanner)
