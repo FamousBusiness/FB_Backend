@@ -37,21 +37,47 @@ rz_client = RazorpayClient()
 
 
 class AllPremiumPlanView(APIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        user = request.user
 
-        monthly_premium_plan = PremiumPlan.objects.filter(
-            plan__duration='Monthly')
-        yearly_premium_plan = PremiumPlan.objects.filter(
-            plan__duration='Yearly')
-        trial_plan = PremiumPlan.objects.filter(
-            autopay_payment_type='One Month Free')
+        try:
+            existing_business = Business.objects.get(owner = user)
+        except Exception as e:
+            return Response({'message': 'No plan available for user'}, status=status.HTTP_404_NOT_FOUND)
+        
 
-        monthly_serializer = PremiumPlanSerializer(
-            monthly_premium_plan, many=True)
-        yearly_serializer = PremiumPlanSerializer(
-            yearly_premium_plan, many=True)
+        try:
+            monthly_premium_plan = PremiumPlan.objects.filter(plan__duration='Monthly', category = existing_business.category)
+
+            if not monthly_premium_plan:
+                monthly_premium_plan = []
+
+        except Exception as e:
+            monthly_premium_plan = []
+
+        try:
+            yearly_premium_plan  = PremiumPlan.objects.filter(plan__duration='Yearly', category = existing_business.category)
+
+            if not yearly_premium_plan:
+                yearly_premium_plan = []
+
+        except Exception as e:
+            yearly_premium_plan = []
+        
+        try:
+            trial_plan = PremiumPlan.objects.filter(autopay_payment_type='One Month Free', category = existing_business.category)
+
+            if not trial_plan:
+                trial_plan = []
+                
+        except Exception as e:
+            trial_plan = []
+
+        
+        monthly_serializer    = PremiumPlanSerializer(monthly_premium_plan, many=True)
+        yearly_serializer     = PremiumPlanSerializer(yearly_premium_plan, many=True)
         trial_plan_serializer = PremiumPlanSerializer(trial_plan, many=True)
 
         response = {

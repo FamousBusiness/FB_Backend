@@ -91,9 +91,10 @@ class PlanDetail(models.Model):
         return f'{self.name} Plan of {self.type} for {self.duration}'
     
 
-#ADMIN
+# 
 class PremiumPlan(models.Model):
     plan            = models.ForeignKey(PlanDetail, on_delete=models.CASCADE)
+    category        = models.ForeignKey('Listings.Category', on_delete=models.CASCADE, null=True)
     lead_view       = models.PositiveIntegerField(default=0, verbose_name='Lead View Quantity')
     job_post        = models.PositiveIntegerField(default=0, verbose_name='Job Post Quantity')
     verified        = models.BooleanField(default=False,     verbose_name='Verified Tag')
