@@ -57,6 +57,7 @@ PLAN_CANCEL_STATUS = [
 
 
 class PlanDetail(models.Model):
+    unique_name         = models.CharField(_("Unique Name"), max_length=50, default='Default')
     name                = models.CharField(choices=PREMIUM_PLAN, max_length=25)
     type                = models.CharField(choices=PREMIUM_PLAN_TYPE, max_length=25,
                                            verbose_name='Marketing Type')
