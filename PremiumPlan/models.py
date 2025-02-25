@@ -89,7 +89,7 @@ class PlanDetail(models.Model):
     
 
     def __str__(self):
-        return f'{self.name} Plan of {self.type} for {self.duration}'
+        return f'{self.unique_name} {self.name}'
     
 
 # 
