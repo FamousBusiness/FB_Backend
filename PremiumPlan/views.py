@@ -103,9 +103,9 @@ class PremiumPlanPaymentView(APIView):
             plan_id = request.data.get('premium_plan_id')
 
             try:
-                premium_plan_instance = PremiumPlan.objects.get(id=plan_id)
+                premium_plan_instance = PremiumPlan.objects.get(pk=int(plan_id))
             except PremiumPlan.DoesNotExist:
-                return Response({'msg': 'Premium Plan Does Not exists'})
+                return Response({'msg': 'Premium Plan Does Not exists'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Create Phonepe Order
             phonePeOrder = PhonepeAutoPayOrder.objects.create(
