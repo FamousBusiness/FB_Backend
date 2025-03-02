@@ -2,8 +2,8 @@ from rest_framework import serializers
 from Listings.models import (
     Business, BusinessMobileNumbers, BusinessImage,
     Category,Order, ProductService, FooterImage,
-    FrontCarousel, BusinessPageLike,
-    BusinessPageReviewRating, Image, CategoryWiseBusinessSideImage
+    FrontCarousel, BusinessPageLike, LocalBusinessSchemaInstagram,LocalBusinessSchemaAggregrateRating, LocalBusinessSchemaVideo, LocalBusinessSchemaFaceBook,LocalSchemaVideoInteractionStatitics,
+    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema
 )
 from Banner.models import Banner
 from Brands.models import BrandProducts, BrandBusinessPage
@@ -313,6 +313,121 @@ class BusinessPageReviewRatingSerializer(serializers.ModelSerializer):
         fields = ['rating', 'review', 'user', 'business_page']
 
 
+#### User name serializer
+class UserNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['name']
+
+
+##### SEO Serializers
+class LocalSchemaSearchKeywordsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LocalSchemaSearchKeywords
+        fields = '__all__'
+
+
+class LocalSchemaSameAsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LocalSchemaSameAs
+        fields = '__all__'
+
+
+class LocalBusinessSchemaAggregrateRatingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LocalBusinessSchemaAggregrateRating
+        fields = '__all__'
+
+
+class LocalSchemaVideoInteractionStatiticsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LocalSchemaVideoInteractionStatitics
+        fields = '__all__'
+
+
+
+class LocalBusinessSchemaVideoSerializer(serializers.ModelSerializer):
+    interactionStatistic = LocalSchemaVideoInteractionStatiticsSerializer(many=True)
+
+    class Meta:
+        model = LocalBusinessSchemaVideo
+        fields = '__all__'
+
+
+
+class LocalSchemaFacebookInteractionStatiticsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = LocalSchemaFacebookInteractionStatitics
+        fields = '__all__'
+
+
+
+class LocalBusinessSchemaFaceBookSerializer(serializers.ModelSerializer):
+    interactionStatistic = LocalSchemaFacebookInteractionStatiticsSerializer(many=True)
+
+    class Meta:
+        model = LocalBusinessSchemaFaceBook
+        fields = '__all__'
+
+
+
+class LocalSchemaInstagramInteractionStatiticsSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = LocalSchemaInstagramInteractionStatitics
+        fields = '__all__'
+
+
+
+class LocalBusinessSchemaInstagramSerializer(serializers.ModelSerializer):
+    interactionStatistic = LocalSchemaInstagramInteractionStatiticsSerializer(many = True)
+
+    class Meta:
+        model = LocalBusinessSchemaInstagram
+        fields = '__all__'
+
+
+
+class LocalBusinessSchemaReviewsSerializer(serializers.ModelSerializer):
+    author = UserNameSerializer()
+
+    class Meta:
+        model = LocalBusinessSchemaReviews
+        fields = '__all__'
+
+
+
+class FAQSchemaMainEntitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FAQSchemaMainEntity
+        fields = '__all__'
+
+
+
+class BreadCrumbSchamaItemListItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BreadCrumbSchamaItemListItem
+        fields = '__all__'
+
+
+
+class ArticleSchemaSerializer(serializers.ModelSerializer):
+    author = UserNameSerializer()
+
+    class Meta:
+        model = ArticleSchema
+        fields = '__all__'
+
+
+
 class IDwiseBusinessSerilizer(serializers.ModelSerializer):
     picture         = serializers.ImageField()
     business_images = BusinessImageSerializer(source='businessimage_set', many=True, read_only=True)
@@ -320,6 +435,17 @@ class IDwiseBusinessSerilizer(serializers.ModelSerializer):
     mobile_numbers  = BusinessMobileSerializer(source='businessmobilenumbers_set', many=True, read_only=True)
     like            = serializers.SerializerMethodField()
     ReviewRatings   = serializers.SerializerMethodField()
+    category        = CategorySerializer()
+    local_schema_search_keyword    = LocalSchemaSearchKeywordsSerializer(many=True)
+    local_schema_same_as           = LocalSchemaSameAsSerializer(many = True)
+    local_schema_aggregrate_rating = LocalBusinessSchemaAggregrateRatingSerializer()
+    local_schema_video             = LocalBusinessSchemaVideoSerializer()
+    local_schema_facebook_video    = LocalBusinessSchemaFaceBookSerializer()
+    local_schema_insta_video       = LocalBusinessSchemaInstagramSerializer()
+    local_schema_reviews           = LocalBusinessSchemaReviewsSerializer(many=True)
+    faq_schema_mainEntity          = FAQSchemaMainEntitySerializer(many=True)
+    brad_crumb_schema_item_list    = BreadCrumbSchamaItemListItemSerializer(many=True)
+    article_schema                 = ArticleSchemaSerializer()
 
 
     def get_like(self, obj):
@@ -340,8 +466,8 @@ class IDwiseBusinessSerilizer(serializers.ModelSerializer):
                   'established_on', 'services','verified','trusted','trending','authorized','picture','like','reviews', 'mobile_number',
                   'address', 'business_images', 'products', 'mobile_numbers','nature', 'opening_time','closing_time','turn_over',
                   'employee_count', 'category', 'ReviewRatings', 'CIN_No', 'DIN', 'director', 'RoC', 'company_No', 'industry_leader',
-                  'sponsor', 'super', 'premium'
-                  ]
+                  'sponsor', 'super', 'premium', 'locality', 'local_schema_search_keyword', 'local_schema_same_as', 'local_schema_aggregrate_rating', 'local_schema_video', 'local_schema_facebook_video', 'local_schema_insta_video', 'local_schema_reviews', 'faq_schema_mainEntity', 'brad_crumb_schema_item_list', 'article_schema'
+                ]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

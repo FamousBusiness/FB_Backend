@@ -54,6 +54,8 @@ def get_tokens_for_user(user):
     }
 
 
+
+# Home Page API
 # @method_decorator(ensure_csrf_cookie, name='dispatch')
 class LandingPageAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -74,31 +76,38 @@ class LandingPageAPIView(generics.ListAPIView):
              
              if locality:
                  verified_business = Business.objects.filter(locality=locality, verified=True)[:20]
+
                  if verified_business.exists():
                      businesses = verified_business
                  businesses = Business.objects.filter(locality=locality)[:20]
+
              elif pincode:
                  verified_business = Business.objects.filter(pincode=pincode, verified=True)[:20]
+
                  if verified_business.exists():
                      businesses = verified_business
                  businesses = Business.objects.filter(pincode=pincode)[:20]
+
              elif city:
                  verified_business = Business.objects.filter(city=city, verified=True)[:20]
+
                  if verified_business.exists():
                      businesses = verified_business
                  businesses = Business.objects.filter(city=city)[:20]
+
              elif state:
                  verified_business = Business.objects.filter(state=state, verified=True)[:20]
+
                  if verified_business.exists():
                      businesses = verified_business
                  businesses = Business.objects.filter(state=state)[:20]
+
              else:
                  verified_business = Business.objects.filter(verified=True)[:20]
                  
                  if verified_business.exists():
                     businesses = verified_business
                  businesses = Business.objects.all()[:20]
-                 
 
              brands                 = BrandBusinessPage.objects.all()[:20]
              ads                    = ADS.objects.filter(verified=True, is_active=True, city=city)[:20]
@@ -142,6 +151,7 @@ class LandingPageAPIView(generics.ListAPIView):
             'brands': brand_serializer.data,
             'combo_leads': combo_lead_serializer.data
         }
+
 
         return self.get_paginated_response(response_data)
         # return Response({'msg': 'All Business,Ads,Banners,Jobs data', 'data': response_data})

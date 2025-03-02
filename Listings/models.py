@@ -12,6 +12,12 @@ from Ecommerce.models import EMIOffers
 from Ecommerce.models import PinCode
 
 
+SCHEMA_TYPE = [
+    ('BreadcrumbList', 'BreadcrumbList'),
+    ('LocalBusiness', 'LocalBusiness'),
+    ('FAQPage', 'FAQPage'),
+    ('Article', 'Article')
+]
 
 
 CATEGORY_TYPE = [
@@ -82,6 +88,149 @@ class SubCategory(models.Model):
 
 
 
+class LocalSchemaSearchKeywords(models.Model):
+    keyword_name = models.CharField(_("Keyword"), max_length=500)
+
+    def __str__(self):
+        return f'{self.keyword_name}'
+    
+
+class LocalSchemaSameAs(models.Model):
+    name  = models.CharField(_("Name"), max_length=20)
+    url   = models.CharField(_("Url"), max_length=500)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class LocalBusinessSchemaAggregrateRating(models.Model):
+    name        = models.CharField(_("Rating Name"), max_length=50)
+    ratingValue = models.CharField(_('ratingValue'), max_length=10)
+    ratingCount = models.CharField(_("ratingCount"), max_length=10)
+    bestRating  = models.CharField(_("bestRating"), max_length=10)
+    worstRating = models.CharField(_("worstRating"), max_length=10)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class LocalSchemaVideoInteractionStatitics(models.Model):
+    interactionType = models.CharField(_('interactionType'), max_length=400)
+    userInteractionCount = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.interactionType}'
+    
+
+class LocalBusinessSchemaVideo(models.Model):
+    name                 = models.CharField(_("Name"), max_length=100)
+    interactionStatistic = models.ManyToManyField(LocalSchemaVideoInteractionStatitics)
+    description          = models.CharField(_("description"), max_length=500)
+    thumbnailUrl         = models.CharField(_("thumbnailUrl"), max_length=600)
+    contentUrl           = models.CharField(_("contentUrl"), max_length=600)
+    embedUrl             = models.CharField(_("embedUrl"), max_length=600)
+    uploadDate           = models.CharField(_("uploadDate"), max_length=10)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+
+class LocalSchemaFacebookInteractionStatitics(models.Model):
+    interactionType = models.CharField(_('interactionType'), max_length=400)
+    userInteractionCount = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.interactionType}'
+    
+    
+
+class LocalBusinessSchemaFaceBook(models.Model):
+    name                 = models.CharField(_("Name"), max_length=100)
+    description          = models.CharField(_("description"), max_length=500)
+    embedUrl             = models.CharField(_("embedUrl"), max_length=500)
+    thumbnailUrl         = models.CharField(_("thumbnailUrl"), max_length=500)
+    uploadDate           = models.CharField(_("uploadDate"), max_length=10)
+    interactionStatistic = models.ManyToManyField(LocalSchemaFacebookInteractionStatitics)
+    publisher_name       = models.CharField(_("Publisher Name"), max_length=100)
+    publisher_logo       = models.CharField(_("logo"), max_length=500)
+
+
+    def __str__(self):
+        return f'{self.name}'
+    
+
+class LocalSchemaInstagramInteractionStatitics(models.Model):
+    interactionType = models.CharField(_('interactionType'), max_length=400)
+    userInteractionCount = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.interactionType}'
+    
+    
+
+class LocalBusinessSchemaInstagram(models.Model):
+    name                 = models.CharField(_("Name"), max_length=100)
+    description          = models.CharField(_("description"), max_length=500)
+    embedUrl             = models.CharField(_("embedUrl"), max_length=500)
+    thumbnailUrl         = models.CharField(_("thumbnailUrl"), max_length=500)
+    uploadDate           = models.CharField(_("uploadDate"), max_length=10)
+    interactionStatistic = models.ManyToManyField(LocalSchemaInstagramInteractionStatitics)
+    publisher_name       = models.CharField(_("Publisher Name"), max_length=100)
+    publisher_logo       = models.CharField(_("logo"), max_length=500)
+
+
+    def __str__(self):
+        return f'{self.name}'
+    
+
+class LocalBusinessSchemaReviews(models.Model):
+    author            = models.ForeignKey(User, on_delete=models.CASCADE)  
+    reviewRatingValue = models.CharField(_("reviewRatingValue"), max_length=10)
+    reviewCount       = models.CharField(_("reviewCount"), max_length=10)
+    bestRating        = models.CharField(_("bestRating"), max_length=10)    
+    worstRating       = models.CharField(_("worstRating"), max_length=10)   
+
+    def __str__(self):
+        return f'{self.author.name} Review Rating' 
+    
+
+class FAQSchemaMainEntity(models.Model):
+    name                = models.CharField(_("name"), max_length=200)
+    acceptedAnswer_type = models.CharField(_("Accept answer type"), max_length=200)
+    acceptedAnswer_text = models.CharField(_("Accept answer text"), max_length=200)
+
+    def __str__(self):
+        return f'{self.name}'
+    
+
+class BreadCrumbSchamaItemListItem(models.Model):
+    type = models.CharField(_("Type"), max_length=20)
+    item_name = models.CharField(_("Item Name"), max_length=200)
+    item_id   = models.CharField(_("item_id"), max_length=500)
+
+    def __str__(self):
+        return f'{self.type}'
+    
+    class Meta:
+        ordering = ['id']
+
+
+class ArticleSchema(models.Model):
+    author                = models.ForeignKey(User, on_delete=models.CASCADE)
+    headline              = models.CharField(_('headline'), max_length=500)
+    publisher_name        = models.CharField(_('Publisher Name'), max_length=100)
+    publisher_logo        = models.ImageField(upload_to='ArticleSchema/PublisherLogo/')
+    datePublished         = models.CharField(_('datePublished'), max_length=50)
+    dateModified          = models.CharField(_('dateModified'), max_length=50)
+    mainEntityOfPage_id   = models.CharField(_('mainEntityOfPage_id'), max_length=50)
+    image                 = models.ImageField(upload_to='ArticleSchema/Image/')
+    articleBody           = models.TextField(_("articleBody"))
+
+    def __str__(self):
+        return f'{self.author.name} Article Schema'
+
+
 class Business(models.Model):
     owner           = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Business Owner', related_name='business')
     business_name   = models.CharField(max_length=255, unique=False,
@@ -128,6 +277,17 @@ class Business(models.Model):
     sponsor         = models.BooleanField(default=False, verbose_name='Sponsor Listings')
     super           = models.BooleanField(default=False, verbose_name='Super Seller')
     premium         = models.BooleanField(default=False, verbose_name='Premium Seller')
+
+    local_schema_search_keyword    = models.ManyToManyField(LocalSchemaSearchKeywords, blank=True)
+    local_schema_same_as           = models.ManyToManyField(LocalSchemaSameAs, blank=True)
+    local_schema_aggregrate_rating = models.ForeignKey(LocalBusinessSchemaAggregrateRating, on_delete=models.SET_NULL, null=True, blank=True)
+    local_schema_video             = models.ForeignKey(LocalBusinessSchemaVideo, on_delete=models.SET_NULL, null=True, blank=True)
+    local_schema_facebook_video    = models.ForeignKey(LocalBusinessSchemaFaceBook, on_delete=models.SET_NULL, null=True, blank=True)
+    local_schema_insta_video       = models.ForeignKey(LocalBusinessSchemaInstagram, on_delete=models.SET_NULL, null=True, blank=True)
+    local_schema_reviews           = models.ManyToManyField(LocalBusinessSchemaReviews, blank=True)
+    faq_schema_mainEntity          = models.ManyToManyField(FAQSchemaMainEntity, blank=True)
+    brad_crumb_schema_item_list    = models.ManyToManyField(BreadCrumbSchamaItemListItem, blank=True)
+    article_schema                 = models.ForeignKey(ArticleSchema, on_delete=models.SET_NULL, blank=True, null=True)
 
 
 
@@ -437,7 +597,8 @@ class CategoryWiseBusinessSideImage(models.Model):
     
     class Meta:
         ordering = ["-id"]
-    
+
+
 
 
 

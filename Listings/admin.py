@@ -1,11 +1,9 @@
 from django.contrib import admin
 from Listings.models import (
-    Business,  BusinessImage, BusinessMobileNumbers,
-    Category, SubCategory, BusinessEmailID, 
-    Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage,
-    ClientOrder, TextMessage,  ProductService, Image,
-   FrontCarousel, BusinessPageLike, BusinessPageReviewRating
-    )
+    Business,  BusinessImage, BusinessMobileNumbers, Category, SubCategory, BusinessEmailID, 
+    Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage, ClientOrder, TextMessage,  ProductService, Image,
+    FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema
+)
 # from django.core.exceptions import ValidationError
 # from django.http import HttpResponseRedirect
 # from django.urls import reverse
@@ -84,6 +82,20 @@ admin.site.register(BusinessPageReviewRating, BusinessReviewModelAdmin)
 admin.site.register(FooterImage)
 admin.site.register(CategoryWiseBusinessSideImage)
 
+
+admin.site.register(LocalSchemaSearchKeywords)
+admin.site.register(LocalSchemaSameAs)
+admin.site.register(LocalBusinessSchemaAggregrateRating)
+admin.site.register(LocalSchemaVideoInteractionStatitics)
+admin.site.register(LocalBusinessSchemaVideo)
+admin.site.register(LocalSchemaFacebookInteractionStatitics)
+admin.site.register(LocalBusinessSchemaFaceBook)
+admin.site.register(LocalSchemaInstagramInteractionStatitics)
+admin.site.register(LocalBusinessSchemaInstagram)
+admin.site.register(LocalBusinessSchemaReviews)
+admin.site.register(FAQSchemaMainEntity)
+admin.site.register(BreadCrumbSchamaItemListItem)
+admin.site.register(ArticleSchema)
 
 
 
