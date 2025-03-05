@@ -2,7 +2,8 @@ from django.contrib import admin
 from Listings.models import (
     Business,  BusinessImage, BusinessMobileNumbers, Category, SubCategory, BusinessEmailID, 
     Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage, ClientOrder, TextMessage,  ProductService, Image,
-    FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema
+    FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema,
+    BusinessProfileTitleTag, BusinessProfileMetaTag
 )
 # from django.core.exceptions import ValidationError
 # from django.http import HttpResponseRedirect
@@ -96,6 +97,8 @@ admin.site.register(LocalBusinessSchemaReviews)
 admin.site.register(FAQSchemaMainEntity)
 admin.site.register(BreadCrumbSchamaItemListItem)
 admin.site.register(ArticleSchema)
+admin.site.register(BusinessProfileTitleTag)
+admin.site.register(BusinessProfileMetaTag)
 
 
 

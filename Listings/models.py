@@ -231,6 +231,24 @@ class ArticleSchema(models.Model):
         return f'{self.author.name} Article Schema'
 
 
+class BusinessProfileTitleTag(models.Model):
+    title_text = models.TextField(_("Title Text"))
+    
+    def __str__(self):
+        return f'{self.title_text}'
+    
+
+
+class BusinessProfileMetaTag(models.Model):
+    name = models.CharField(_("Name"), max_length=200, blank=True, null=True)
+    content = models.TextField(_("Content"), blank=True, null=True)
+    property = models.CharField(_("Property"), max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.pk}'
+    
+
+
 class Business(models.Model):
     owner           = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Business Owner', related_name='business')
     business_name   = models.CharField(max_length=255, unique=False,
@@ -288,7 +306,8 @@ class Business(models.Model):
     faq_schema_mainEntity          = models.ManyToManyField(FAQSchemaMainEntity, blank=True)
     brad_crumb_schema_item_list    = models.ManyToManyField(BreadCrumbSchamaItemListItem, blank=True)
     article_schema                 = models.ForeignKey(ArticleSchema, on_delete=models.SET_NULL, blank=True, null=True)
-
+    title                          = models.ManyToManyField(BusinessProfileTitleTag, blank=True)
+    meta_tag                       = models.ManyToManyField(BusinessProfileMetaTag, blank=True)
 
 
     def __str__(self):
