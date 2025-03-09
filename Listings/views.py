@@ -14,7 +14,7 @@ from .serializers import (
     SingleListingsSerializer,BannerSerializer, 
     FrontCarouselSerializer, CategoryWiseBusinessSideImageSerializer,
     BusinessMobileSerializer, CategoryLeadGenerateSerializer, CategorywiseBusinessSerilizer,
-    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer
+    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer
     )
 from Lead.serializer import ComboLeadSerializer
 from Listings.ADS.ads_serializers import AdSerializer
@@ -252,6 +252,13 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
         finally:
             if category:
                 try:
+                    category_obj = Category.objects.get(type__icontains = category)
+                except Exception as e:
+                    return Response({'msg': 'Business and Banner does not exist in this category'})
+                
+                title_tag = category_obj.title_tag
+
+                try:
                     category_wise_business = Business.objects.filter(category__type__icontains=category)
                     banner                 = Banner.objects.filter(category__type=category, verified=True, expired=False)
                 except Business.DoesNotExist:
@@ -291,6 +298,9 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
                 ordered_business = businesses.order_by('-true_count')
                 business_page    = self.paginate_queryset(ordered_business)
 
+                category_meta_tag            = category_obj.meta_tag
+                category_meta_tag_serializer_data = CategoryMetaTagSerializer(category_meta_tag, many=True).data
+
                 business_category_serializer = self.get_serializer(business_page, many=True)
                 banner_category_serializer   = BannerSerializer(banner, many=True)
                 side_images_serializer       = CategoryWiseBusinessSideImageSerializer(side_images, many=True)
@@ -298,7 +308,9 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
                 response_data = {
                     'category_wise_business': business_category_serializer.data,
                     'category_wise_banner':   banner_category_serializer.data,
-                    'side_images':            side_images_serializer.data
+                    'side_images':            side_images_serializer.data,
+                    'title_tag': title_tag,
+                    'category_meta_tag': category_meta_tag_serializer_data,
                 }
 
                 if (ordered_business or banner):

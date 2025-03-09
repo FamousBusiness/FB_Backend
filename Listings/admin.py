@@ -4,7 +4,7 @@ from Listings.models import (
     Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage, ClientOrder, TextMessage,  ProductService, Image,
     FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema,
     BusinessProfileTitleTag, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoInteractionStatitics,
-    CategoryVideoObjectSchema
+    CategoryVideoObjectSchema, CategoryMetaTag
 )
 # from django.core.exceptions import ValidationError
 # from django.http import HttpResponseRedirect
@@ -108,6 +108,7 @@ admin.site.register(CategoryFAQPageSchema)
 admin.site.register(CategoryArticleSchema)
 admin.site.register(CategoryVideoInteractionStatitics)
 admin.site.register(CategoryVideoObjectSchema)
+admin.site.register(CategoryMetaTag)
 
 
 

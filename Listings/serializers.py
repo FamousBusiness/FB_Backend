@@ -3,7 +3,7 @@ from Listings.models import (
     Business, BusinessMobileNumbers, BusinessImage,
     Category,Order, ProductService, FooterImage,
     FrontCarousel, BusinessPageLike, LocalBusinessSchemaInstagram,LocalBusinessSchemaAggregrateRating, LocalBusinessSchemaVideo, LocalBusinessSchemaFaceBook,LocalSchemaVideoInteractionStatitics,
-    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileTitleTag, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics
+    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileTitleTag, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag
 )
 from Banner.models import Banner
 from Brands.models import BrandProducts, BrandBusinessPage
@@ -11,7 +11,7 @@ from Lead.models import Lead
 from users.models import User
 
 
-#Images will be sent According to the location and category of the banner
+##Images will be sent According to the location and category of the banner
 class CategoryWiseBusinessSideImageSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -107,7 +107,6 @@ class SingleListingsSerializer(serializers.ModelSerializer):
         business_name = serializers.CharField(required=True)
         website_url = serializers.CharField(required=True)
         business_info = serializers.CharField(required=True)    
-
 
 
 
@@ -212,7 +211,6 @@ class UserDetailsSerializer(serializers.ModelSerializer):
 
 
 
-
 class CategoryLeadGenerateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -220,10 +218,12 @@ class CategoryLeadGenerateSerializer(serializers.ModelSerializer):
         fields = ['category']
 
 
+
 class BusinessMobileSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessMobileNumbers
         fields = ['mobile_number']
+
 
 
 #### Category Schema Serializer
@@ -300,6 +300,14 @@ class CategorySchemaSerializer(serializers.ModelSerializer):
             'type', 'B2B2C', 'image', 'trending', 'is_store', 'store_trending',
             'breadcrumb_item_schema', 'item_list_schema', 'faq_page_schema', 'articleSchema', 'video_object_schema'
         ]
+
+
+class CategoryMetaTagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CategoryMetaTag
+        fields = '__all__'
+
 #### Category Schema Serializer
 
 
@@ -312,7 +320,7 @@ class CategorywiseBusinessSerilizer(serializers.ModelSerializer):
     class Meta:
         model = Business
         fields = [
-            'id', 'business_name', 'mobile_numbers','state','city','pincode','whatsapp_number','email','website_url','GSTIN','business_info','established_on', 'services','verified','trusted','trending','authorized','picture','likes','reviews', 'mobile_number','category', 'business_images', 'industry_leader', 'sponsor', 'super', 'premium'
+            'id', 'business_name', 'mobile_numbers','state','city','pincode','whatsapp_number','email','website_url','GSTIN','business_info','established_on', 'services','verified','trusted','trending','authorized','picture','likes','reviews', 'mobile_number','category', 'business_images', 'industry_leader', 'sponsor', 'super', 'premium',
         ]
 
     def to_representation(self, instance):
@@ -323,6 +331,7 @@ class CategorywiseBusinessSerilizer(serializers.ModelSerializer):
             representation['picture'] = image_path
 
         return representation
+ 
 
     # def get_mobile_numbers(self, obj):
     #     # Retrieve the related mobile numbers for the current Business instance

@@ -156,6 +156,14 @@ class CategoryVideoObjectSchema(models.Model):
     
 
 
+class CategoryMetaTag(models.Model):
+    name     = models.CharField(_("Name"), max_length=200, blank=True, null=True)
+    content  = models.TextField(_("Content"), blank=True, null=True)
+    property = models.CharField(_("Property"), max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.pk}'
+
 
 ### Category table
 class Category(models.Model):
@@ -171,8 +179,10 @@ class Category(models.Model):
     faq_page_schema        = models.ManyToManyField(CategoryFAQPageSchema, blank=True)
     articleSchema          = models.ManyToManyField(CategoryArticleSchema, blank=True)
     video_object_schema    = models.ForeignKey(CategoryVideoObjectSchema, on_delete=models.SET_NULL, null=True, blank=True)
-
-
+    title_tag              = models.TextField(_("Title Tag"), null=True, blank=True)
+    meta_tag               = models.ManyToManyField(CategoryMetaTag)
+    
+    
     def __str__(self):
         return f'{self.type}'
     
