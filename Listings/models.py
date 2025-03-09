@@ -58,6 +58,104 @@ PRODUCT_RETURN_PERIOD = [
 ]
 
 
+class CategoryBreadCrumbSchamaItemListItem(models.Model):
+    type      = models.CharField(_("Type"), max_length=20)
+    item_name = models.CharField(_("Item Name"), max_length=200)
+    item_id   = models.CharField(_("item_id"), max_length=500)
+
+    def __str__(self):
+        return f'{self.type}'
+    
+    class Meta:
+        ordering = ['id']
+
+
+
+class CategoryItemListElementSchema(models.Model):
+    item_name        = models.CharField(_("Item Name"), max_length=200)
+    item_url         = models.CharField(_("URL"), max_length=500)
+    telephone        = models.CharField(_("Telephone"), max_length=10)
+    address_type     = models.CharField(_("Address Type"), max_length=50)
+    streetAddress    = models.CharField(_("streetAddress"), max_length=200)
+    addressLocality  = models.CharField(_("addressLocality"), max_length=100)
+    addressRegion    = models.CharField(_("addressRegion"), max_length=100)
+    postalCode       = models.CharField(_("postalCode"), max_length=10)
+    addressCountry   = models.CharField(_("addressCountry"), max_length=10)
+    openingHours     = models.CharField(_("openingHours"), max_length=50)
+    serviceArea_type = models.CharField(_("serviceArea_type"), max_length=10)
+    serviceArea_name = models.CharField(_("serviceArea_name"), max_length=10)
+    aggregateRating  = models.CharField(_("aggregateRating"), max_length=10)
+    ratingValue      = models.CharField(_("ratingValue"), max_length=10)
+    ratingCount      = models.CharField(_("ratingCount"), max_length=10)
+
+
+    def __str__(self):
+        return f'{self.item_name}'
+    
+
+
+class CategoryItemListSchema(models.Model):
+    name          = models.CharField(_("Name"), max_length=150)
+    list_elements = models.ManyToManyField(CategoryItemListElementSchema)
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+
+class CategoryFAQPageSchema(models.Model):
+    Question_name     = models.CharField(_("Question_name"), max_length=200)
+    acceptedAnswer_text = models.TextField(_("acceptedAnswer_text"))
+
+    def __str__(self):
+        return f'{self.Question_name}-{self.acceptedAnswer_text}'
+
+
+
+class CategoryArticleSchema(models.Model):
+    headline       = models.CharField(_("headline"), max_length=200)
+    articleBody    = models.TextField(_("articleBody"))
+    author_name    = models.ForeignKey(User, on_delete=models.CASCADE)
+    publisher_name = models.CharField(_("publisher_name"), max_length=80)
+    logo_url       = models.ImageField(_("Logo URL"), upload_to='CategoryArticleSchema/Logo/')
+    datePublished  = models.CharField(_("datePublished"), max_length=100)
+    image          = models.ImageField(_("Image"), upload_to='CategoryArticleSchema/Image/')
+    mainEntityOfPage_type = models.CharField(_("mainEntityOfPage_type"), max_length=50)
+    mainEntityOfPage_id   = models.CharField(_("mainEntityOfPage_id"), max_length=500)
+
+    def __str__(self):
+        return f'{self.headline}'
+
+
+
+class CategoryVideoInteractionStatitics(models.Model):
+    interactionType      = models.CharField(_("interactionType"), max_length=50)
+    userInteractionCount = models.PositiveIntegerField(_("userInteractionCount"), default=1)
+    url                  = models.CharField(_("URL"), max_length=300)
+
+    def __str__(self):
+        return f'{self.interactionType}'
+    
+
+
+class CategoryVideoObjectSchema(models.Model):
+    name                  = models.CharField(_("Name"), max_length=200)
+    description           = models.TextField(_("description"))
+    thumbnailUrl          = models.CharField(_("thumbnailUrl"), max_length=500)
+    uploadDate            = models.CharField(_("uploadDate"), max_length=80)
+    duration              = models.CharField(_("duration"), max_length=10)
+    contentUrl            = models.CharField(_("contentUrl"), max_length=500)
+    embedUrl              = models.CharField(_("embedUrl"), max_length=500)
+    publisher_name        = models.CharField(_("publisher_name"), max_length=100)
+    publisher_logo        = models.ImageField(_("Publisher Logo"), upload_to='CategiryVideo/Schema/Logo/')
+    interaction_statitics = models.ManyToManyField(CategoryVideoInteractionStatitics)
+
+
+    def __str__(self):
+        return f'{self.name}'
+    
+
+
 
 ### Category table
 class Category(models.Model):
@@ -68,12 +166,18 @@ class Category(models.Model):
     is_store = models.BooleanField(_("Store Category"), default=False, null=True, blank=True)
     store_trending = models.BooleanField(_("Store Trending"), default=False)
 
+    breadcrumb_item_schema = models.ManyToManyField(CategoryBreadCrumbSchamaItemListItem, blank=True)
+    item_list_schema       = models.ForeignKey(CategoryItemListSchema, on_delete=models.SET_NULL, null=True, blank=True)
+    faq_page_schema        = models.ManyToManyField(CategoryFAQPageSchema, blank=True)
+    articleSchema          = models.ManyToManyField(CategoryArticleSchema, blank=True)
+    video_object_schema    = models.ForeignKey(CategoryVideoObjectSchema, on_delete=models.SET_NULL, null=True, blank=True)
+
 
     def __str__(self):
         return f'{self.type}'
     
     class Meta:
-        ordering = ["type"]
+        ordering = ["-id"]
 
 
 class SubCategory(models.Model):
@@ -253,11 +357,11 @@ class Business(models.Model):
     owner           = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='Business Owner', related_name='business')
     business_name   = models.CharField(max_length=255, unique=False,
                                      verbose_name='Business Name')
+    category        = models.ForeignKey(Category,on_delete=models.SET_NULL, verbose_name='Category', null=True)
     brand           = models.ManyToManyField(BrandBusinessPage, verbose_name='Brand Name', blank=True)
     mobile_number   = models.CharField(max_length=16, null=True, blank=True, unique=True)
     whatsapp_number = models.CharField(max_length=16, null=True, blank=True, unique=True)
     email           = models.EmailField(max_length=200, null=True, blank=True, unique=True)
-    category        = models.ForeignKey(Category,on_delete=models.SET_NULL, verbose_name='Category', null=True)
     subcategory     = models.ManyToManyField(SubCategory, verbose_name='Sub Category', blank=True)
     state           = models.CharField(max_length=80, null=True, blank=True)
     city            = models.CharField(max_length=50, null=True, blank=True)
@@ -306,7 +410,7 @@ class Business(models.Model):
     faq_schema_mainEntity          = models.ManyToManyField(FAQSchemaMainEntity, blank=True)
     brad_crumb_schema_item_list    = models.ManyToManyField(BreadCrumbSchamaItemListItem, blank=True)
     article_schema                 = models.ForeignKey(ArticleSchema, on_delete=models.SET_NULL, blank=True, null=True)
-    title                          = models.ManyToManyField(BusinessProfileTitleTag, blank=True)
+    title                          = models.ForeignKey(BusinessProfileTitleTag, blank=True, on_delete=models.SET_NULL, null=True)
     meta_tag                       = models.ManyToManyField(BusinessProfileMetaTag, blank=True)
 
 

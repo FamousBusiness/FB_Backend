@@ -187,12 +187,13 @@ class CreateBusinessPageAPiView(APIView):
 
 
 
+#### Category Wise Business
 class CategoryWiseBusinessAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
     pagination_class   = PageNumberPagination 
     serializer_class   = CategorywiseBusinessSerilizer
     
-
+    
     def can_create_lead(self, user, category):
       current_time = timezone.now()
 
@@ -202,10 +203,10 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
         existing_leads = Lead.objects.filter(created_by=user, category=category, created_at__gte=six_hours_ago).exists()
       except:
           pass
-
       return not existing_leads
-
-    @method_decorator(cache_page(CACHE_TTL))
+    
+    
+    # @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, city=None, category=None): 
         #state=None,
         #Lead Generate
@@ -252,14 +253,14 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
             if category:
                 try:
                     category_wise_business = Business.objects.filter(category__type__icontains=category)
-                    banner   = Banner.objects.filter(category__type=category, verified=True, expired=False)
+                    banner                 = Banner.objects.filter(category__type=category, verified=True, expired=False)
                 except Business.DoesNotExist:
                     return Response({'msg': 'Business and Banner does not exist in this category'})
                 
                 if city:
                     try:
                         city_wise_business = category_wise_business.filter(city__icontains=city)
-                        banner   = banner.filter(city__icontains=city, verified=True, expired=False)
+                        banner             = banner.filter(city__icontains=city, verified=True, expired=False)
                     except Business.DoesNotExist:
                         return Response({'msg': 'No Business Exist in this city'})
                     
@@ -288,7 +289,7 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
                     )
                 )
                 ordered_business = businesses.order_by('-true_count')
-                business_page = self.paginate_queryset(ordered_business)
+                business_page    = self.paginate_queryset(ordered_business)
 
                 business_category_serializer = self.get_serializer(business_page, many=True)
                 banner_category_serializer   = BannerSerializer(banner, many=True)

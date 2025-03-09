@@ -3,7 +3,7 @@ from Listings.models import (
     Business, BusinessMobileNumbers, BusinessImage,
     Category,Order, ProductService, FooterImage,
     FrontCarousel, BusinessPageLike, LocalBusinessSchemaInstagram,LocalBusinessSchemaAggregrateRating, LocalBusinessSchemaVideo, LocalBusinessSchemaFaceBook,LocalSchemaVideoInteractionStatitics,
-    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileTitleTag, BusinessProfileMetaTag
+    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileTitleTag, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics
 )
 from Banner.models import Banner
 from Brands.models import BrandProducts, BrandBusinessPage
@@ -226,18 +226,95 @@ class BusinessMobileSerializer(serializers.ModelSerializer):
         fields = ['mobile_number']
 
 
+#### Category Schema Serializer
+class CategoryBreadCrumbSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CategoryBreadCrumbSchamaItemListItem
+        fields = ['type', 'item_name', 'item_id']
+
+
+class CategoryItemListElementSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CategoryItemListElementSchema
+        fields = [
+            'item_name', 'item_url', 'telephone', 'address_type',
+            'streetAddress', 'addressLocality', 'addressRegion',
+            'postalCode', 'addressCountry', 'openingHours',
+            'serviceArea_type', 'serviceArea_name',
+            'aggregateRating', 'ratingValue', 'ratingCount', 'id'
+        ]
+
+
+class CategoryItemListSchemaSerializer(serializers.ModelSerializer):
+    list_elements = CategoryItemListElementSchemaSerializer(many=True)  # Nested serialization
+
+    class Meta:
+        model = CategoryItemListSchema
+        fields = ['name', 'list_elements', 'id']
+
+
+class CategoryFAQPageSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CategoryFAQPageSchema
+        fields = ['Question_name', 'acceptedAnswer_text']
+
+
+
+class CategoryArticleSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CategoryArticleSchema
+        fields = [
+            'headline', 'articleBody', 'author_name',
+            'publisher_name', 'logo_url', 'datePublished',
+            'image', 'mainEntityOfPage_type', 'mainEntityOfPage_id'
+        ]
+
+
+
+class CategoryVideoInteractionStatiticsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CategoryVideoInteractionStatitics
+        fields = '__all__'
+
+
+
+class CategoryVideoObjectSchemaSerializer(serializers.ModelSerializer):
+    interaction_statitics = CategoryVideoInteractionStatiticsSerializer(many = True)
+
+    class Meta:
+        model = CategoryVideoObjectSchema
+        fields = '__all__'
+
+
+class CategorySchemaSerializer(serializers.ModelSerializer):
+    breadcrumb_item_schema = CategoryBreadCrumbSchemaSerializer(many=True)
+    item_list_schema       = CategoryItemListSchemaSerializer()
+    faq_page_schema        = CategoryFAQPageSchemaSerializer(many=True)
+    articleSchema          = CategoryArticleSchemaSerializer(many=True)
+    video_object_schema    = CategoryVideoObjectSchemaSerializer()
+
+    class Meta:
+        model = Category
+        fields = [
+            'type', 'B2B2C', 'image', 'trending', 'is_store', 'store_trending',
+            'breadcrumb_item_schema', 'item_list_schema', 'faq_page_schema', 'articleSchema', 'video_object_schema'
+        ]
+#### Category Schema Serializer
+
+
 class CategorywiseBusinessSerilizer(serializers.ModelSerializer):
-    picture = serializers.ImageField()
-    mobile_numbers = BusinessMobileSerializer(source='businessmobilenumbers_set', many=True, read_only=True)
+    picture         = serializers.ImageField()
+    mobile_numbers  = BusinessMobileSerializer(source='businessmobilenumbers_set', many=True, read_only=True)
     business_images = BusinessImageSerializer(source='businessimage_set', many=True, read_only=True)
+    category        = CategorySchemaSerializer()
 
     class Meta:
         model = Business
-        fields = ['id', 'business_name', 'mobile_numbers','state','city','pincode','whatsapp_number','email','website_url','GSTIN','business_info',
-                  'established_on', 'services','verified','trusted','trending','authorized','picture','likes','reviews', 'mobile_number',
-                  'category', 'business_images', 'industry_leader', 'sponsor', 'super', 'premium'
-                  ]
-        
+        fields = [
+            'id', 'business_name', 'mobile_numbers','state','city','pincode','whatsapp_number','email','website_url','GSTIN','business_info','established_on', 'services','verified','trusted','trending','authorized','picture','likes','reviews', 'mobile_number','category', 'business_images', 'industry_leader', 'sponsor', 'super', 'premium'
+        ]
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
