@@ -343,13 +343,6 @@ class ArticleSchema(models.Model):
 
     def __str__(self):
         return f'{self.author.name} Article Schema'
-
-
-class BusinessProfileTitleTag(models.Model):
-    title_text = models.TextField(_("Title Text"))
-    
-    def __str__(self):
-        return f'{self.title_text}'
     
 
 
@@ -420,7 +413,7 @@ class Business(models.Model):
     faq_schema_mainEntity          = models.ManyToManyField(FAQSchemaMainEntity, blank=True)
     brad_crumb_schema_item_list    = models.ManyToManyField(BreadCrumbSchamaItemListItem, blank=True)
     article_schema                 = models.ForeignKey(ArticleSchema, on_delete=models.SET_NULL, blank=True, null=True)
-    title                          = models.ForeignKey(BusinessProfileTitleTag, blank=True, on_delete=models.SET_NULL, null=True)
+    title_tag                      = models.TextField(_("Title Tag"), null=True, blank=True)
     meta_tag                       = models.ManyToManyField(BusinessProfileMetaTag, blank=True)
 
 

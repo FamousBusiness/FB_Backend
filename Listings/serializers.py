@@ -3,7 +3,7 @@ from Listings.models import (
     Business, BusinessMobileNumbers, BusinessImage,
     Category,Order, ProductService, FooterImage,
     FrontCarousel, BusinessPageLike, LocalBusinessSchemaInstagram,LocalBusinessSchemaAggregrateRating, LocalBusinessSchemaVideo, LocalBusinessSchemaFaceBook,LocalSchemaVideoInteractionStatitics,
-    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileTitleTag, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag
+    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag
 )
 from Banner.models import Banner
 from Brands.models import BrandProducts, BrandBusinessPage
@@ -521,13 +521,6 @@ class BusinessProfileMetaTagSerializer(serializers.ModelSerializer):
 
 
 
-class BusinessProfileTitleTagSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = BusinessProfileTitleTag
-        fields = '__all__'
-
-
 
 class IDwiseBusinessSerilizer(serializers.ModelSerializer):
     picture         = serializers.ImageField()
@@ -547,7 +540,6 @@ class IDwiseBusinessSerilizer(serializers.ModelSerializer):
     faq_schema_mainEntity          = FAQSchemaMainEntitySerializer(many=True)
     brad_crumb_schema_item_list    = BreadCrumbSchamaItemListItemSerializer(many=True)
     article_schema                 = ArticleSchemaSerializer()
-    title                          = BusinessProfileTitleTagSerializer(many = True)
     meta_tag                       = BusinessProfileMetaTagSerializer(many = True)
 
 
@@ -569,9 +561,9 @@ class IDwiseBusinessSerilizer(serializers.ModelSerializer):
                   'established_on', 'services','verified','trusted','trending','authorized','picture','like','reviews', 'mobile_number',
                   'address', 'business_images', 'products', 'mobile_numbers','nature', 'opening_time','closing_time','turn_over',
                   'employee_count', 'category', 'ReviewRatings', 'CIN_No', 'DIN', 'director', 'RoC', 'company_No', 'industry_leader',
-                  'sponsor', 'super', 'premium', 'locality', 'local_schema_search_keyword', 'local_schema_same_as', 'local_schema_aggregrate_rating', 'local_schema_video', 'local_schema_facebook_video', 'local_schema_insta_video', 'local_schema_reviews', 'faq_schema_mainEntity', 'brad_crumb_schema_item_list', 'article_schema', 'title', 'meta_tag',
+                  'sponsor', 'super', 'premium', 'locality', 'local_schema_search_keyword', 'local_schema_same_as', 'local_schema_aggregrate_rating', 'local_schema_video', 'local_schema_facebook_video', 'local_schema_insta_video', 'local_schema_reviews', 'faq_schema_mainEntity', 'brad_crumb_schema_item_list', 'article_schema', 'title_tag', 'meta_tag',
                 ]
-
+    
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 

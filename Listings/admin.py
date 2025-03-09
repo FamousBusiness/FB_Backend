@@ -3,7 +3,7 @@ from Listings.models import (
     Business,  BusinessImage, BusinessMobileNumbers, Category, SubCategory, BusinessEmailID, 
     Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage, ClientOrder, TextMessage,  ProductService, Image,
     FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema,
-    BusinessProfileTitleTag, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoInteractionStatitics,
+    BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoInteractionStatitics,
     CategoryVideoObjectSchema, CategoryMetaTag
 )
 # from django.core.exceptions import ValidationError
@@ -98,7 +98,6 @@ admin.site.register(LocalBusinessSchemaReviews)
 admin.site.register(FAQSchemaMainEntity)
 admin.site.register(BreadCrumbSchamaItemListItem)
 admin.site.register(ArticleSchema)
-admin.site.register(BusinessProfileTitleTag)
 admin.site.register(BusinessProfileMetaTag)
 
 admin.site.register(CategoryBreadCrumbSchamaItemListItem)

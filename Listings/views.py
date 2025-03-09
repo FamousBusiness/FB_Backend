@@ -329,7 +329,7 @@ class CategoryWiseBusinessAPIView(generics.ListAPIView):
 class IDWiseBusinessAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(cache_page(CACHE_TTL))
     def post(self, request, pk):
         business_id = pk
 
