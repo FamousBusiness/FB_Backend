@@ -901,7 +901,7 @@ class SearchKeywordBusinessAPIView(APIView):
         if not search_keywords.exists():
             return Response({'message': 'Search keyword not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        search_keyword_positions = SearchKeywordBusinessPosition.objects.filter(search_keyword__in=search_keywords)
+        search_keyword_positions = SearchKeywordBusinessPosition.objects.filter(search_keyword__in=search_keywords).order_by('id')
 
         paginator           = self.pagination_class()
         paginated_positions = paginator.paginate_queryset(search_keyword_positions, request)

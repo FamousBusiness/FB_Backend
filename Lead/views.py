@@ -1720,6 +1720,7 @@ class LeadExcelUploadView(View):
                         send_whatsapp_message_enqiury_form_user.delay(user_data)
 
                 except Exception as e:
+                    print('user create error', {e})
                     pass
 
                 # try:
@@ -1741,13 +1742,14 @@ class LeadExcelUploadView(View):
                 try:
                     send_category_wise_business_whatsapp_message_lead_excel_upload.delay(data)
                 except Exception as e:
+                    print('error', {e})
                     return HttpResponse(f"Not able to sent mail {str(e)}")
 
                 try:
                     send_category_wise_business_message_excel_upload.delay(data)
                 except Exception as e:
+                    print('error', {e})
                     return HttpResponse(f"Not able to sent mail {str(e)}")
-                
 
             response_data = {'msg': 'Mail has been sent to the user'}
 

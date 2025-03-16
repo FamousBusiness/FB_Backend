@@ -20,21 +20,32 @@ def update_lead_status(sender, instance, created, **kwargs):
 
         try:
             assigned_lead_view_quantity = CategoryLeadViewQuantity.objects.get(category = lead_category)
+
+            if lead_view >= assigned_lead_view_quantity.quantity:
+                try:
+                    lead = Lead.objects.get(id=lead_id)
+
+                    if not lead.expired:
+                        lead.expired = True
+                        lead.status = "Completed"
+                        lead.save()
+                    
+                except ObjectDoesNotExist:
+                    pass
         except Exception as e:
             assigned_lead_view_quantity = 5
-        
 
-        if lead_view >= assigned_lead_view_quantity.quantity:
-            try:
-                lead = Lead.objects.get(id=lead_id)
+            if lead_view >= assigned_lead_view_quantity:
+                try:
+                    lead = Lead.objects.get(id=lead_id)
 
-                if not lead.expired:
-                    lead.expired = True
-                    lead.status = "Completed"
-                    lead.save()
-                
-            except ObjectDoesNotExist:
-                pass
+                    if not lead.expired:
+                        lead.expired = True
+                        lead.status = "Completed"
+                        lead.save()
+                    
+                except ObjectDoesNotExist:
+                    pass
 
     else:
         lead_id       = instance.id
@@ -43,20 +54,32 @@ def update_lead_status(sender, instance, created, **kwargs):
 
         try:
             assigned_lead_view_quantity = CategoryLeadViewQuantity.objects.get(category = lead_category)
+
+            if lead_view >= assigned_lead_view_quantity.quantity:
+                try:
+                    lead = Lead.objects.get(id=lead_id)
+
+                    if not lead.expired:
+                        lead.expired = True
+                        lead.status = "Completed"
+                        lead.save()
+                    # write_total_assignments( lead)
+                except ObjectDoesNotExist:
+                    pass
         except Exception as e:
             assigned_lead_view_quantity = 5
 
-        if lead_view >= assigned_lead_view_quantity.quantity:
-            try:
-                lead = Lead.objects.get(id=lead_id)
+            if lead_view >= assigned_lead_view_quantity:
+                try:
+                    lead = Lead.objects.get(id=lead_id)
 
-                if not lead.expired:
-                    lead.expired = True
-                    lead.status = "Completed"
-                    lead.save()
-                # write_total_assignments( lead)
-            except ObjectDoesNotExist:
-                pass
+                    if not lead.expired:
+                        lead.expired = True
+                        lead.status = "Completed"
+                        lead.save()
+                    # write_total_assignments( lead)
+                except ObjectDoesNotExist:
+                    pass
 
             
 
