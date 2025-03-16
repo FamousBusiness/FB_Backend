@@ -24,3 +24,6 @@ class Banner(models.Model):
 
     def __str__(self):
         return f'{self.user.name}\'s Banner' 
+    
+    class Meta:
+        ordering = ['-id']

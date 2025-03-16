@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import (
     BusinessAPIView, CategoryViewAPIView, CategoryUploadUpdateAPIView, IDWiseBusinessAPIView,
     CategoryWiseBusinessAPIView, BusinessPageSearchAPiView, BusinessMobileNumber, LandigPageAdTesting,
@@ -50,7 +51,9 @@ urlpatterns = [
     path('capture-users-view/', StoreUsersView.as_view(), name='users_view'),
     path('landing-page-ad/', LandigPageAdTesting.as_view(), name='landing_page_view'),
 
-    path('all-brands/', AllBrandsAPIView.as_view(), name='all-brands')
+    path('all-brands/', AllBrandsAPIView.as_view(), name='all-brands'),
+
+    path('search/keyword/business/', views.SearchKeywordBusinessAPIView.as_view(), name='search_keyword_business')
 ]
 
 

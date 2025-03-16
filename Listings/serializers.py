@@ -3,7 +3,7 @@ from Listings.models import (
     Business, BusinessMobileNumbers, BusinessImage,
     Category,Order, ProductService, FooterImage,
     FrontCarousel, BusinessPageLike, LocalBusinessSchemaInstagram,LocalBusinessSchemaAggregrateRating, LocalBusinessSchemaVideo, LocalBusinessSchemaFaceBook,LocalSchemaVideoInteractionStatitics,
-    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag
+    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag, SearchkeywordMetaTag, SearchKeywordBusinessPosition, SearchKeyword, SearchKeywordFAQSchemaMainEntity, SearchKeywordArticleSchema
 )
 from Banner.models import Banner
 from Brands.models import BrandProducts, BrandBusinessPage
@@ -691,7 +691,81 @@ class BrandBusinessSerializer(serializers.ModelSerializer):
         model = BrandBusinessPage
         fields = "__all__"
 
+
+class SearchKeywordMetatagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SearchkeywordMetaTag
+        fields = '__all__'
     
+
+
+class CategoryTypeIDSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id', 'type', 'image', 'trending', 'is_store', 'store_trending']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if instance.image:
+            image_path = f"https://mdwebzotica.famousbusiness.in/{instance.image.name}"
+            representation['image'] = image_path
+
+        return representation
+
+
+##### Search keyword wise Business Serializer
+class SearchKeywordBusinessSerilizer(serializers.ModelSerializer):
+    picture         = serializers.ImageField()
+    mobile_numbers  = BusinessMobileSerializer(source='businessmobilenumbers_set', many=True, read_only=True)
+    business_images = BusinessImageSerializer(source='businessimage_set', many=True, read_only=True)
+    category        = CategoryTypeIDSerializer()
+
+
+    class Meta:
+        model = Business
+        fields = [
+            'id', 'business_name', 'mobile_numbers','state','city','pincode','whatsapp_number','email','website_url','GSTIN','business_info','established_on', 'services','verified','trusted','trending','authorized','picture','likes','reviews', 'mobile_number','category', 'business_images', 'industry_leader', 'sponsor', 'super', 'premium', 'address', 'pincode', 'locality', 'latitude', 'longitude', 'rating'
+        ]
     
-    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if instance.picture:
+            image_path = f"https://mdwebzotica.famousbusiness.in/{instance.picture.name}"
+            representation['picture'] = image_path
+
+        return representation
+
+
+
+class SearchkeywordMetaTagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SearchkeywordMetaTag
+        fields = '__all__'
+
+
+class SearchKeywordFAQSchemaMainEntitySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SearchKeywordFAQSchemaMainEntity
+        fields = '__all__'
+
+
+class SearchKeywordArticleSchemaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SearchKeywordArticleSchema
+        fields = '__all__'
+        
+
+class SearchKeywordBusinessPositionSerializer(serializers.ModelSerializer):
+    business_page  = SearchKeywordBusinessSerilizer()
+
+    class Meta:
+        model = SearchKeywordBusinessPosition
+        fields = '__all__'
 

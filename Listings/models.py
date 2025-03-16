@@ -371,6 +371,8 @@ class Business(models.Model):
     pincode         = models.CharField(max_length=25, null=True, blank=True)
     locality        = models.CharField(max_length=250, null=True, blank=True)
     address         = models.CharField(max_length=1000, null=True, blank=True)
+    latitude        = models.CharField(_("Latitude"), max_length=30, null=True, blank=True)
+    longitude       = models.CharField(_("Longitude"), max_length=30, null=True, blank=True)
     website_url     = models.URLField(max_length=200, null=True, blank=True, verbose_name='Website URL')
     GSTIN           = models.CharField(max_length=50, null=True, blank=True, unique=True, verbose_name='GST No')
     CIN_No          = models.CharField(max_length=50, null=True, blank=True, unique=True, verbose_name='CIN No')
@@ -391,6 +393,7 @@ class Business(models.Model):
     trending        = models.BooleanField(default=False, null=True, blank=True)
     likes           = models.IntegerField(default=0, null=True, blank=True)
     reviews         = models.IntegerField(default=0, null=True, blank=True)
+    rating          = models.IntegerField(default=0, null=True, blank=True)
     keywords        = models.TextField(verbose_name='Search Keywords', null=True, blank=True)
     opening_time    = models.TimeField(null=True, blank=True, verbose_name='Opening Time')
     closing_time    = models.TimeField(null=True, blank=True, verbose_name='Closing Time')
@@ -726,8 +729,71 @@ class CategoryWiseBusinessSideImage(models.Model):
 
 
 
+class SearchKeywordArticleSchema(models.Model):
+    author                = models.ForeignKey(User, on_delete=models.CASCADE)
+    headline              = models.CharField(_('headline'), max_length=500)
+    publisher_name        = models.CharField(_('Publisher Name'), max_length=100)
+    publisher_logo        = models.ImageField(upload_to='ArticleSchema/PublisherLogo/')
+    datePublished         = models.CharField(_('datePublished'), max_length=50)
+    dateModified          = models.CharField(_('dateModified'), max_length=50)
+    mainEntityOfPage_id   = models.CharField(_('mainEntityOfPage_id'), max_length=50)
+    image                 = models.ImageField(upload_to='ArticleSchema/Image/')
+    articleBody           = models.TextField(_("articleBody"))
+
+    def __str__(self):
+        return f'{self.author.name} Article Schema'
 
 
 
+class SearchkeywordMetaTag(models.Model):
+    name     = models.CharField(_("Name"), max_length=200, blank=True, null=True)
+    content  = models.TextField(_("Content"), blank=True, null=True)
+    property = models.CharField(_("Property"), max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.pk}'
     
+
+
+class SearchKeywordFAQSchemaMainEntity(models.Model):
+    question_name       = models.CharField(_("Question Name"), max_length=200, null=True, blank=True)
+    acceptedAnswer_type = models.CharField(_("Accept answer type"), max_length=200)
+    acceptedAnswer_text = models.CharField(_("Accept answer text"), max_length=200)
+
+    def __str__(self):
+        return f'{self.question_name}'
+
+
+
+class SearchKeyword(models.Model):
+    city      = models.CharField(_("City"), max_length=30)
+    keyword   = models.CharField(_("Keyword"), max_length=200)
+    meta_tag  = models.ManyToManyField(SearchkeywordMetaTag)
+    title_tag = models.CharField(_("Title Tag"), max_length=100, null=True)
+    body_tag  = models.TextField(_("Body Tag"), null=True, blank=True)
+
+    item_list_schema_name = models.CharField(_("ItemListSchema Name"), max_length=100, null=True, blank=True)
+    article_schema = models.ForeignKey(SearchKeywordArticleSchema, on_delete=models.SET_NULL, null=True, blank=True)
+    faq_schema     = models.ManyToManyField(SearchKeywordFAQSchemaMainEntity, blank=True)
+
+    def __str__(self):
+        return f'{self.city}-{self.keyword}'
+    
+
+
+
+class SearchKeywordBusinessPosition(models.Model):
+    search_keyword = models.ForeignKey(SearchKeyword, on_delete=models.CASCADE)
+    business_page  = models.ForeignKey(Business, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return f'{self.search_keyword}-{self.business_page}'
+    
+    class Meta:
+        ordering = ['-id']
+
+
+
+
 

@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from Listings.models import (
     Business, Category, FrontCarousel, SubCategory, ProductService, CategoryWiseBusinessSideImage,
-    BusinessMobileNumbers, BusinessImage, BusinessPageLike, BusinessPageReviewRating, FooterImage
+    BusinessMobileNumbers, BusinessImage, BusinessPageLike, BusinessPageReviewRating, FooterImage, SearchKeyword, SearchKeywordBusinessPosition, SearchkeywordMetaTag
 )
 from ADS.models import ADS, UserADView
 from Banner.models import Banner
@@ -14,8 +14,9 @@ from .serializers import (
     SingleListingsSerializer,BannerSerializer, 
     FrontCarouselSerializer, CategoryWiseBusinessSideImageSerializer,
     BusinessMobileSerializer, CategoryLeadGenerateSerializer, CategorywiseBusinessSerilizer,
-    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer
+    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer, SearchKeywordBusinessSerilizer, SearchkeywordMetaTagSerializer, SearchKeywordBusinessPositionSerializer, SearchKeywordFAQSchemaMainEntitySerializer, SearchKeywordArticleSchemaSerializer
     )
+from .pagination import SearchKeywordBusinessPagination
 from Lead.serializer import ComboLeadSerializer
 from Listings.ADS.ads_serializers import AdSerializer
 from rest_framework import permissions
@@ -35,6 +36,7 @@ from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, IntegerField, When, Case
 from django.utils.decorators import method_decorator
+from rest_framework.generics import ListAPIView
 
 
 
@@ -854,3 +856,64 @@ class AllBrandsAPIView(generics.ListAPIView):
         }
 
         return self.get_paginated_response(response_data)
+    
+
+
+
+class SearchKeywordBusinessAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class   = SearchKeywordBusinessPositionSerializer
+    pagination_class   = SearchKeywordBusinessPagination
+
+
+    def get(self, request):
+        city    = request.query_params.get('city')
+        keyword = request.query_params.get('keyword')
+
+        # search_keyword_position_data = []
+
+        if not all([city, keyword]):
+            return Response({'message': 'Please provide required fields, city, keyword'}, status=status.HTTP_400_BAD_REQUEST)
+
+        ### Get the search keyword according to the city
+        search_keywords = SearchKeyword.objects.filter(city=city, keyword=keyword)
+
+        #### title tag
+        title_tag = search_keywords.first().title_tag if search_keywords.exists() else ""
+
+        #### Body Tag
+        body_tag = search_keywords.first().body_tag if search_keywords.exists() else ""
+
+        #### Item list Schema Name
+        item_list_schema_name = search_keywords.first().item_list_schema_name if search_keywords.exists() else ""
+
+        #### Faqschema
+        faq_schema = search_keywords.first().faq_schema if search_keywords.exists() else []
+        faq_schema_serialized_data = SearchKeywordFAQSchemaMainEntitySerializer(faq_schema, many=True).data
+
+        ### Article Schema
+        article_schema = search_keywords.first().article_schema if search_keywords.exists() else {}
+        article_schema_serialized_data = SearchKeywordArticleSchemaSerializer(article_schema).data
+
+        meta_tag_data            = SearchkeywordMetaTag.objects.filter(searchkeyword__in = search_keywords).distinct()
+        meta_tag_serializer_data = SearchkeywordMetaTagSerializer(meta_tag_data, many=True).data
+        
+        if not search_keywords.exists():
+            return Response({'message': 'Search keyword not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        search_keyword_positions = SearchKeywordBusinessPosition.objects.filter(search_keyword__in=search_keywords)
+
+        paginator           = self.pagination_class()
+        paginated_positions = paginator.paginate_queryset(search_keyword_positions, request)
+        serialized_data     = self.serializer_class(paginated_positions , many=True).data
+
+        return paginator.get_paginated_response({
+            'business_data': serialized_data,
+            'meta_tag': meta_tag_serializer_data,
+            'title_tag': title_tag,
+            'item_list_schema_name': item_list_schema_name,
+            'faq_schema': faq_schema_serialized_data,
+            'article_schema': article_schema_serialized_data,
+            'body_tag': body_tag
+        })
+    

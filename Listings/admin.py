@@ -4,12 +4,33 @@ from Listings.models import (
     Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage, ClientOrder, TextMessage,  ProductService, Image,
     FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema,
     BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoInteractionStatitics,
-    CategoryVideoObjectSchema, CategoryMetaTag
+    CategoryVideoObjectSchema, CategoryMetaTag, SearchKeyword, SearchKeywordBusinessPosition, SearchKeywordArticleSchema, SearchkeywordMetaTag, SearchKeywordFAQSchemaMainEntity
 )
 # from django.core.exceptions import ValidationError
 # from django.http import HttpResponseRedirect
 # from django.urls import reverse
 # from django import forms
+
+@admin.register(SearchkeywordMetaTag)
+class SearchkeywordMetaTagModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'property',)
+    ordering = ('id',)
+
+
+
+@admin.register(SearchKeywordBusinessPosition)
+class SearchKeywordBusinessPositionModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'search_keyword', 'business_page',)
+    ordering = ('id',)
+    search_fields = ('search_keyword', 'business_page',)
+
+
+
+@admin.register(SearchKeyword)
+class SearchKeywordModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'city', 'keyword')
+    ordering = ('-id',)
+    search_fields = ('city', 'keyword',)
 
 
 
@@ -108,6 +129,10 @@ admin.site.register(CategoryArticleSchema)
 admin.site.register(CategoryVideoInteractionStatitics)
 admin.site.register(CategoryVideoObjectSchema)
 admin.site.register(CategoryMetaTag)
+
+admin.site.register(SearchKeywordArticleSchema)
+admin.site.register(SearchKeywordFAQSchemaMainEntity)
+
 
 
 
