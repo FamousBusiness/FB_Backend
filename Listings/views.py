@@ -14,7 +14,7 @@ from .serializers import (
     SingleListingsSerializer,BannerSerializer, 
     FrontCarouselSerializer, CategoryWiseBusinessSideImageSerializer,
     BusinessMobileSerializer, CategoryLeadGenerateSerializer, CategorywiseBusinessSerilizer,
-    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer, SearchKeywordBusinessSerilizer, SearchkeywordMetaTagSerializer, SearchKeywordBusinessPositionSerializer, SearchKeywordFAQSchemaMainEntitySerializer, SearchKeywordArticleSchemaSerializer
+    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer, SearchKeywordBusinessSerilizer, SearchkeywordMetaTagSerializer, SearchKeywordBusinessPositionSerializer, SearchKeywordFAQSchemaMainEntitySerializer, SearchKeywordArticleSchemaSerializer, SearchKeywordLinkSerializer
     )
 from .pagination import SearchKeywordBusinessPagination
 from Lead.serializer import ComboLeadSerializer
@@ -895,6 +895,10 @@ class SearchKeywordBusinessAPIView(APIView):
         article_schema = search_keywords.first().article_schema if search_keywords.exists() else {}
         article_schema_serialized_data = SearchKeywordArticleSchemaSerializer(article_schema).data
 
+        #### Link tag
+        link_tag = search_keywords.first().link_tag
+        link_tag_serializer = SearchKeywordLinkSerializer(link_tag, many=True).data
+
         meta_tag_data            = SearchkeywordMetaTag.objects.filter(searchkeyword__in = search_keywords).distinct()
         meta_tag_serializer_data = SearchkeywordMetaTagSerializer(meta_tag_data, many=True).data
         
@@ -914,6 +918,7 @@ class SearchKeywordBusinessAPIView(APIView):
             'item_list_schema_name': item_list_schema_name,
             'faq_schema': faq_schema_serialized_data,
             'article_schema': article_schema_serialized_data,
-            'body_tag': body_tag
+            'body_tag': body_tag,
+            'link_tag': link_tag_serializer
         })
     

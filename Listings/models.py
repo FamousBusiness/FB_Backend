@@ -764,6 +764,15 @@ class SearchKeywordFAQSchemaMainEntity(models.Model):
         return f'{self.question_name}'
 
 
+class SearchKeywordLink(models.Model):
+    rel  = models.CharField(_("rel"), max_length=30)
+    href = models.CharField(_("href"), max_length=200)
+    type = models.CharField(_("type"), max_length=80, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.rel}-{self.href}'
+
+
 
 class SearchKeyword(models.Model):
     city      = models.CharField(_("City"), max_length=30)
@@ -771,6 +780,7 @@ class SearchKeyword(models.Model):
     meta_tag  = models.ManyToManyField(SearchkeywordMetaTag)
     title_tag = models.CharField(_("Title Tag"), max_length=100, null=True)
     body_tag  = models.TextField(_("Body Tag"), null=True, blank=True)
+    link_tag  = models.ManyToManyField(SearchKeywordLink, blank=True)
 
     item_list_schema_name = models.CharField(_("ItemListSchema Name"), max_length=100, null=True, blank=True)
     article_schema = models.ForeignKey(SearchKeywordArticleSchema, on_delete=models.SET_NULL, null=True, blank=True)

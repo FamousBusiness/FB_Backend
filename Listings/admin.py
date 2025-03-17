@@ -4,12 +4,19 @@ from Listings.models import (
     Assigned_Benefits,Order, FooterImage, CategoryWiseBusinessSideImage, ClientOrder, TextMessage,  ProductService, Image,
     FrontCarousel, BusinessPageLike, BusinessPageReviewRating, LocalSchemaSearchKeywords, LocalSchemaSameAs, LocalBusinessSchemaAggregrateRating, LocalSchemaVideoInteractionStatitics, LocalBusinessSchemaVideo, LocalSchemaFacebookInteractionStatitics, LocalBusinessSchemaFaceBook, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaInstagram, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema,
     BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoInteractionStatitics,
-    CategoryVideoObjectSchema, CategoryMetaTag, SearchKeyword, SearchKeywordBusinessPosition, SearchKeywordArticleSchema, SearchkeywordMetaTag, SearchKeywordFAQSchemaMainEntity
+    CategoryVideoObjectSchema, CategoryMetaTag, SearchKeyword, SearchKeywordBusinessPosition, SearchKeywordArticleSchema, SearchkeywordMetaTag, SearchKeywordFAQSchemaMainEntity, SearchKeywordLink
 )
 # from django.core.exceptions import ValidationError
 # from django.http import HttpResponseRedirect
 # from django.urls import reverse
 # from django import forms
+
+
+@admin.register(SearchKeywordLink)
+class SearchKeywordLinkModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'rel', 'href',)
+    ordering = ('-id',)
+
 
 @admin.register(SearchkeywordMetaTag)
 class SearchkeywordMetaTagModelAdmin(admin.ModelAdmin):

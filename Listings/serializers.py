@@ -3,7 +3,7 @@ from Listings.models import (
     Business, BusinessMobileNumbers, BusinessImage,
     Category,Order, ProductService, FooterImage,
     FrontCarousel, BusinessPageLike, LocalBusinessSchemaInstagram,LocalBusinessSchemaAggregrateRating, LocalBusinessSchemaVideo, LocalBusinessSchemaFaceBook,LocalSchemaVideoInteractionStatitics,
-    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag, SearchkeywordMetaTag, SearchKeywordBusinessPosition, SearchKeyword, SearchKeywordFAQSchemaMainEntity, SearchKeywordArticleSchema
+    BusinessPageReviewRating, Image, LocalSchemaSameAs,CategoryWiseBusinessSideImage, LocalSchemaSearchKeywords, LocalSchemaFacebookInteractionStatitics, LocalSchemaInstagramInteractionStatitics, LocalBusinessSchemaReviews, FAQSchemaMainEntity, BreadCrumbSchamaItemListItem, ArticleSchema, BusinessProfileMetaTag, CategoryBreadCrumbSchamaItemListItem, CategoryItemListElementSchema, CategoryItemListSchema, CategoryFAQPageSchema, CategoryArticleSchema, CategoryVideoObjectSchema, CategoryVideoInteractionStatitics, CategoryMetaTag, SearchkeywordMetaTag, SearchKeywordBusinessPosition, SearchKeyword, SearchKeywordFAQSchemaMainEntity, SearchKeywordArticleSchema, SearchKeywordLink
 )
 from Banner.models import Banner
 from Brands.models import BrandProducts, BrandBusinessPage
@@ -760,7 +760,14 @@ class SearchKeywordArticleSchemaSerializer(serializers.ModelSerializer):
     class Meta:
         model = SearchKeywordArticleSchema
         fields = '__all__'
-        
+
+
+class SearchKeywordLinkSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = SearchKeywordLink
+        fields = '__all__'
+
 
 class SearchKeywordBusinessPositionSerializer(serializers.ModelSerializer):
     business_page  = SearchKeywordBusinessSerilizer()
