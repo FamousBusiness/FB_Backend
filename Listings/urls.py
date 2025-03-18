@@ -53,7 +53,9 @@ urlpatterns = [
 
     path('all-brands/', AllBrandsAPIView.as_view(), name='all-brands'),
 
-    path('search/keyword/business/', views.SearchKeywordBusinessAPIView.as_view(), name='search_keyword_business')
+    path('search/keyword/business/', views.SearchKeywordBusinessAPIView.as_view(), name='search_keyword_business'),
+
+    path('location/city/sitemap/', views.LocationCitySitemapAPIView.as_view(), name='location_city_sitemap'),
 ]
 
 

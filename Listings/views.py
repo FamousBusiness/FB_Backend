@@ -921,4 +921,21 @@ class SearchKeywordBusinessAPIView(APIView):
             'body_tag': body_tag,
             'link_tag': link_tag_serializer
         })
-    
+
+
+
+class LocationCitySitemapAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        keywords_data = SearchKeyword.objects.values_list('city', 'keyword').distinct()
+
+        locations = {}
+
+        for city, keyword in keywords_data:
+            if city not in locations:
+                locations[city] = []
+
+            locations[city].append(keyword)
+
+        return Response({"locations": locations})
