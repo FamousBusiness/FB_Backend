@@ -776,3 +776,43 @@ class SearchKeywordBusinessPositionSerializer(serializers.ModelSerializer):
         model = SearchKeywordBusinessPosition
         fields = '__all__'
 
+
+
+class SearchKeywordOpenGraphSerializer(serializers.ModelSerializer):
+    og_image = serializers.ImageField(use_url=True)  # Ensures the full URL is returned
+
+    class Meta:
+        model = SearchKeyword
+        fields = [
+            'og_title', 'og_description', 'og_type', 'og_image',
+            'og_locale', 'og_url', 'og_site_name'
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if instance.og_image:
+            image_path = f"https://mdwebzotica.famousbusiness.in/{instance.og_image.name}"
+            representation['og_image'] = image_path
+
+        return representation
+    
+
+class SearchKeywordTwitterCardSerializer(serializers.ModelSerializer):
+    twitter_image = serializers.ImageField(use_url=True)  # Ensures the full URL is returned
+
+    class Meta:
+        model = SearchKeyword
+        fields = [
+            'twitter_card', 'twitter_site', 'twitter_title', 'twitter_description',
+            'twitter_image', 'twitter_url'
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if instance.twitter_image:
+            image_path = f"https://mdwebzotica.famousbusiness.in/{instance.twitter_image.name}"
+            representation['twitter_image'] = image_path
+
+        return representation

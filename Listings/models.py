@@ -774,6 +774,8 @@ class SearchKeywordLink(models.Model):
 
 
 
+
+
 class SearchKeyword(models.Model):
     city      = models.CharField(_("City"), max_length=30)
     keyword   = models.CharField(_("Keyword"), max_length=200)
@@ -781,6 +783,26 @@ class SearchKeyword(models.Model):
     title_tag = models.CharField(_("Title Tag"), max_length=100, null=True)
     body_tag  = models.TextField(_("Body Tag"), null=True, blank=True)
     link_tag  = models.ManyToManyField(SearchKeywordLink, blank=True)
+
+    canonical_url    = models.CharField(_("Canonical URL"), max_length=200, null=True, blank=True)
+    meta_ios_url     = models.CharField(_("Meta Tag IOS URL"), max_length=200, null=True, blank=True)
+    meta_android_url = models.CharField(_("Meta Android URL"), max_length=200, null=True, blank=True)
+    meta_web_url     = models.CharField(_("Meta Web URL"), max_length=200, null=True, blank=True)
+
+    og_title       = models.CharField(_("og_title"), max_length=100, null=True, blank=True)
+    og_description = models.CharField(_("og_description"), max_length=100, null=True, blank=True)
+    og_url         = models.CharField(_("og_url"), max_length=100, null=True, blank=True)
+    og_site_name   = models.CharField(_("og_site_name"), max_length=100, null=True, blank=True)
+    og_locale      = models.CharField(_("og_locale"), max_length=100, null=True, blank=True)
+    og_type        = models.CharField(_("og_type"), max_length=100, null=True, blank=True)
+    og_image       = models.ImageField(_("Image"), upload_to='searchKeyword/OG/Images/', null=True, blank=True)
+
+    twitter_card        = models.CharField(_("Twitter Card"), max_length=80, null=True, blank=True)
+    twitter_site        = models.CharField(_("Twitter Site"), max_length=80, null=True, blank=True)
+    twitter_url         = models.CharField(_("Twitter URL"), max_length=200, null=True, blank=True)
+    twitter_title       = models.CharField(_("Twitter Title"), max_length=80, null=True, blank=True)
+    twitter_description = models.TextField(_("Twitter Description"), null=True, blank=True)
+    twitter_image       = models.ImageField(_("Twitter"), upload_to='searchKeyword/TwitterCard/Images/', null=True, blank=True)
 
     item_list_schema_name = models.CharField(_("ItemListSchema Name"), max_length=100, null=True, blank=True)
     article_schema = models.ForeignKey(SearchKeywordArticleSchema, on_delete=models.SET_NULL, null=True, blank=True)

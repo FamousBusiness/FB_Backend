@@ -145,6 +145,7 @@ admin.site.register(SearchKeywordFAQSchemaMainEntity)
 
 
 
+
     # def clean(self):
     #     for obj in FrontCarousel.objects.all():
     #         if not obj.has_image_or_video():

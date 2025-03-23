@@ -14,7 +14,9 @@ from .serializers import (
     SingleListingsSerializer,BannerSerializer, 
     FrontCarouselSerializer, CategoryWiseBusinessSideImageSerializer,
     BusinessMobileSerializer, CategoryLeadGenerateSerializer, CategorywiseBusinessSerilizer,
-    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer, SearchKeywordBusinessSerilizer, SearchkeywordMetaTagSerializer, SearchKeywordBusinessPositionSerializer, SearchKeywordFAQSchemaMainEntitySerializer, SearchKeywordArticleSchemaSerializer, SearchKeywordLinkSerializer
+    IDwiseBusinessSerilizer, FootImageSerializer, UserSpecificBusinessPageSerializer, ProductServiceCRUDSerializer, CategoryMetaTagSerializer, SearchKeywordBusinessSerilizer, SearchkeywordMetaTagSerializer, SearchKeywordBusinessPositionSerializer, SearchKeywordFAQSchemaMainEntitySerializer, SearchKeywordArticleSchemaSerializer, SearchKeywordLinkSerializer,
+    SearchKeywordOpenGraphSerializer,
+    SearchKeywordTwitterCardSerializer
     )
 from .pagination import SearchKeywordBusinessPagination
 from Lead.serializer import ComboLeadSerializer
@@ -895,6 +897,21 @@ class SearchKeywordBusinessAPIView(APIView):
         article_schema = search_keywords.first().article_schema if search_keywords.exists() else {}
         article_schema_serialized_data = SearchKeywordArticleSchemaSerializer(article_schema).data
 
+        ### Cnonical URL
+        canonical_url = search_keywords.first().canonical_url if search_keywords.exists() else ''
+
+        #### Open Graphs
+        search_keyword_instance = search_keywords.first()
+        og_data = SearchKeywordOpenGraphSerializer(search_keyword_instance).data if search_keywords.exists() else {}
+
+        #### Twitter Card Serializer
+        twitter_card = SearchKeywordTwitterCardSerializer(search_keyword_instance).data if search_keywords.exists() else {}
+
+        # Android, Web, IOS Meta URL
+        meta_android_url = search_keywords.first().meta_android_url if search_keywords.exists() else ''
+        meta_ios_url     = search_keywords.first().meta_ios_url if search_keywords.exists() else ''
+        meta_web_url     = search_keywords.first().meta_web_url if search_keywords.exists() else ''
+
         #### Link tag
         link_tag = search_keywords.first().link_tag
         link_tag_serializer = SearchKeywordLinkSerializer(link_tag, many=True).data
@@ -919,7 +936,13 @@ class SearchKeywordBusinessAPIView(APIView):
             'faq_schema': faq_schema_serialized_data,
             'article_schema': article_schema_serialized_data,
             'body_tag': body_tag,
-            'link_tag': link_tag_serializer
+            'link_tag': link_tag_serializer,
+            'canonical_url': canonical_url,
+            'meta_android_url': meta_android_url,
+            'meta_ios_url': meta_ios_url,
+            'meta_web_url': meta_web_url,
+            'open_graph': og_data,
+            'twitter_card': twitter_card
         })
 
 
