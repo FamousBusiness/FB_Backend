@@ -58,7 +58,7 @@ def get_tokens_for_user(user):
     }
 
 
-
+from django.core.cache import cache
 # Home Page API
 # @method_decorator(ensure_csrf_cookie, name='dispatch')
 class LandingPageAPIView(generics.ListAPIView):
@@ -68,6 +68,12 @@ class LandingPageAPIView(generics.ListAPIView):
 
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, *args, **kwargs):
+        cache_key     = "landing_page_request_count"
+        request_count = cache.get(cache_key, 0) + 1
+
+        cache.set(cache_key, request_count, None)
+
+        print('request_count', request_count)
 
         try:
              city     = request.GET.get('city')
@@ -113,32 +119,32 @@ class LandingPageAPIView(generics.ListAPIView):
                     businesses = verified_business
                  businesses = Business.objects.all()[:20]
 
-             brands                 = BrandBusinessPage.objects.all()[:20]
-             ads                    = ADS.objects.filter(verified=True, is_active=True, city=city)[:20]
+            #  brands                 = BrandBusinessPage.objects.all()[:20]
+            #  ads                    = ADS.objects.filter(verified=True, is_active=True, city=city)[:20]
              banner                 = Banner.objects.filter(verified=True, expired=False)[:20]
              carousel               = FrontCarousel.objects.all()
-             combo_leads            = ComboLead.objects.all()
-             mobile_number_ads_user = [ad.posted_by.mobile_number for ad in ads]
+            #  combo_leads            = ComboLead.objects.all()
+            #  mobile_number_ads_user = [ad.posted_by.mobile_number for ad in ads]
 
         except ModuleNotFoundError:
             return Response({'msg': 'No data found'})
         
-        ads_serializer      = AdSerializer(ads, many=True)
+        # ads_serializer      = AdSerializer(ads, many=True)
 
-        for ad_data, mobile_number in zip(ads_serializer.data, mobile_number_ads_user):
-            ad_data['mobile_number'] = mobile_number
+        # for ad_data, mobile_number in zip(ads_serializer.data, mobile_number_ads_user):
+        #     ad_data['mobile_number'] = mobile_number
 
         business_page = self.paginate_queryset(businesses)
         banner_page   = self.paginate_queryset(banner)
         carousel_page = self.paginate_queryset(carousel)
-        brand_page    = self.paginate_queryset(brands)
-        combo_page    = self.paginate_queryset(combo_leads)
+        # brand_page    = self.paginate_queryset(brands)
+        # combo_page    = self.paginate_queryset(combo_leads)
 
         business_serializer   = BusinessSerializer(business_page, many=True)
         banner_serializer     = BannerSerializer(banner_page, many=True)
         carousel_serializer   = FrontCarouselSerializer(carousel_page, many=True)
-        brand_serializer      = LandingPageBrandSerializer(brand_page, many=True)
-        combo_lead_serializer = ComboLeadSerializer(combo_page, many=True)
+        # brand_serializer      = LandingPageBrandSerializer(brand_page, many=True)
+        # combo_lead_serializer = ComboLeadSerializer(combo_page, many=True)
 
         # business_serializer = BusinessSerializer(businesses, many=True)
         # banner_serializer   = BannerSerializer(banner, many=True)
@@ -148,12 +154,12 @@ class LandingPageAPIView(generics.ListAPIView):
         
         response_data = {
             'Business': business_serializer.data,
-            'ads': ads_serializer.data,
+            # 'ads': ads_serializer.data,
             'banner': banner_serializer.data,
             # 'jobs': jobs_serializer.data,
             'Carousel': carousel_serializer.data,
-            'brands': brand_serializer.data,
-            'combo_leads': combo_lead_serializer.data
+            # 'brands': brand_serializer.data,
+            # 'combo_leads': combo_lead_serializer.data
         }
 
 
@@ -490,7 +496,7 @@ class CategoryViewAPIView(APIView):
 
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
-        category = Category.objects.all()
+        category   = Category.objects.filter(is_store = False)[:20]
         serializer = CategorySerializer(category, many=True)
         return Response({'status': 'Success', 'data': serializer.data}, status=status.HTTP_200_OK)
 
@@ -866,14 +872,14 @@ class SearchKeywordBusinessAPIView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class   = SearchKeywordBusinessPositionSerializer
     pagination_class   = SearchKeywordBusinessPagination
-
-
+    
+    
+    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         city    = request.query_params.get('city')
         keyword = request.query_params.get('keyword')
 
         # search_keyword_position_data = []
-
         if not all([city, keyword]):
             return Response({'message': 'Please provide required fields, city, keyword'}, status=status.HTTP_400_BAD_REQUEST)
 

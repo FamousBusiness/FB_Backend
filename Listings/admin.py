@@ -146,16 +146,18 @@ admin.site.register(SearchKeywordFAQSchemaMainEntity)
 
 
 
-    # def clean(self):
-    #     for obj in FrontCarousel.objects.all():
-    #         if not obj.has_image_or_video():
-    #             raise ValidationError('Please add any image or Video')
-            
-    # def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-    #     obj = self.get_object(request, object_id)
+# def clean(self):
+#     for obj in FrontCarousel.objects.all():
+#         if not obj.has_image_or_video():
+#             raise ValidationError('Please add any image or Video')
         
-    #     if obj and not obj.has_image_or_video():
-    #         self.message_user(request, "Please add any image or video for Front Carousel with ID {}".format(obj.id), level='ERROR')
-    #         return HttpResponseRedirect(reverse('admin:%s_%s_change' % (self.opts.app_label,  self.opts.model_name),  args=[object_id]))
+# def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+#     obj = self.get_object(request, object_id)
+    
+#     if obj and not obj.has_image_or_video():
+#         self.message_user(request, "Please add any image or video for Front Carousel with ID {}".format(obj.id), level='ERROR')
+#         return HttpResponseRedirect(reverse('admin:%s_%s_change' % (self.opts.app_label,  self.opts.model_name),  args=[object_id]))
 
-    #     return super().changeform_view(request, object_id, form_url, extra_context)
+# return super().changeform_view(request, object_id, form_url, extra_context)
+
+
