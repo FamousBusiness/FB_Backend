@@ -1,4 +1,5 @@
 from django.urls import path
+from . import views
 from .views import (
     EnquiryFormAPIView, BusinessPageLeadAPIView, AllLeadWithoutAllDataView, 
     ShowBusinessPageAssignedLeadView, LeadPaymentAPIView, LeadExcelUploadView, LeadCheckView,
@@ -47,6 +48,8 @@ urlpatterns = [
     path('lead/form/question/', LeadFormUpdateQuestionView.as_view(), name='lead_form_question'),
     path('lead/banner/', LeadBannerView.as_view(), name='lead_banner'),
     path('lead/form/tag/', LeadFormTagViewSet.as_view({'get': 'list'}), name='lead_form_tag'),
+
+    path('create/search/keyword/lead/', views.CreateSearchKeywordLeadAPIView.as_view(), name='create_search_keyword_lead'),
     # path('initiation/', welcome, name='welcome'),
     # path('pay/', pay, name='pay'),
     # path('return-to-me/', payment_return, name='payment_return'),

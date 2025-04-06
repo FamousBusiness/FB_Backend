@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from Listings.models import (
-    Category, Business,
+    Category, Business, SearchKeyword
     )
 from Lead.models import (
     BusinessPageLeadView, Lead, BusinessPageLeadBucket, BusinessPageLead, AssignedLeadPerPremiumPlan, 
@@ -2382,6 +2382,42 @@ class LeadFormTagViewSet(viewsets.ModelViewSet):
     
 
 
+class CreateSearchKeywordLeadAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        mobile_number = request.data.get('mobile_number')
+        name = request.data.get('name')  # maps to created_by
+        city = request.data.get('city')
+        keyword = request.data.get('keyword')
+
+        if not mobile_number or not name or not city:
+            return Response(
+                {"error": "mobile_number, name, keyword and city are required fields."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        search_keword = SearchKeyword.objects.filter(
+            city__icontains = city,
+            keyword = keyword
+        ).first()
+
+        if not search_keword:
+            return Response({'message': 'Invvalid Search keyword'}, status=status.HTTP_400_BAD_REQUEST)
+
+        Lead.objects.create(
+            created_by    = name,
+            mobile_number = mobile_number,
+            city          = city,
+            category      = search_keword.category,
+            comment       = 'Lead generated through Search Keyword'
+        )
+
+        # serializer = LeadSerializer(lead)
+
+        return Response({
+            'success': True
+        },status=status.HTTP_201_CREATED)
 
 
 

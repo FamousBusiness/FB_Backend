@@ -779,6 +779,7 @@ class SearchKeywordLink(models.Model):
 class SearchKeyword(models.Model):
     city      = models.CharField(_("City"), max_length=30)
     keyword   = models.CharField(_("Keyword"), max_length=200)
+    category  = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     meta_tag  = models.ManyToManyField(SearchkeywordMetaTag)
     title_tag = models.CharField(_("Title Tag"), max_length=100, null=True)
     body_tag  = models.TextField(_("Body Tag"), null=True, blank=True)
