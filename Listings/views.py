@@ -58,7 +58,7 @@ def get_tokens_for_user(user):
     }
 
 
-from django.core.cache import cache
+
 # Home Page API
 # @method_decorator(ensure_csrf_cookie, name='dispatch')
 class LandingPageAPIView(generics.ListAPIView):
@@ -68,12 +68,6 @@ class LandingPageAPIView(generics.ListAPIView):
 
     @method_decorator(cache_page(CACHE_TTL))
     def get(self, request, *args, **kwargs):
-        cache_key     = "landing_page_request_count"
-        request_count = cache.get(cache_key, 0) + 1
-
-        cache.set(cache_key, request_count, None)
-
-        print('request_count', request_count)
 
         try:
              city     = request.GET.get('city')
@@ -154,10 +148,10 @@ class LandingPageAPIView(generics.ListAPIView):
         
         response_data = {
             'Business': business_serializer.data,
-            # 'ads': ads_serializer.data,
             'banner': banner_serializer.data,
-            # 'jobs': jobs_serializer.data,
             'Carousel': carousel_serializer.data,
+            # 'ads': ads_serializer.data,
+            # 'jobs': jobs_serializer.data,
             # 'brands': brand_serializer.data,
             # 'combo_leads': combo_lead_serializer.data
         }
